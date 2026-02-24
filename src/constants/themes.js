@@ -5,7 +5,7 @@ export const trueBlack = {
   type: 'dark',
 
   // Backgrounds
-  bg: '#000000',
+  bg: '#0A0A0A',
   cardBg: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
   innerBg: 'rgba(255, 255, 255, 0.03)',
   subtleBg: 'rgba(255, 255, 255, 0.02)',

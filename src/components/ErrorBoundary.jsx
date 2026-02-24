@@ -52,7 +52,7 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       const { error, errorInfo, errorCount } = this.state;
-      const isDarkMode = document.body.style.background === '#000000' ||
+      const isDarkMode = document.body.style.background === '#0A0A0A' ||
                          window.matchMedia('(prefers-color-scheme: dark)').matches;
 
       return (
@@ -63,7 +63,7 @@ class ErrorBoundary extends React.Component {
             alignItems: 'center',
             justifyContent: 'center',
             padding: '20px',
-            background: isDarkMode ? '#000000' : '#F9F9F7',
+            background: isDarkMode ? '#0A0A0A' : '#F9F9F7',
           }}
         >
           <div
