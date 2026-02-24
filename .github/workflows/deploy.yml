@@ -33,6 +33,7 @@ jobs:
         env:
           VITE_CLICKUP_API_KEY: ${{ secrets.VITE_CLICKUP_API_KEY }}
           VITE_CLICKUP_TEAM_ID: ${{ secrets.VITE_CLICKUP_TEAM_ID }}
+          VITE_USE_CLICKUP_API: ${{ secrets.VITE_USE_CLICKUP_API }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
