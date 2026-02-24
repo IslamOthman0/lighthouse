@@ -4,6 +4,7 @@ import LiveTimer from '../../ui/LiveTimer';
 import { PriorityBadge } from '../../ui/PriorityFlag';
 import { getTextFontStyle, tabularNumberStyle } from '../../../utils/typography';
 import { formatHoursToHM, formatMinutesToHM } from '../../../utils/timeFormat';
+import { logger } from '../../../utils/logger';
 
 // Utility to detect RTL text (Arabic)
 const isRTL = (text) => /[\u0600-\u06FF]/.test(text);
@@ -44,23 +45,19 @@ const WorkingCard = ({ member, theme, onClick, workingDays = 1 }) => {
     const threshold = 2 / 60; // 2 minutes in hours
 
     if (diff > threshold) {
-      console.log(`[WorkingCard ${name}] Significant change detected: ${liveTracked}h → ${tracked}h (diff: ${(diff * 60).toFixed(1)}m)`);
+      logger.debug(`[WorkingCard ${name}] Significant change detected: ${liveTracked}h → ${tracked}h (diff: ${(diff * 60).toFixed(1)}m)`);
       setLiveTracked(tracked);
     }
   }, [tracked, name, liveTracked]);
 
   useEffect(() => {
-    console.log(`[WorkingCard ${name}] Starting timer interval (increment every 60s)`);
+    logger.debug(`[WorkingCard ${name}] Starting timer interval (increment every 60s)`);
     const interval = setInterval(() => {
-      setLiveTracked(prev => {
-        const newValue = prev + (1 / 60);
-        console.log(`[WorkingCard ${name}] Timer tick: ${prev}h → ${newValue}h`);
-        return newValue;
-      });
+      setLiveTracked(prev => prev + (1 / 60));
     }, 60000);
 
     return () => {
-      console.log(`[WorkingCard ${name}] Cleaning up timer interval`);
+      logger.debug(`[WorkingCard ${name}] Cleaning up timer interval`);
       clearInterval(interval);
     };
   }, [name]);

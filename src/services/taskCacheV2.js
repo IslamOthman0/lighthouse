@@ -472,10 +472,10 @@ class TaskCacheV2 {
   }
 
   /**
-   * Get cache statistics
-   * @returns {Object} Cache stats
+   * Get in-memory hit/miss stats (synchronous)
+   * @returns {Object} Cache hit stats
    */
-  getStats() {
+  getCacheHitStats() {
     const hitRate = this.stats.hits + this.stats.misses > 0
       ? (this.stats.hits / (this.stats.hits + this.stats.misses)) * 100
       : 0;
@@ -492,7 +492,7 @@ class TaskCacheV2 {
    * Log cache statistics
    */
   logStats() {
-    const stats = this.getStats();
+    const stats = this.getCacheHitStats();
     console.log('📊 TaskCacheV2 Stats:', {
       hits: stats.hits,
       misses: stats.misses,

@@ -12,6 +12,16 @@
     font-family: 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Support notched devices (iPhone X+) */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Mobile bottom nav safe area */
+  #root {
+    min-height: 100dvh;
   }
 
   /* Scrollbar styling */

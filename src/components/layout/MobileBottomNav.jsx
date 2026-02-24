@@ -62,7 +62,7 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, alertCount = 0 }) => {
         bottom: '16px',
         left: '50%',
         transform: 'translateX(-50%)',
-        zIndex: 1000,
+        zIndex: 100,
         width: 'calc(100% - 32px)',
         maxWidth: '420px',
       }}

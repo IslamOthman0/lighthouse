@@ -12,6 +12,7 @@ import { DEFAULT_MEMBER_QUOTAS } from '../../constants/defaults';
 import { db } from '../../db';
 import { hexToRgba } from '../../utils/colorHelpers';
 import { useAppStore } from '../../stores/useAppStore';
+import { lockScroll, unlockScroll } from '../../utils/scrollLock';
 
 // ClickUp status colors
 const statusColors = {
@@ -596,8 +597,16 @@ const SummaryMetrics = ({ tasks, breaks, member, theme }) => {
 const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
   const { settings } = useSettings();
   const storeMembers = useAppStore(state => state.members);
+  const globalDateRange = useAppStore(state => state.dateRange);
   const [activeTab, setActiveTab] = useState('timeline');
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(() => {
+    // Initialize from global date range if available, otherwise today
+    if (globalDateRange?.startDate) {
+      const [y, m, d] = globalDateRange.startDate.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+    return new Date();
+  });
   const [dateMode, setDateMode] = useState('today'); // today, yesterday, thisWeek, custom
   const [weekDayIndex, setWeekDayIndex] = useState(null); // For week navigation
   const [isLoading, setIsLoading] = useState(false);
@@ -614,39 +623,50 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
+      lockScroll();
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      if (isOpen) unlockScroll();
     };
   }, [isOpen, onClose]);
 
-  // Fetch timeline data when member or date changes
+  // Sync selectedDate with global date range when modal opens
+  useEffect(() => {
+    if (isOpen && globalDateRange?.startDate) {
+      const [y, m, d] = globalDateRange.startDate.split('-').map(Number);
+      setSelectedDate(new Date(y, m - 1, d));
+      setDateMode('custom');
+    }
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch timeline data when member or date changes (debounced 300ms)
   useEffect(() => {
     if (!isOpen || !member) return;
 
     let isCancelled = false;
-    setIsLoading(true);
-
-    fetchTimelineData(member, selectedDate)
-      .then(data => {
-        if (!isCancelled) {
-          setTimelineData(data);
-          setIsLoading(false);
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching timeline:', error);
-        if (!isCancelled) {
-          setTimelineData({ tasks: [], breaks: [] });
-          setIsLoading(false);
-        }
-      });
+    const timer = setTimeout(() => {
+      setIsLoading(true);
+      fetchTimelineData(member, selectedDate)
+        .then(data => {
+          if (!isCancelled) {
+            setTimelineData(data);
+            setIsLoading(false);
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching timeline:', error);
+          if (!isCancelled) {
+            setTimelineData({ tasks: [], breaks: [] });
+            setIsLoading(false);
+          }
+        });
+    }, 300);
 
     return () => {
       isCancelled = true;
+      clearTimeout(timer);
     };
   }, [isOpen, member, selectedDate]);
 
@@ -827,7 +847,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
 
   if (!isOpen || !member) return null;
 
-  const isMobile = window.innerWidth < 640;
+  const isMobile = window.innerWidth < 768;
 
   // Calculate progress for header
   const progressPercent = member.target > 0
@@ -849,6 +869,9 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
         right: 0,
         bottom: 0,
         zIndex: 1000,
+        background: 'rgba(0,0,0,0.7)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

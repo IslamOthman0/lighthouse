@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { getFontFamily } from '../../utils/typography';
+import { lockScroll, unlockScroll } from '../../utils/scrollLock';
 
 /**
  * Unified Modal Shell Component
@@ -25,12 +26,12 @@ const ModalShell = ({
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
+      lockScroll();
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      if (isOpen) unlockScroll();
     };
   }, [isOpen, onClose]);
 
@@ -52,7 +53,7 @@ const ModalShell = ({
           background: 'rgba(0, 0, 0, 0.75)',
           backdropFilter: 'blur(32px)',
           WebkitBackdropFilter: 'blur(32px)',
-          zIndex: 999998,
+          zIndex: 1000,
           animation: 'modalFadeIn 0.2s ease-out',
           overflow: 'hidden',
         }}
@@ -66,7 +67,7 @@ const ModalShell = ({
           left: 0,
           right: 0,
           bottom: 0,
-          zIndex: 999999,
+          zIndex: 1001,
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'center',

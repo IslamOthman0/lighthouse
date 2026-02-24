@@ -62,6 +62,18 @@ const generateStatusColor = (statusName) => {
   return colors[index];
 };
 
+// Returns black or white text color with sufficient contrast against a hex background
+const getContrastColor = (hexBg) => {
+  if (!hexBg || !hexBg.startsWith('#')) return '#ffffff';
+  const r = parseInt(hexBg.slice(1, 3), 16);
+  const g = parseInt(hexBg.slice(3, 5), 16);
+  const b = parseInt(hexBg.slice(5, 7), 16);
+  // WCAG relative luminance
+  const toLinear = (c) => { const s = c / 255; return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
+  const L = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+  return L > 0.179 ? '#000000' : '#ffffff';
+};
+
 // Status Pill Component - uses dynamic ClickUp status colors
 const StatusPill = ({ statusName, statusColor, count, theme, onClick }) => {
   // Validate color - must be a proper hex/rgb value, not CSS variable
@@ -85,6 +97,10 @@ const StatusPill = ({ statusName, statusColor, count, theme, onClick }) => {
   // Generate test ID from status name
   const testId = `status-pill-${statusName.toLowerCase().replace(/\s+/g, '-')}`;
 
+  // Use accessible text color based on background luminance
+  const textColor = getContrastColor(bgColor);
+  const badgeBg = textColor === '#000000' ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.25)';
+
   return (
     <button
       onClick={onClick}
@@ -97,7 +113,7 @@ const StatusPill = ({ statusName, statusColor, count, theme, onClick }) => {
         borderRadius: '12px',
         fontSize: '12px',
         fontWeight: '500',
-        color: '#ffffff',
+        color: textColor,
         background: bgColor,
         border: 'none',
         cursor: 'pointer',
@@ -118,7 +134,7 @@ const StatusPill = ({ statusName, statusColor, count, theme, onClick }) => {
       <span>{capitalizedName}</span>
       <span
         style={{
-          background: 'rgba(255, 255, 255, 0.25)',
+          background: badgeBg,
           padding: '2px 6px',
           borderRadius: '6px',
           fontSize: '11px',

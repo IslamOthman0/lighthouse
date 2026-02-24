@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAppStore } from '../../stores/useAppStore';
+import { lockScroll, unlockScroll } from '../../utils/scrollLock';
 
 // Date range picker modal with comprehensive quick filters
 const DatePickerModal = ({ isOpen, onClose, theme }) => {
@@ -24,11 +25,11 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
     };
     if (isOpen) {
       document.addEventListener('keydown', handleEsc);
-      document.body.style.overflow = 'hidden';
+      lockScroll();
     }
     return () => {
       document.removeEventListener('keydown', handleEsc);
-      document.body.style.overflow = 'unset';
+      if (isOpen) unlockScroll();
     };
   }, [isOpen, onClose]);
 
@@ -199,8 +200,13 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
     setViewDate(new Date(currentYear, currentMonth + 1, 1));
   };
 
+  const isFutureDate = (date) => {
+    if (!date) return false;
+    return startOfDay(date).getTime() > startOfDay(new Date()).getTime();
+  };
+
   const handleDateClick = (date) => {
-    if (!date) return;
+    if (!date || isFutureDate(date)) return;
 
     if (selectionMode === 'start') {
       // First click - set start date
@@ -475,11 +481,13 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
               const isStart = isStartDate(date);
               const isEnd = isEndDate(date);
               const isTodayDate = isToday(date);
+              const isFuture = isFutureDate(date);
 
               return (
                 <button
                   key={index}
                   onClick={() => handleDateClick(date)}
+                  disabled={isFuture}
                   style={{
                     padding: '6px',
                     borderRadius: isStart || isEnd ? '6px' : '0',
@@ -496,16 +504,18 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
                         : theme.text,
                     fontSize: '12px',
                     fontWeight: isStart || isEnd || isTodayDate ? '600' : '400',
-                    cursor: 'pointer',
+                    cursor: isFuture ? 'not-allowed' : 'pointer',
+                    opacity: isFuture ? 0.25 : 1,
                     transition: 'all 0.15s ease',
+                    pointerEvents: isFuture ? 'none' : 'auto',
                   }}
                   onMouseEnter={(e) => {
-                    if (!inRange && !isStart && !isEnd) {
+                    if (!isFuture && !inRange && !isStart && !isEnd) {
                       e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (!inRange && !isStart && !isEnd) {
+                    if (!isFuture && !inRange && !isStart && !isEnd) {
                       e.currentTarget.style.background = 'transparent';
                     }
                   }}

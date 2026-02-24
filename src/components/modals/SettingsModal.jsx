@@ -29,6 +29,7 @@ import {
 import { db } from '../../db';
 import { fetchTeamMembers, fetchClickUpLists } from '../../utils/clickupHelpers';
 import { hexToRgba } from '../../utils/colorHelpers';
+import { lockScroll, unlockScroll } from '../../utils/scrollLock';
 import { getAdaptiveFontFamily } from '../../utils/typography';
 
 // Egyptian Public Holidays 2026
@@ -165,11 +166,11 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
     const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
     if (isOpen) {
       document.addEventListener('keydown', handleEsc);
-      document.body.style.overflow = 'hidden';
+      lockScroll();
     }
     return () => {
       document.removeEventListener('keydown', handleEsc);
-      document.body.style.overflow = 'unset';
+      if (isOpen) unlockScroll();
     };
   }, [isOpen, onClose]);
 
