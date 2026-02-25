@@ -42,16 +42,14 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
 
   // Calculate time data from real values
   const timeData = useMemo(() => {
-    if (!members || members.length === 0 || !teamStats) return null;
+    if (!members || members.length === 0) return null;
 
-    const rawTracked = teamStats.tracked?.value;
-    const rawTarget = teamStats.tracked?.target;
-    const totalTracked = (typeof rawTracked === 'number' && isFinite(rawTracked)) ? rawTracked : 0;
     const workingDays = dateRangeInfo?.workingDays || 1;
-    // Use store-computed target (already accounts for workingDays); fallback if missing
-    const totalTarget = (typeof rawTarget === 'number' && rawTarget > 0)
-      ? rawTarget
-      : members.length * 6.5 * workingDays;
+    const totalTracked = members.reduce((sum, m) => {
+      const t = (typeof m.tracked === 'number' && isFinite(m.tracked)) ? m.tracked : 0;
+      return sum + t;
+    }, 0);
+    const totalTarget = members.length * 6.5 * workingDays;
     const progress = totalTarget > 0 ? Math.min((totalTracked / totalTarget) * 100, 100) : 0;
 
     // Avg time per task (across all members in range)
@@ -93,27 +91,28 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
       activeCount: members.filter(m => m.status === 'working').length,
       totalMembers: members.length
     };
-  }, [members, teamStats, dateRangeInfo]);
+  }, [members, dateRangeInfo]);
 
   // Calculate tasks data from real values
   const tasksData = useMemo(() => {
-    if (!members || members.length === 0 || !teamStats) return null;
+    if (!members || members.length === 0) return null;
 
-    const totalDone = teamStats.tasks?.done || 0;
-    const totalTasks = teamStats.tasks?.total || 0;
-    const progress = teamStats.tasks?.progress || 0;
     const workingDays = dateRangeInfo?.workingDays || 1;
-    const avgTasksPerMember = members.length > 0
-      ? (totalTasks / members.length / workingDays)
-      : 0;
 
-    // Member breakdown
+    // Member breakdown computed directly from members array
     const memberBreakdown = members.map(m => ({
       name: m.name,
       done: m.done || 0,
       total: m.tasks || 0,
       percent: m.tasks > 0 ? Math.round(((m.done || 0) / m.tasks) * 100) : 0
     })).sort((a, b) => b.done - a.done);
+
+    const totalDone = memberBreakdown.reduce((sum, m) => sum + m.done, 0);
+    const totalTasks = memberBreakdown.reduce((sum, m) => sum + m.total, 0);
+    const progress = totalTasks > 0 ? Math.min((totalDone / totalTasks) * 100, 100) : 0;
+    const avgTasksPerMember = members.length > 0
+      ? (totalTasks / members.length / workingDays)
+      : 0;
 
     return {
       totalDone,
@@ -124,7 +123,7 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
       avgTasksPerMember,
       workingDays,
     };
-  }, [members, teamStats, dateRangeInfo]);
+  }, [members, dateRangeInfo]);
 
   // Calculate score data from real values
   const scoreData = useMemo(() => {
