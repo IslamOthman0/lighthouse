@@ -218,7 +218,35 @@ export async function pruneOldData(retentionDays = 30) {
   }
 }
 
-// Database error handling
-// Note: Dexie 3.x handles errors via promise rejections
-// Global error handling is done through window.addEventListener('unhandledrejection')
-// Individual operations should use try/catch blocks
+/**
+ * Opens IndexedDB with automatic corruption recovery.
+ * If the backing store is corrupted (DatabaseClosedError / UnknownError),
+ * deletes the database and reloads so a fresh one is created.
+ */
+export async function initDB() {
+  try {
+    await db.open();
+    logger.info(`IndexedDB opened (v${db.verno})`);
+  } catch (err) {
+    logger.error('Failed to open IndexedDB:', err);
+
+    const isCorrupted =
+      err.name === 'DatabaseClosedError' ||
+      err.name === 'UnknownError' ||
+      err.name === 'InvalidStateError';
+
+    if (isCorrupted) {
+      logger.warn('Corrupted IndexedDB detected — deleting and reloading for a fresh start...');
+      try {
+        await Dexie.delete('LighthouseDB');
+        logger.info('Database deleted successfully — reloading...');
+      } catch (deleteErr) {
+        logger.warn('Could not delete database:', deleteErr);
+      }
+      // Reload regardless — a fresh DB will be created on next open
+      window.location.reload();
+    }
+    // If unavailable for other reasons (private mode, quota), the app
+    // continues — individual operations have their own try/catch blocks.
+  }
+}
