@@ -242,6 +242,7 @@ export function useClickUpSync(config = {}) {
   const setDateRangeInfo = useAppStore(state => state.setDateRangeInfo);
   const setSyncProgress = useAppStore(state => state.setSyncProgress);
   const setScoreWeights = useAppStore(state => state.setScoreWeights);
+  const setYesterdaySnapshot = useAppStore(state => state.setYesterdaySnapshot);
   const dateRange = useAppStore(state => state.dateRange);
 
   // Keep store scoreWeights in sync with settings.score.weights
@@ -257,6 +258,22 @@ export function useClickUpSync(config = {}) {
     settings?.score?.weights?.compliance,
     setScoreWeights,
   ]);
+
+  // On mount, load yesterday's snapshot for daily score comparison
+  useEffect(() => {
+    const loadYesterdaySnapshot = async () => {
+      try {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yDate = yesterday.toISOString().split('T')[0]; // "YYYY-MM-DD"
+        const snap = await db.dailySnapshots.get(yDate);
+        if (snap) setYesterdaySnapshot(snap);
+      } catch (e) {
+        // non-critical
+      }
+    };
+    loadYesterdaySnapshot();
+  }, []);
 
   useEffect(() => {
     // Skip if sync is disabled
@@ -525,6 +542,39 @@ export function useClickUpSync(config = {}) {
         // Update sync status
         setLastSync(Date.now());
         setSyncError(null);
+
+        // Save today's daily snapshot for score comparison
+        const saveSnapshot = async (scoreMetricsValue) => {
+          try {
+            const today = new Date().toISOString().split('T')[0];
+            const existing = await db.dailySnapshots.get(today);
+            // Only update if score changed by 1+ point
+            if (!existing || Math.abs((existing.teamScore || 0) - scoreMetricsValue.total) >= 1) {
+              await db.dailySnapshots.put({
+                date: today,
+                teamScore: scoreMetricsValue.total,
+                metrics: {
+                  time: scoreMetricsValue.time,
+                  workload: scoreMetricsValue.workload,
+                  tasks: scoreMetricsValue.tasks,
+                  compliance: scoreMetricsValue.compliance,
+                },
+                memberCount: currentMembers?.length || 0,
+              });
+            }
+            // Prune snapshots older than 90 days
+            const cutoff = new Date();
+            cutoff.setDate(cutoff.getDate() - 90);
+            const cutoffDate = cutoff.toISOString().split('T')[0];
+            await db.dailySnapshots.where('date').below(cutoffDate).delete();
+          } catch (e) {
+            // non-critical
+          }
+        };
+        const currentScoreMetrics = useAppStore.getState().scoreMetrics;
+        if (currentScoreMetrics) {
+          await saveSnapshot(currentScoreMetrics);
+        }
 
         // Update request count from ClickUp service (per-sync count, not rolling window)
         const { clickup } = await import('../services/clickup');

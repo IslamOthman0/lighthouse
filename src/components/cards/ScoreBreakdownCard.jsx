@@ -10,8 +10,12 @@ const getScoreColor = (score, theme) => {
   return theme.danger;
 };
 
-const ScoreBreakdownCard = ({ theme, teamScore, metrics, onClick }) => {
+const ScoreBreakdownCard = ({ theme, teamScore, metrics, yesterdayScore, onClick }) => {
   const scoreColor = getScoreColor(teamScore, theme);
+
+  const dailyDelta = (yesterdayScore != null && teamScore != null)
+    ? Math.round(teamScore - yesterdayScore)
+    : null;
 
   return (
     <div
@@ -62,9 +66,13 @@ const ScoreBreakdownCard = ({ theme, teamScore, metrics, onClick }) => {
           <div style={{ fontSize: '14px', fontWeight: '600', color: theme.text, fontFamily: getFontFamily('english') }}>
             Team Score
           </div>
-          {metrics && (
+          {dailyDelta !== null ? (
+            <div style={{ fontSize: '11px', color: dailyDelta > 0 ? theme.success : dailyDelta < 0 ? theme.danger : theme.textMuted, marginTop: '2px', fontFamily: getFontFamily('english') }}>
+              {dailyDelta > 0 ? '↑' : dailyDelta < 0 ? '↓' : '→'} {dailyDelta > 0 ? '+' : ''}{dailyDelta} from yesterday
+            </div>
+          ) : (
             <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '2px', fontFamily: getFontFamily('english') }}>
-              Time {metrics.time || 0}% · Tasks {metrics.tasks || 0}%
+              {metrics && `Time ${metrics.time || 0}% · Tasks ${metrics.tasks || 0}%`}
             </div>
           )}
         </div>
@@ -108,9 +116,31 @@ const ScoreBreakdownCard = ({ theme, teamScore, metrics, onClick }) => {
             >
               {metric.label}
             </div>
+            <div style={{ marginTop: '6px', height: '3px', borderRadius: '2px', background: theme.border, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${Math.min(metric.value, 100)}%`, background: metric.color, borderRadius: '2px', transition: 'width 0.3s ease' }} />
+            </div>
           </div>
         ))}
       </div>
+
+      {/* Focus area callout - shows weakest metric if below 80% */}
+      {metrics && (() => {
+        const metricList = [
+          { label: 'Time', value: metrics.time || 0 },
+          { label: 'Workload', value: metrics.workload || 0 },
+          { label: 'Completion', value: metrics.tasks || 0 },
+          { label: 'Compliance', value: metrics.compliance || 0 },
+        ];
+        const weakest = metricList.reduce((min, m) => m.value < min.value ? m : min, metricList[0]);
+        if (weakest.value >= 80) return null; // Don't show if all metrics are good
+        return (
+          <div style={{ marginTop: '10px', padding: '8px 12px', background: theme.secondaryBg, borderRadius: '8px', border: `1px solid ${theme.borderLight}` }}>
+            <span style={{ fontSize: '10px', color: theme.textMuted, fontFamily: getFontFamily('english') }}>
+              Focus area: <strong style={{ color: theme.warning || '#F59E0B' }}>{weakest.label}</strong> at {weakest.value}%
+            </span>
+          </div>
+        );
+      })()}
     </div>
   );
 };

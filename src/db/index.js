@@ -38,6 +38,23 @@ db.version(17).stores({
 });
 
 /**
+ * Database Schema v18 - Daily snapshots for score comparison
+ * v18: Added dailySnapshots table (date is primary key, e.g. "2026-02-25")
+ */
+db.version(18).stores({
+  members: '++id, name, status, project, clickUpId',
+  sessions: '++id, memberId, date, startTime, endTime, totalMinutes, timestamp',
+  breaks: '++id, sessionId, memberId, startTime, endTime, duration, timestamp',
+  tasks: '++id, memberId, clickUpId, status, project, name',
+  leaves: '++id, memberId, type, startDate, endDate, returnDate',
+  syncQueue: '++id, type, status, timestamp',
+  baselines: 'key, value, updatedAt',
+  clickUpTasks: 'id, dateUpdated, *assigneeIds',
+  taskSyncMeta: 'key',
+  dailySnapshots: 'date, teamScore, memberCount'
+});
+
+/**
  * Seeds the database with mock data on first run
  * @param {Array} mockMembers - Array of member objects
  */

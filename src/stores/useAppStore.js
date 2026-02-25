@@ -316,6 +316,11 @@ export const useAppStore = create(devtools((set, get) => ({
     apiConfig: { ...state.apiConfig, ...config }
   }), false, 'setApiConfig'),
 
+  // ===== Daily Snapshot (for score comparison) =====
+  yesterdaySnapshot: null,
+
+  setYesterdaySnapshot: (snapshot) => set({ yesterdaySnapshot: snapshot }, false, 'setYesterdaySnapshot'),
+
   // ===== Project Breakdown Data =====
   // Dynamic structure from ClickUp:
   // { projectName: { name, color, statuses: { statusName: { name, color, count, tasks } } } }

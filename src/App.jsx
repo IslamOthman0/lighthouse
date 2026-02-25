@@ -63,6 +63,7 @@ function App() {
   const setMembers = useAppStore(state => state.setMembers);
   const updateStats = useAppStore(state => state.updateStats);
   const updateProjectBreakdown = useAppStore(state => state.updateProjectBreakdown);
+  const yesterdaySnapshot = useAppStore(state => state.yesterdaySnapshot);
 
   // Filter/Sort state from Zustand
   const memberFilter = useAppStore(state => state.memberFilter);
@@ -419,7 +420,7 @@ function App() {
                   </div>
 
                   {/* Score Breakdown Card (Column 2) */}
-                  <ScoreBreakdownCard theme={theme} teamScore={teamScore} metrics={displayScoreMetrics} onClick={() => handleDashboardCardClick('score')} />
+                  <ScoreBreakdownCard theme={theme} teamScore={teamScore} metrics={displayScoreMetrics} yesterdayScore={yesterdaySnapshot?.teamScore ?? null} onClick={() => handleDashboardCardClick('score')} />
 
                   {/* Team Status Overview (Column 3) */}
                   <TeamStatusOverview members={filteredMembers} theme={theme} />
