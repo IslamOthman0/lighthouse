@@ -6,6 +6,25 @@
 import { taskCacheV2 } from '../taskCacheV2';
 
 /**
+ * Resolve a ClickUp custom field value to a human-readable string.
+ * For dropdown fields the raw value is an orderindex; look it up via type_config.options.
+ * @param {Object} f - A single custom_fields entry from a ClickUp task
+ * @returns {string|null}
+ */
+function resolveFieldValue(f) {
+  if (f.value == null) return null;
+  if (f.type === 'drop_down' && f.type_config?.options?.length > 0) {
+    const opt = f.type_config.options.find(
+      o => String(o.orderindex) === String(f.value) || o.id === f.value
+    );
+    return opt?.name || null;
+  }
+  if (typeof f.value === 'object') return f.value?.name || null;
+  const str = String(f.value).trim();
+  return str.length > 0 ? str : null;
+}
+
+/**
  * Calculate project breakdown from today's time entries
  * Groups tasks by project (list) and status
  *
@@ -218,8 +237,9 @@ export async function calculateProjectBreakdown(timeEntries, globalTaskCache = {
 
 /**
  * Fast project breakdown calculation from time entries + TaskCacheV2
- * Time entries DON'T include task.list.name, so we MUST use cache for project info
+ * Uses entry.task_location.list_name for project info and enriches tasks from cache.
  * @param {Array} timeEntries - Time entries array
+ * @param {Object} globalTaskCache - Pre-fetched task details cache (avoids duplicate API calls)
  * @returns {Object} Project breakdown with status pills
  */
 export function calculateFastProjectBreakdown(timeEntries, globalTaskCache = {}) {
@@ -356,15 +376,6 @@ export function calculateFastProjectBreakdown(timeEntries, globalTaskCache = {})
           if (cachedTask?.custom_fields) {
             cachedTask.custom_fields.forEach(field => {
               const fieldName = field.name?.toLowerCase();
-              // Resolve value: for dropdown fields, value is an option orderindex; resolve via type_config.options
-              const resolveFieldValue = (f) => {
-                if (f.value == null) return null;
-                if (f.type === 'drop_down' && f.type_config?.options) {
-                  const opt = f.type_config.options.find(o => String(o.orderindex) === String(f.value) || o.id === f.value);
-                  return opt?.name || String(f.value);
-                }
-                return typeof f.value === 'object' ? (f.value?.name || null) : String(f.value);
-              };
               if (fieldName === 'genre' || fieldName === 'النوع') {
                 genre = resolveFieldValue(field);
               } else if (fieldName === 'publisher' || fieldName === 'الناشر') {
