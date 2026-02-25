@@ -22,6 +22,7 @@ import { getAvgTasksBaseline } from '../services/baselineService';
 import { SETTINGS_STORAGE_KEY, DEFAULT_SETTINGS } from '../constants/defaults';
 import { sanitizeSettings } from '../utils/settingsValidation';
 import { useOnlineStatus } from './useOnlineStatus';
+import { useSettings } from './useSettings';
 import { processPendingQueue } from '../services/syncQueue';
 import { taskCacheV2 } from '../services/taskCacheV2';
 import { enrichMembersWithLeaveStatus } from '../utils/leaveHelpers';
@@ -226,6 +227,9 @@ export function useClickUpSync(config = {}) {
   // Offline detection
   const { isOnline, wasOffline } = useOnlineStatus();
 
+  // Reactive settings (to watch for weight changes)
+  const { settings } = useSettings();
+
   // Get store methods - use getState() for sync function to avoid stale closures
   const setMembers = useAppStore(state => state.setMembers);
   const setLastSync = useAppStore(state => state.setLastSync);
@@ -237,7 +241,15 @@ export function useClickUpSync(config = {}) {
   const setTeamBaseline = useAppStore(state => state.setTeamBaseline);
   const setDateRangeInfo = useAppStore(state => state.setDateRangeInfo);
   const setSyncProgress = useAppStore(state => state.setSyncProgress);
+  const setScoreWeights = useAppStore(state => state.setScoreWeights);
   const dateRange = useAppStore(state => state.dateRange);
+
+  // Keep store scoreWeights in sync with settings.score.weights
+  useEffect(() => {
+    if (settings?.score?.weights) {
+      setScoreWeights(settings.score.weights);
+    }
+  }, [settings?.score?.weights]);
 
   useEffect(() => {
     // Skip if sync is disabled

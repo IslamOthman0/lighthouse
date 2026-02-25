@@ -264,6 +264,16 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
     updateSettings({ score: { ...settings.score, weights: newWeights } });
   };
 
+  const handleIndependentWeightChange = (key, newPercent) => {
+    const fraction = newPercent / 100;
+    updateSettings({
+      score: {
+        ...settings.score,
+        weights: { ...settings.score.weights, [key]: fraction }
+      }
+    });
+  };
+
   const handleClearCache = async () => {
     try {
       await db.members.clear();
@@ -651,25 +661,42 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
 
               {/* Visual weight bar */}
               <div>
-                <div style={{ display: 'flex', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
-                  {weightConfig.map((w) => (
-                    <div key={w.key} style={{ width: `${Math.round(settings.score.weights[w.key] * 100)}%`, background: w.color, transition: 'width 0.2s' }} />
-                  ))}
-                </div>
+                {(() => {
+                  return (
+                    <div style={{ display: 'flex', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
+                      {weightConfig.map((w) => (
+                        <div key={w.key} style={{ flex: settings.score.weights[w.key], background: w.color, transition: 'flex 0.2s' }} />
+                      ))}
+                    </div>
+                  );
+                })()}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '600', color: Math.round(Object.values(settings.score.weights).reduce((s, v) => s + v, 0) * 100) === 100 ? '#10B981' : '#EF4444' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: Math.round(Object.values(settings.score.weights).reduce((s, v) => s + v, 0) * 100) === 100 ? '#10B981' : '#F59E0B' }}>
                     Total: {Math.round(Object.values(settings.score.weights).reduce((s, v) => s + v, 0) * 100)}%
                   </span>
                 </div>
               </div>
 
-              {/* Auto-balance info */}
-              <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.08)', borderRadius: '8px', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                <span style={{ fontSize: '16px' }}>💡</span>
-                <p style={{ margin: 0, fontSize: '11px', color: theme.textSecondary, lineHeight: 1.5 }}>
-                  All weights must add up to <strong>100%</strong>. When you change one slider, the others automatically adjust to keep the total at 100%. Drag slowly for precise control.
-                </p>
-              </div>
+              {/* Dynamic weight total banner */}
+              {(() => {
+                const totalPct = Math.round(Object.values(settings.score.weights).reduce((s, v) => s + v, 0) * 100);
+                if (totalPct === 100) {
+                  return (
+                    <div style={{ padding: '10px 14px', background: 'rgba(16,185,129,0.08)', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.25)', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <span style={{ fontSize: '16px' }}>✓</span>
+                      <p style={{ margin: 0, fontSize: '11px', color: theme.textSecondary }}>Weights sum to 100% — scoring is fully calibrated.</p>
+                    </div>
+                  );
+                }
+                return (
+                  <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.08)', borderRadius: '8px', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: '16px' }}>⚠</span>
+                    <p style={{ margin: 0, fontSize: '11px', color: theme.textSecondary, lineHeight: 1.5 }}>
+                      Weights total <strong style={{ color: theme.text }}>{totalPct}%</strong> — {totalPct > 100 ? 'scores will be capped at 100 even if metrics are perfect.' : 'max achievable score is ' + totalPct + '.'}
+                    </p>
+                  </div>
+                );
+              })()}
 
               {/* Weight cards */}
               {weightConfig.map((w) => {
@@ -683,9 +710,28 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                       </div>
                       <div style={{ fontSize: '20px', fontWeight: '700', color: w.color, minWidth: '50px', textAlign: 'right' }}>{value}%</div>
                     </div>
-                    <input type="range" min="0" max="100" value={value}
-                      onChange={(e) => handleWeightChange(w.key, e.target.value)}
-                      style={{ width: '100%', marginTop: '8px', accentColor: w.color }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+                      <button
+                        onClick={() => handleIndependentWeightChange(w.key, Math.max(0, value - 5))}
+                        style={{ width: '32px', height: '32px', borderRadius: '8px', border: `1px solid ${theme.border}`, background: theme.innerBg, color: theme.text, fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}
+                      >−</button>
+                      <input
+                        type="number"
+                        min="0"
+                        max="200"
+                        value={value}
+                        onChange={(e) => {
+                          const v = parseInt(e.target.value, 10);
+                          if (!isNaN(v)) handleIndependentWeightChange(w.key, Math.max(0, Math.min(200, v)));
+                        }}
+                        style={{ width: '64px', textAlign: 'center', background: theme.innerBg, border: `1px solid ${theme.border}`, borderRadius: '8px', color: w.color, fontSize: '18px', fontWeight: '700', padding: '6px', fontFamily: 'JetBrains Mono, monospace' }}
+                      />
+                      <button
+                        onClick={() => handleIndependentWeightChange(w.key, Math.min(200, value + 5))}
+                        style={{ width: '32px', height: '32px', borderRadius: '8px', border: `1px solid ${theme.border}`, background: theme.innerBg, color: theme.text, fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}
+                      >+</button>
+                      <span style={{ fontSize: '12px', color: theme.textMuted, marginLeft: '4px' }}>%</span>
+                    </div>
                   </div>
                 );
               })}

@@ -113,6 +113,11 @@ export const useAppStore = create(devtools((set, get) => ({
     )
   }), false, 'updateMember'),
 
+  // ===== Score Weights (from settings, kept in sync via useClickUpSync) =====
+  scoreWeights: null, // null = use defaults (40/20/30/10)
+
+  setScoreWeights: (weights) => set({ scoreWeights: weights }, false, 'setScoreWeights'),
+
   // ===== Team Stats (Computed) =====
   teamStats: null,
   scoreMetrics: null,
@@ -202,7 +207,14 @@ export const useAppStore = create(devtools((set, get) => ({
       : 0;
 
     // ===== WEIGHTED SCORES (contribution to total) =====
-    const WEIGHTS = {
+    // Read from store's scoreWeights (set from settings), fall back to defaults
+    const storedWeights = get().scoreWeights;
+    const WEIGHTS = storedWeights ? {
+      TIME: storedWeights.trackedTime ?? 0.40,
+      WORKLOAD: storedWeights.tasksWorked ?? 0.20,
+      COMPLETION: storedWeights.tasksDone ?? 0.30,
+      COMPLIANCE: storedWeights.compliance ?? 0.10,
+    } : {
       TIME: 0.40,       // 40%
       WORKLOAD: 0.20,   // 20%
       COMPLETION: 0.30, // 30%
@@ -214,8 +226,8 @@ export const useAppStore = create(devtools((set, get) => ({
     const completionScore = (completionRatio / 100) * (WEIGHTS.COMPLETION * 100); // Max 30 points
     const complianceScore = (complianceRatio / 100) * (WEIGHTS.COMPLIANCE * 100); // Max 10 points
 
-    // Total score (max 100)
-    const totalScore = timeScore + workloadScore + completionScore + complianceScore;
+    // Total score (max 100 — capped even if weights sum to more than 100%)
+    const totalScore = Math.min(timeScore + workloadScore + completionScore + complianceScore, 100);
 
     // ===== TEAM STATS (for overview cards) =====
     const teamStats = {

@@ -80,8 +80,8 @@ export function calculateMemberScore({
   const complianceRatio = Math.min(complianceHours / effectiveTarget, 1);
   const complianceScore = complianceRatio * (COMPLIANCE * 100);
 
-  // Total score (max 100)
-  const totalScore = trackedScore + tasksWorkedScore + tasksDoneScore + complianceScore;
+  // Total score (max 100 — capped even if weights sum to more than 100%)
+  const totalScore = Math.min(trackedScore + tasksWorkedScore + tasksDoneScore + complianceScore, 100);
 
   return {
     total: Math.round(totalScore * 10) / 10, // Round to 1 decimal
