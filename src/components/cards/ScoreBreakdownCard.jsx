@@ -68,7 +68,7 @@ const ScoreBreakdownCard = ({ theme, teamScore, metrics, yesterdayScore, onClick
           </div>
           {dailyDelta !== null ? (
             <div style={{ fontSize: '11px', color: dailyDelta > 0 ? theme.success : dailyDelta < 0 ? theme.danger : theme.textMuted, marginTop: '2px', fontFamily: getFontFamily('english') }}>
-              {dailyDelta > 0 ? '↑' : dailyDelta < 0 ? '↓' : '→'} {dailyDelta > 0 ? '+' : ''}{dailyDelta} from yesterday
+              {dailyDelta > 0 ? `↑ +${dailyDelta} from yesterday` : dailyDelta < 0 ? `↓ ${dailyDelta} from yesterday` : '→ No change'}
             </div>
           ) : (
             <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '2px', fontFamily: getFontFamily('english') }}>
@@ -124,7 +124,7 @@ const ScoreBreakdownCard = ({ theme, teamScore, metrics, yesterdayScore, onClick
       </div>
 
       {/* Focus area callout - shows weakest metric if below 80% */}
-      {metrics && (() => {
+      {metrics && teamScore != null && teamScore > 0 && (() => {
         const metricList = [
           { label: 'Time', value: metrics.time || 0 },
           { label: 'Workload', value: metrics.workload || 0 },

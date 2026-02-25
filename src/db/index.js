@@ -55,6 +55,24 @@ db.version(18).stores({
 });
 
 /**
+ * Database Schema v19 - Remove unnecessary indexes from dailySnapshots
+ * v19: teamScore and memberCount are never queried by index — drop them to reduce write overhead.
+ *      Only 'date' (primary key) is needed; all other fields are stored as plain data.
+ */
+db.version(19).stores({
+  members: '++id, name, status, project, clickUpId',
+  sessions: '++id, memberId, date, startTime, endTime, totalMinutes, timestamp',
+  breaks: '++id, sessionId, memberId, startTime, endTime, duration, timestamp',
+  tasks: '++id, memberId, clickUpId, status, project, name',
+  leaves: '++id, memberId, type, startDate, endDate, returnDate',
+  syncQueue: '++id, type, status, timestamp',
+  baselines: 'key, value, updatedAt',
+  clickUpTasks: 'id, dateUpdated, *assigneeIds',
+  taskSyncMeta: 'key',
+  dailySnapshots: 'date', // Only date as primary key, teamScore/memberCount are plain data
+});
+
+/**
  * Seeds the database with mock data on first run
  * @param {Array} mockMembers - Array of member objects
  */

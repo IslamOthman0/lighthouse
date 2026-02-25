@@ -273,7 +273,7 @@ export function useClickUpSync(config = {}) {
       }
     };
     loadYesterdaySnapshot();
-  }, []);
+  }, [setYesterdaySnapshot]);
 
   useEffect(() => {
     // Skip if sync is disabled
