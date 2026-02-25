@@ -452,7 +452,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
 
     // Update taskCacheV2 memory cache for faster lookups
     if (allTasks.length > 0) {
-      taskCacheV2.storeTasks(allTasks);
+      await taskCacheV2.storeTasks(allTasks);
       console.log(`✅ Updated taskCacheV2 with ${allTasks.length} fresh tasks`);
     }
 
@@ -506,7 +506,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
 
     // ALWAYS use fast project breakdown from time entries (no dependency on cache)
     // Time entries already contain task.list.name (project), task.status, task.name
-    let projectBreakdown = calculateFastProjectBreakdown(todayTimeEntries);
+    let projectBreakdown = calculateFastProjectBreakdown(todayTimeEntries, globalTaskCache);
     console.log(`📂 Project breakdown from time entries: ${Object.keys(projectBreakdown).length} projects`)
 
     if (onProgress) {

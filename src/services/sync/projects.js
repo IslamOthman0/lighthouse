@@ -222,7 +222,7 @@ export async function calculateProjectBreakdown(timeEntries, globalTaskCache = {
  * @param {Array} timeEntries - Time entries array
  * @returns {Object} Project breakdown with status pills
  */
-export function calculateFastProjectBreakdown(timeEntries) {
+export function calculateFastProjectBreakdown(timeEntries, globalTaskCache = {}) {
   const projects = {};
 
   // Debug: Log first time entry structure
@@ -319,7 +319,7 @@ export function calculateFastProjectBreakdown(timeEntries) {
           }
 
           // Try to get task details from cache for additional fields
-          const cachedTask = taskCacheV2.get(taskId);
+          const cachedTask = globalTaskCache[taskId] || taskCacheV2.get(taskId);
 
           // Extract assignee from entry.user (the person who tracked time) or cached task
           let assignee = null;
@@ -356,10 +356,19 @@ export function calculateFastProjectBreakdown(timeEntries) {
           if (cachedTask?.custom_fields) {
             cachedTask.custom_fields.forEach(field => {
               const fieldName = field.name?.toLowerCase();
+              // Resolve value: for dropdown fields, value is an option orderindex; resolve via type_config.options
+              const resolveFieldValue = (f) => {
+                if (f.value == null) return null;
+                if (f.type === 'drop_down' && f.type_config?.options) {
+                  const opt = f.type_config.options.find(o => String(o.orderindex) === String(f.value) || o.id === f.value);
+                  return opt?.name || String(f.value);
+                }
+                return typeof f.value === 'object' ? (f.value?.name || null) : String(f.value);
+              };
               if (fieldName === 'genre' || fieldName === 'النوع') {
-                genre = field.value || null;
+                genre = resolveFieldValue(field);
               } else if (fieldName === 'publisher' || fieldName === 'الناشر') {
-                publisher = field.value || null;
+                publisher = resolveFieldValue(field);
               }
             });
           }
