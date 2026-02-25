@@ -185,8 +185,8 @@ export const useAppStore = create(devtools((set, get) => ({
 
     // 2. Workload Ratio: tasks worked / team baseline
     // Team baseline = avg tasks per member per day from 3-month history
-    // Total expected = teamBaseline * number of members
-    const taskBaseline = members.length * teamBaseline;
+    // Total expected = teamBaseline * members * workingDays (scales with date range)
+    const taskBaseline = members.length * teamBaseline * workingDays;
     const workloadRatio = taskBaseline > 0
       ? Math.min((totalTasks / taskBaseline) * 100, 100)
       : 0;

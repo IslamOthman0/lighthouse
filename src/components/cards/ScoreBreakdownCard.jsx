@@ -62,9 +62,11 @@ const ScoreBreakdownCard = ({ theme, teamScore, metrics, onClick }) => {
           <div style={{ fontSize: '14px', fontWeight: '600', color: theme.text, fontFamily: getFontFamily('english') }}>
             Team Score
           </div>
-          <div style={{ fontSize: '12px', color: theme.success, marginTop: '2px', fontFamily: getFontFamily('english') }}>
-            ▲ <span style={{ ...tabularNumberStyle }}>5.2</span> from yesterday
-          </div>
+          {metrics && (
+            <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '2px', fontFamily: getFontFamily('english') }}>
+              Time {metrics.time || 0}% · Tasks {metrics.tasks || 0}%
+            </div>
+          )}
         </div>
       </div>
 

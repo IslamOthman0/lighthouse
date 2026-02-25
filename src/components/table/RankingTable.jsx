@@ -5,8 +5,9 @@ import { getTextFontStyle, tabularNumberStyle, getFontFamily } from '../../utils
 import { formatHoursToHM } from '../../utils/timeFormat';
 import { getMetricColor } from '../../utils/metricColor';
 
-const RankingTable = ({ members, theme, onMemberClick }) => {
+const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
   const { isMobile } = useWindowSize();
+  const workingDays = dateRangeInfo?.workingDays || 1;
   const [sortBy, setSortBy] = useState('score');
   const [sortOrder, setSortOrder] = useState('desc');
   const [isMobileSortOpen, setIsMobileSortOpen] = useState(false);
@@ -90,11 +91,12 @@ const RankingTable = ({ members, theme, onMemberClick }) => {
     return <span style={{ marginLeft: '4px' }}>{sortOrder === 'asc' ? '↑' : '↓'}</span>;
   };
 
-  // Format compliance display: show percentage (complianceHours / target * 100%)
+  // Format compliance display: show percentage (complianceHours / (dailyTarget × workingDays) × 100%)
   const formatComplianceDisplay = (member) => {
     const compliance = member.complianceHours || 0;
-    const target = member.target || 6.5;
-    const pct = Math.min(Math.round((compliance / target) * 100), 100);
+    const dailyTarget = member.target || 6.5;
+    const totalTarget = dailyTarget * workingDays;
+    const pct = Math.min(Math.round((compliance / totalTarget) * 100), 100);
     return { pct, label: `${pct}%` };
   };
 

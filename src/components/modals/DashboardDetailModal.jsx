@@ -8,7 +8,7 @@ import Sparkline, { SparklineWithStats } from '../ui/Sparkline';
  * Dashboard Detail Modal - Shows detailed breakdowns for Time/Tasks/Score cards
  * Uses real data only - no fake/estimated values
  */
-const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats, scoreMetrics }) => {
+const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats, scoreMetrics, dateRangeInfo }) => {
 
   // Helper to get status color
   const getStatusColor = (status) => {
@@ -44,20 +44,37 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
   const timeData = useMemo(() => {
     if (!members || members.length === 0 || !teamStats) return null;
 
-    const totalTracked = teamStats.tracked?.value || 0;
-    const totalTarget = teamStats.tracked?.target || 0;
-    const progress = teamStats.tracked?.progress || 0;
+    const rawTracked = teamStats.tracked?.value;
+    const rawTarget = teamStats.tracked?.target;
+    const totalTracked = (typeof rawTracked === 'number' && isFinite(rawTracked)) ? rawTracked : 0;
+    const workingDays = dateRangeInfo?.workingDays || 1;
+    // Use store-computed target (already accounts for workingDays); fallback if missing
+    const totalTarget = (typeof rawTarget === 'number' && rawTarget > 0)
+      ? rawTarget
+      : members.length * 6.5 * workingDays;
+    const progress = totalTarget > 0 ? Math.min((totalTracked / totalTarget) * 100, 100) : 0;
 
-    // Member breakdown with real data only
-    const memberBreakdown = members.map(m => ({
-      id: m.id,
-      name: m.name,
-      status: m.status,
-      tracked: m.tracked || 0,
-      target: m.target || 6.5,
-      timer: m.timer || 0,
-      percent: m.target > 0 ? Math.round(((m.tracked || 0) / m.target) * 100) : 0
-    })).sort((a, b) => b.tracked - a.tracked);
+    // Avg time per task (across all members in range)
+    const totalDoneForAvg = members.reduce((s, m) => s + (m.done || 0), 0);
+    const avgTimePerTask = (totalDoneForAvg > 0 && totalTracked > 0)
+      ? totalTracked / totalDoneForAvg
+      : null;
+
+    // Per-member target = daily target × working days in range
+    const memberBreakdown = members.map(m => {
+      const dailyTarget = m.target || 6.5;
+      const memberTarget = dailyTarget * workingDays;
+      const tracked = (typeof m.tracked === 'number' && isFinite(m.tracked)) ? m.tracked : 0;
+      return {
+        id: m.id,
+        name: m.name,
+        status: m.status,
+        tracked,
+        target: memberTarget,
+        timer: m.timer || 0,
+        percent: memberTarget > 0 ? Math.min(Math.round((tracked / memberTarget) * 100), 100) : 0,
+      };
+    }).sort((a, b) => b.tracked - a.tracked);
 
     // Count by status
     const statusCounts = members.reduce((acc, m) => {
@@ -71,10 +88,12 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
       progress,
       memberBreakdown,
       statusCounts,
+      avgTimePerTask,
+      workingDays,
       activeCount: members.filter(m => m.status === 'working').length,
       totalMembers: members.length
     };
-  }, [members, teamStats]);
+  }, [members, teamStats, dateRangeInfo]);
 
   // Calculate tasks data from real values
   const tasksData = useMemo(() => {
@@ -83,6 +102,10 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
     const totalDone = teamStats.tasks?.done || 0;
     const totalTasks = teamStats.tasks?.total || 0;
     const progress = teamStats.tasks?.progress || 0;
+    const workingDays = dateRangeInfo?.workingDays || 1;
+    const avgTasksPerMember = members.length > 0
+      ? (totalTasks / members.length / workingDays)
+      : 0;
 
     // Member breakdown
     const memberBreakdown = members.map(m => ({
@@ -97,9 +120,11 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
       totalTasks,
       progress,
       memberBreakdown,
-      inProgress: totalTasks - totalDone
+      inProgress: totalTasks - totalDone,
+      avgTasksPerMember,
+      workingDays,
     };
-  }, [members, teamStats]);
+  }, [members, teamStats, dateRangeInfo]);
 
   // Calculate score data from real values
   const scoreData = useMemo(() => {
@@ -146,7 +171,7 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
       title={modalInfo.title}
       icon={modalInfo.icon}
       theme={theme}
-      maxWidth="800px"
+      maxWidth="min(800px, 95vw)"
       testId={`dashboard-detail-modal-${type}`}
     >
       {/* ========== TIME VIEW ========== */}
@@ -168,38 +193,29 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
               }
             />
 
-            {/* Weekly Trend Sparkline */}
-            <ModalSection theme={theme} title="Weekly Trend" icon="📈">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                <SparklineWithStats
-                  data={timeData.weeklyTrend || [4.5, 5.2, 6.1, 5.8, 6.3]} // Placeholder data
-                  labels={['Sun', 'Mon', 'Tue', 'Wed', 'Thu']}
-                  width={280}
-                  height={50}
-                  color={theme.working}
-                  theme={theme}
-                  formatValue={(v) => formatHoursToHM(v)}
-                />
-                <div style={{ flex: 1, minWidth: '150px' }}>
-                  <p style={{ fontSize: '11px', color: theme.textMuted, margin: 0, marginBottom: '8px', fontFamily: getFontFamily('english') }}>
-                    Trend shows daily team time tracked
-                  </p>
-                  <p style={{ fontSize: '10px', color: theme.textSecondary, margin: 0, fontStyle: 'italic' }}>
-                    Historical data coming soon
-                  </p>
+            {/* Summary stats row: working days + avg time per task */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px', marginBottom: '16px' }}>
+              {[
+                { label: 'Working Days', value: timeData.workingDays, icon: '📅', color: theme.text },
+                { label: 'Avg / Member', value: formatHoursToHM(timeData.totalTracked / timeData.totalMembers), icon: '👤', color: theme.text },
+                { label: 'Avg / Task', value: timeData.avgTimePerTask ? formatHoursToHM(timeData.avgTimePerTask) : '—', icon: '⏱', color: theme.working },
+              ].map((s, i) => (
+                <div key={i} style={{ background: theme.innerBg, borderRadius: '10px', padding: '12px', textAlign: 'center', border: `1px solid ${theme.border}` }}>
+                  <div style={{ fontSize: '16px', marginBottom: '4px' }}>{s.icon}</div>
+                  <div style={{ fontSize: '16px', fontWeight: '700', color: s.color, fontFamily: 'JetBrains Mono, monospace' }}>{s.value}</div>
+                  <div style={{ fontSize: '10px', color: theme.textMuted, marginTop: '2px' }}>{s.label}</div>
                 </div>
-              </div>
-            </ModalSection>
+              ))}
+            </div>
 
             {/* Member Breakdown */}
             <ModalSection theme={theme} title="Member Breakdown" icon="👥" noPadding>
               {/* Header */}
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 70px 70px 100px 60px', gap: '8px', padding: '8px 16px', borderBottom: `1px solid ${theme.border}`, fontSize: '9px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 70px 80px 100px', gap: '8px', padding: '8px 16px', borderBottom: `1px solid ${theme.border}`, fontSize: '9px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase' }}>
                 <span>Member</span>
                 <span style={{ textAlign: 'right' }}>Tracked</span>
                 <span style={{ textAlign: 'right' }}>Target</span>
                 <span style={{ textAlign: 'right' }}>Progress</span>
-                <span style={{ textAlign: 'center' }}>Trend</span>
               </div>
               {/* Rows */}
               {timeData.memberBreakdown.map((m, i) => (
@@ -207,7 +223,7 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
                   key={m.id || i}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '2fr 70px 70px 100px 60px',
+                    gridTemplateColumns: '2fr 70px 80px 100px',
                     gap: '8px',
                     padding: '10px 16px',
                     alignItems: 'center',
@@ -220,16 +236,6 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
                     <ProgressBar theme={theme} value={m.tracked} max={m.target} color={getPerformanceColor(m.percent)} height={4} />
                     <span style={{ fontSize: '10px', fontWeight: '600', color: getPerformanceColor(m.percent), ...tabularNumberStyle, minWidth: '28px', textAlign: 'right' }}>{m.percent}%</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <Sparkline
-                      data={m.weeklyTrend || [3, 4, 5, 4.5, m.tracked]} // Member placeholder trend
-                      width={50}
-                      height={20}
-                      color={getPerformanceColor(m.percent)}
-                      showMarkers={false}
-                      theme={theme}
-                    />
                   </div>
                 </div>
               ))}
@@ -280,11 +286,12 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
             />
 
             {/* Quick Stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '16px' }}>
               {[
                 { label: 'Completed', value: tasksData.totalDone, color: theme.success || '#10b981', icon: '✅' },
                 { label: 'In Progress', value: tasksData.inProgress, color: theme.accent, icon: '🔄' },
                 { label: 'Total Tasks', value: tasksData.totalTasks, color: theme.text, icon: '📋' },
+                { label: `Avg / Member / Day`, value: tasksData.avgTasksPerMember.toFixed(1), color: theme.text, icon: '📊' },
               ].map((stat, i) => (
                 <div
                   key={i}
@@ -372,28 +379,17 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
               }
             />
 
-            {/* Weekly Score Trend Sparkline */}
-            <ModalSection theme={theme} title="Weekly Score Trend" icon="📈">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                <SparklineWithStats
-                  data={scoreData.weeklyTrend || [65, 70, 78, 72, scoreData.totalScore]} // Placeholder data
-                  labels={['Sun', 'Mon', 'Tue', 'Wed', 'Thu']}
-                  width={280}
-                  height={50}
-                  color={theme.accent}
-                  theme={theme}
-                  formatValue={(v) => `${Math.round(v)}`}
-                />
-                <div style={{ flex: 1, minWidth: '150px' }}>
-                  <p style={{ fontSize: '11px', color: theme.textMuted, margin: 0, marginBottom: '8px', fontFamily: getFontFamily('english') }}>
-                    Daily team score trend
-                  </p>
-                  <p style={{ fontSize: '10px', color: theme.textSecondary, margin: 0, fontStyle: 'italic' }}>
-                    Historical data coming soon
-                  </p>
+            {/* Score summary stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '10px', marginBottom: '16px' }}>
+              {scoreData.breakdown.map((item, i) => (
+                <div key={i} style={{ background: theme.innerBg, borderRadius: '10px', padding: '12px', textAlign: 'center', border: `1px solid ${theme.border}` }}>
+                  <div style={{ fontSize: '16px', marginBottom: '4px' }}>{item.icon}</div>
+                  <div style={{ fontSize: '16px', fontWeight: '700', color: getPerformanceColor(item.ratio), fontFamily: 'JetBrains Mono, monospace' }}>{Math.round(item.ratio)}%</div>
+                  <div style={{ fontSize: '10px', color: theme.textMuted, marginTop: '2px' }}>{item.label}</div>
+                  <div style={{ fontSize: '9px', color: theme.textMuted, marginTop: '1px' }}>weight {item.weight}%</div>
                 </div>
-              </div>
-            </ModalSection>
+              ))}
+            </div>
 
             {/* Score Breakdown - INTEGER POINTS */}
             <ModalSection theme={theme} title="Score Formula Breakdown" icon="📊">
@@ -428,7 +424,7 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
                     key={i}
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: '50px 1fr 50px 70px 50px',
+                      gridTemplateColumns: '50px 1fr 50px 80px',
                       alignItems: 'center',
                       gap: '8px',
                       padding: '12px 16px',
@@ -447,16 +443,6 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats
                     </span>
                     <div>
                       <ProgressBar theme={theme} value={m.score} max={100} color={i < 3 ? theme.success : theme.accent} height={5} />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                      <Sparkline
-                        data={m.weeklyTrend || [60, 65, 70, 68, m.score]} // Member placeholder trend
-                        width={45}
-                        height={18}
-                        color={i < 3 ? theme.success : theme.accent}
-                        showMarkers={false}
-                        theme={theme}
-                      />
                     </div>
                   </div>
                 );

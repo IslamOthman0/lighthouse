@@ -444,7 +444,7 @@ function App() {
 
                 {/* Ranking Table - Full Width */}
                 <div style={{ marginBottom: '16px' }}>
-                  <RankingTable members={filteredMembers} theme={theme} onMemberClick={handleMemberClick} />
+                  <RankingTable members={filteredMembers} theme={theme} onMemberClick={handleMemberClick} dateRangeInfo={dateRangeInfo} />
                 </div>
 
                 
@@ -519,6 +519,7 @@ function App() {
         members={filteredMembers}
         teamStats={displayTeamStats}
         scoreMetrics={displayScoreMetrics}
+        dateRangeInfo={dateRangeInfo}
       />
 
       {/* Settings Modal */}

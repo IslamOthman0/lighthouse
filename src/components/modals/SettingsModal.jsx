@@ -663,6 +663,14 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                 </div>
               </div>
 
+              {/* Auto-balance info */}
+              <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.08)', borderRadius: '8px', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '16px' }}>💡</span>
+                <p style={{ margin: 0, fontSize: '11px', color: theme.textSecondary, lineHeight: 1.5 }}>
+                  All weights must add up to <strong>100%</strong>. When you change one slider, the others automatically adjust to keep the total at 100%. Drag slowly for precise control.
+                </p>
+              </div>
+
               {/* Weight cards */}
               {weightConfig.map((w) => {
                 const value = Math.round(settings.score.weights[w.key] * 100);
@@ -685,7 +693,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
               {/* Task Baseline */}
               <div style={{ padding: '16px', background: theme.innerBg, borderRadius: '10px', border: `1px solid ${theme.border}` }}>
                 <FieldLabel theme={theme}>Task Baseline</FieldLabel>
-                <FieldHint theme={theme}>Members working on this many tasks/day get full marks for "Tasks Worked"</FieldHint>
+                <FieldHint theme={theme}>Members working on this many tasks/day get full marks for "Tasks Worked". The app also auto-calculates a 3-month average from your team's history — this setting overrides it.</FieldHint>
                 <input type="number" min="1" max="20" value={settings.score.taskBaseline}
                   onChange={(e) => updateSettings({ score: { ...settings.score, taskBaseline: parseInt(e.target.value) || 3 } })}
                   style={{ ...inputStyle(theme, '100px'), marginTop: '10px' }} />

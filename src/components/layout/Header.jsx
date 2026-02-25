@@ -148,11 +148,25 @@ const Header = ({ theme, themes, currentTheme, setTheme, onSettingsClick }) => {
               color: !dateDisplay.isToday ? '#000000' : theme.text,
               fontSize: isMobile ? '14px' : '13px',
               fontWeight: !dateDisplay.isToday ? '600' : '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
             }}
             title={dateDisplay.isToday ? 'Select date range' : `Viewing: ${dateDisplay.text}`}
           >
-            <span>📅</span>
-            {!isMobile && <span>{dateDisplay.text}</span>}
+            {syncStatus.isSyncing && !dateDisplay.isToday ? (
+              <span style={{
+                display: 'inline-block',
+                width: '12px', height: '12px',
+                border: `2px solid ${!dateDisplay.isToday ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)'}`,
+                borderTopColor: !dateDisplay.isToday ? '#000' : theme.text,
+                borderRadius: '50%',
+                animation: 'spin 0.8s linear infinite',
+              }} />
+            ) : (
+              <span>📅</span>
+            )}
+            {!isMobile && <span>{syncStatus.isSyncing && !dateDisplay.isToday ? 'Loading...' : dateDisplay.text}</span>}
           </button>
 
           {/* Theme Toggle Switch — desktop */}
