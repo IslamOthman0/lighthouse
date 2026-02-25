@@ -8,7 +8,7 @@ import Sparkline, { SparklineWithStats } from '../ui/Sparkline';
  * Dashboard Detail Modal - Shows detailed breakdowns for Time/Tasks/Score cards
  * Uses real data only - no fake/estimated values
  */
-const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, teamStats, scoreMetrics, dateRangeInfo }) => {
+const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetrics, dateRangeInfo }) => {
 
   // Helper to get status color
   const getStatusColor = (status) => {

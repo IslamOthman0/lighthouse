@@ -517,7 +517,6 @@ function App() {
         type={dashboardDetailType}
         theme={theme}
         members={filteredMembers}
-        teamStats={displayTeamStats}
         scoreMetrics={displayScoreMetrics}
         dateRangeInfo={dateRangeInfo}
       />
