@@ -290,24 +290,27 @@ export function useClickUpSync(config = {}) {
       return;
     }
 
-    // Hydrate UI immediately from IndexedDB cache before first API sync fires
-    const hydrateFromCache = async () => {
-      try {
-        const cachedMembers = await db.members.toArray();
-        if (cachedMembers && cachedMembers.length > 0) {
-          setMembers(cachedMembers);
-          updateStats();
-          logger.info(`Hydrated ${cachedMembers.length} members from IndexedDB cache`);
-        }
-      } catch (e) {
-        // non-critical — will be populated by first sync
-        logger.warn('Cache hydration failed, will wait for first sync');
-      }
-    };
-    hydrateFromCache();
-
     // Initialize ClickUp service once
     if (!isInitialized.current) {
+      // Hydrate UI immediately from IndexedDB cache before first API sync fires.
+      // Must run inside the isInitialized guard so it only runs once — not on every
+      // effect re-fire (e.g. React Strict Mode double-mount, apiKey change), which
+      // would otherwise overwrite freshly synced data with stale cache.
+      const hydrateFromCache = async () => {
+        try {
+          const cachedMembers = await db.members.toArray();
+          if (cachedMembers && cachedMembers.length > 0) {
+            setMembers(cachedMembers);
+            updateStats();
+            logger.info(`Hydrated ${cachedMembers.length} members from IndexedDB cache`);
+          }
+        } catch (e) {
+          // non-critical — will be populated by first sync
+          logger.warn('Cache hydration failed, will wait for first sync');
+        }
+      };
+      hydrateFromCache();
+
       initializeSync(apiKey, teamId);
       isInitialized.current = true;
 

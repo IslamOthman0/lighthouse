@@ -437,9 +437,14 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
         onProgress({ phase: 'tasks', message: `Fetching tasks (page 1)...`, progress: 52 });
       }
     } catch (taskFetchErr) {
+      if (taskFetchErr.name === 'AbortError') throw taskFetchErr;
       console.error(`❌ Failed to fetch tasks (page 0):`, taskFetchErr.message);
       hasMore = false;
     }
+
+    // Check abort between page 0 completing and starting the parallel batch loop.
+    // If cancelled while page 0 was in-flight, skip the 3 parallel batch requests.
+    checkAbort(signal);
 
     if (hasMore) {
       // Fetch remaining pages in parallel batches of 3
@@ -464,13 +469,15 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
           )
         );
 
-        hasMore = false;
         for (const result of batchResults) {
           if (result.tasks?.length > 0) {
             allTasks.push(...result.tasks);
           }
-          if (result.hasMore) hasMore = true;
         }
+        // Only the last fetched page's hasMore is authoritative — ORing all results
+        // would wrongly continue pagination when only lower-numbered pages had data.
+        const lastBatchResult = batchResults[batchResults.length - 1];
+        hasMore = lastBatchResult?.hasMore ?? false;
 
         page += batchPages.length;
 
