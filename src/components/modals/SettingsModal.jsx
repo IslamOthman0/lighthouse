@@ -18,7 +18,6 @@ import { useWindowSize } from '../../hooks/useWindowSize';
 import { useAppStore } from '../../stores/useAppStore';
 import {
   validateClickUpApiKey,
-  balanceScoreWeights,
 } from '../../utils/settingsValidation';
 import {
   SYNC_INTERVAL_OPTIONS,
@@ -255,13 +254,6 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
       setApiValidation({ status: 'error', message: 'Validation timed out' });
     }
     setIsValidating(false);
-  };
-
-  const handleWeightChange = (key, value) => {
-    const numValue = parseFloat(value) / 100;
-    if (isNaN(numValue) || numValue < 0 || numValue > 1) return;
-    const newWeights = balanceScoreWeights(settings.score.weights, key, numValue);
-    updateSettings({ score: { ...settings.score, weights: newWeights } });
   };
 
   const handleIndependentWeightChange = (key, newPercent) => {

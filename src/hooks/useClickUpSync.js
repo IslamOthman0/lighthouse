@@ -245,11 +245,18 @@ export function useClickUpSync(config = {}) {
   const dateRange = useAppStore(state => state.dateRange);
 
   // Keep store scoreWeights in sync with settings.score.weights
+  // Destructure primitive weight values as dependencies to avoid firing on every settings change
   useEffect(() => {
     if (settings?.score?.weights) {
       setScoreWeights(settings.score.weights);
     }
-  }, [settings?.score?.weights]);
+  }, [
+    settings?.score?.weights?.trackedTime,
+    settings?.score?.weights?.tasksWorked,
+    settings?.score?.weights?.tasksDone,
+    settings?.score?.weights?.compliance,
+    setScoreWeights,
+  ]);
 
   useEffect(() => {
     // Skip if sync is disabled

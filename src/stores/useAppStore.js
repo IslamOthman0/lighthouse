@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { calculateMemberScore } from '../utils/scoreCalculation';
 
 /**
  * Global application state store using Zustand
@@ -268,7 +269,29 @@ export const useAppStore = create(devtools((set, get) => ({
       weights: WEIGHTS
     };
 
-    set({ teamStats, scoreMetrics }, false, 'updateStats');
+    // Re-score each individual member with the current weights and baseline
+    // This ensures member scores update immediately when weights change (no waiting for next sync)
+    const settingsWeights = {
+      trackedTime: WEIGHTS.TIME,
+      tasksWorked: WEIGHTS.WORKLOAD,
+      tasksDone: WEIGHTS.COMPLETION,
+      compliance: WEIGHTS.COMPLIANCE,
+    };
+    const recalculatedMembers = members.map(m => {
+      const memberScore = calculateMemberScore({
+        tracked: m.tracked || 0,
+        tasks: m.tasks || 0,
+        done: m.done || 0,
+        completionDenominator: m.completionDenominator,
+        complianceHours: m.complianceHours ?? (m.tracked || 0) * 0.85,
+        avgTasksBaseline: teamBaseline,
+        weights: settingsWeights,
+        workingDays,
+      });
+      return { ...m, score: memberScore };
+    });
+
+    set({ teamStats, scoreMetrics, members: recalculatedMembers }, false, 'updateStats');
   },
 
   // ===== Sync Status =====
