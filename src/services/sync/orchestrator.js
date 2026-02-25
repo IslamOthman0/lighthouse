@@ -420,26 +420,65 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
 
     console.log(`📦 Fetching fresh tasks for ${assigneeIds.length} members (90-day window)...`);
 
-    while (hasMore && page < 20) { // Safety limit: max 20 pages = 2000 tasks
-      try {
-        const result = await clickup.getFilteredTeamTasks({
-          assignees: assigneeIds,
-          dateUpdatedGt: ninetyDaysAgoMs,
-          includeClosed: true,
-          subtasks: true,
-          page
-        });
+    // Fetch first page to determine if there are more pages
+    try {
+      const firstResult = await clickup.getFilteredTeamTasks({
+        assignees: assigneeIds,
+        dateUpdatedGt: ninetyDaysAgoMs,
+        includeClosed: true,
+        subtasks: true,
+        page: 0
+      });
+      allTasks.push(...(firstResult.tasks || []));
+      hasMore = firstResult.hasMore;
+      page = 1;
 
-        allTasks.push(...result.tasks);
-        hasMore = result.hasMore;
-        page++;
+      if (onProgress && hasMore) {
+        onProgress({ phase: 'tasks', message: `Fetching tasks (page 1)...`, progress: 52 });
+      }
+    } catch (taskFetchErr) {
+      console.error(`❌ Failed to fetch tasks (page 0):`, taskFetchErr.message);
+      hasMore = false;
+    }
+
+    if (hasMore) {
+      // Fetch remaining pages in parallel batches of 3
+      let nextPage = 1;
+
+      while (hasMore && nextPage < 20) {
+        // Build a batch of up to 3 page numbers
+        const batchSize = 3;
+        const batchPages = [];
+        for (let i = 0; i < batchSize && nextPage + i < 20; i++) {
+          batchPages.push(nextPage + i);
+        }
+
+        const batchResults = await Promise.all(
+          batchPages.map(p => clickup.getFilteredTeamTasks({
+            assignees: assigneeIds,
+            dateUpdatedGt: ninetyDaysAgoMs,
+            includeClosed: true,
+            subtasks: true,
+            page: p
+          }).catch(() => ({ tasks: [], hasMore: false })) // graceful per-page failure
+          )
+        );
+
+        hasMore = false;
+        for (const result of batchResults) {
+          if (result.tasks?.length > 0) {
+            allTasks.push(...result.tasks);
+          }
+          if (result.hasMore) hasMore = true;
+        }
+
+        page += batchPages.length;
 
         if (onProgress && hasMore) {
           onProgress({ phase: 'tasks', message: `Fetching tasks (page ${page})...`, progress: 50 + (page * 2) });
         }
-      } catch (taskFetchErr) {
-        console.error(`❌ Failed to fetch tasks (page ${page}):`, taskFetchErr.message);
-        hasMore = false; // Stop on error
+
+        nextPage += batchSize;
       }
     }
 

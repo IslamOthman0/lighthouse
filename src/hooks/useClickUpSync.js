@@ -18,6 +18,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useAppStore } from '../stores/useAppStore';
 import { syncMemberData, initializeSync, isSyncInProgress, syncLeaveAndWfh } from '../services/clickupSync';
 import { bulkUpdateMembers, db, autoClearCache, pruneOldData } from '../db';
+import { logger } from '../utils/logger';
 import { getAvgTasksBaseline } from '../services/baselineService';
 import { SETTINGS_STORAGE_KEY, DEFAULT_SETTINGS } from '../constants/defaults';
 import { sanitizeSettings } from '../utils/settingsValidation';
@@ -288,6 +289,22 @@ export function useClickUpSync(config = {}) {
       setSyncError('Missing API configuration');
       return;
     }
+
+    // Hydrate UI immediately from IndexedDB cache before first API sync fires
+    const hydrateFromCache = async () => {
+      try {
+        const cachedMembers = await db.members.toArray();
+        if (cachedMembers && cachedMembers.length > 0) {
+          setMembers(cachedMembers);
+          updateStats();
+          logger.info(`Hydrated ${cachedMembers.length} members from IndexedDB cache`);
+        }
+      } catch (e) {
+        // non-critical — will be populated by first sync
+        logger.warn('Cache hydration failed, will wait for first sync');
+      }
+    };
+    hydrateFromCache();
 
     // Initialize ClickUp service once
     if (!isInitialized.current) {
