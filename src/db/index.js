@@ -73,6 +73,25 @@ db.version(19).stores({
 });
 
 /**
+ * Database Schema v20 - Time entry day-level cache
+ * v20: Cache historical time entries per day to avoid re-fetching unchanged data.
+ *      dateKey is "YYYY-MM-DD" (local time). Today is never cached — always fresh.
+ */
+db.version(20).stores({
+  members: '++id, name, status, project, clickUpId',
+  sessions: '++id, memberId, date, startTime, endTime, totalMinutes, timestamp',
+  breaks: '++id, sessionId, memberId, startTime, endTime, duration, timestamp',
+  tasks: '++id, memberId, clickUpId, status, project, name',
+  leaves: '++id, memberId, type, startDate, endDate, returnDate',
+  syncQueue: '++id, type, status, timestamp',
+  baselines: 'key, value, updatedAt',
+  clickUpTasks: 'id, dateUpdated, *assigneeIds',
+  taskSyncMeta: 'key',
+  dailySnapshots: 'date',
+  timeEntryCache: 'dateKey'  // primary key = "YYYY-MM-DD", data: { entries: [], fetchedAt: timestamp }
+});
+
+/**
  * Seeds the database with mock data on first run
  * @param {Array} mockMembers - Array of member objects
  */
@@ -112,6 +131,7 @@ export async function clearDatabase() {
     await db.baselines.clear();
     await db.clickUpTasks.clear();
     await db.taskSyncMeta.clear();
+    await db.timeEntryCache.clear();  // NEW
     logger.info('Database cleared');
   } catch (error) {
     logger.error('Error clearing database:', error);
