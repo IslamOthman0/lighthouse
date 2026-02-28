@@ -564,9 +564,9 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                       </div>
                     ) : (
                       /* Mobile Layout */
-                      <div style={{ padding: '12px 16px' }}>
+                      <div style={{ padding: '14px 16px' }}>
                         {/* Task name */}
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '12px' }}>
                           <span style={{ color: taskStatusColor, fontSize: '8px', marginTop: '5px', flexShrink: 0 }}>●</span>
                           <span
                             style={{
@@ -582,26 +582,26 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                           </span>
                         </div>
 
-                        {/* Mobile grid */}
+                        {/* Mobile grid — 2 columns for breathing room, Due removed */}
                         <div
                           style={{
                             display: 'grid',
-                            gridTemplateColumns: '1fr 1fr 1fr',
-                            gap: '8px',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '12px 16px',
                             fontSize: '10px',
                             color: theme.textSecondary,
                           }}
                         >
                           {/* Assignee */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <span style={{ fontSize: '10px', opacity: 0.6, textTransform: 'uppercase', fontFamily: getFontFamily('english') }}>Assignee</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                               {task.assignee ? (
                                 <>
                                   <div
                                     style={{
-                                      width: '16px',
-                                      height: '16px',
+                                      width: '18px',
+                                      height: '18px',
                                       borderRadius: '50%',
                                       background: task.assignee.avatar ? `url(${task.assignee.avatar})` : theme.accent,
                                       backgroundSize: 'cover',
@@ -616,7 +616,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                                   >
                                     {!task.assignee.avatar && task.assignee.initials}
                                   </div>
-                                  <span style={{ fontSize: '10px', fontFamily: getAdaptiveFontFamily(task.assignee.name || '') }}>
+                                  <span style={{ fontSize: '11px', fontFamily: getAdaptiveFontFamily(task.assignee.name || '') }}>
                                     {task.assignee.name ? task.assignee.name.split(' ')[0] : ''}
                                   </span>
                                 </>
@@ -626,18 +626,8 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                             </div>
                           </div>
 
-                          {/* Date */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                            <span style={{ fontSize: '10px', opacity: 0.6, textTransform: 'uppercase', fontFamily: getFontFamily('english') }}>
-                              {isDoneStatus ? 'Closed' : 'Due'}
-                            </span>
-                            <span style={{ fontSize: '11px', ...tabularNumberStyle }}>
-                              {displayDate ? formatClickUpDate(displayDate) : <span style={{ opacity: 0.5 }}>—</span>}
-                            </span>
-                          </div>
-
                           {/* Time tracked */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <span style={{ fontSize: '10px', opacity: 0.6, textTransform: 'uppercase', fontFamily: getFontFamily('english') }}>Tracked</span>
                             <span style={{ fontSize: '11px', ...tabularNumberStyle }}>
                               {task.trackedTime > 0 ? formatMinutesToHM(task.trackedTime) : <span style={{ opacity: 0.5 }}>0m</span>}
@@ -645,7 +635,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                           </div>
 
                           {/* Priority */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <span style={{ fontSize: '10px', opacity: 0.6, textTransform: 'uppercase', fontFamily: getFontFamily('english') }}>Priority</span>
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                               {task.priority ? <PriorityFlag priority={task.priority} showLabel={false} size={13} /> : <span style={{ opacity: 0.5, color: theme.textMuted }}>—</span>}
@@ -653,7 +643,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                           </div>
 
                           {/* Genre */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <span style={{ fontSize: '10px', opacity: 0.6, textTransform: 'uppercase', fontFamily: getFontFamily('english') }}>Genre</span>
                             <span
                               style={{
@@ -670,7 +660,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                           </div>
 
                           {/* Publisher */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <span style={{ fontSize: '10px', opacity: 0.6, textTransform: 'uppercase', fontFamily: getFontFamily('english') }}>Publisher</span>
                             <span
                               style={{
