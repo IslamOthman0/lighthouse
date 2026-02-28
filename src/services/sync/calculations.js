@@ -419,7 +419,9 @@ export function countLeaveDaysInRange(leaves, startDate, endDate, settings = nul
 
   const workDays = new Set(settings?.schedule?.workDays ?? [0, 1, 2, 3, 4]);
   const publicHolidays = new Set(settings?.schedule?.publicHolidays ?? []);
-  let leaveDays = 0;
+
+  // Use a Set of date keys to avoid double-counting overlapping leave records
+  const leaveDateKeys = new Set();
 
   for (const leave of leaves) {
     // Only count approved/confirmed leaves
@@ -438,7 +440,7 @@ export function countLeaveDaysInRange(leaves, startDate, endDate, settings = nul
 
     if (overlapStart > overlapEnd) continue;
 
-    // Count working days in the overlap
+    // Collect unique working days covered by this leave
     const cur = new Date(overlapStart);
     cur.setHours(0, 0, 0, 0);
     while (cur <= overlapEnd) {
@@ -446,14 +448,15 @@ export function countLeaveDaysInRange(leaves, startDate, endDate, settings = nul
       const y = cur.getFullYear();
       const mo = String(cur.getMonth() + 1).padStart(2, '0');
       const dy = String(cur.getDate()).padStart(2, '0');
-      if (workDays.has(dow) && !publicHolidays.has(`${y}-${mo}-${dy}`)) {
-        leaveDays++;
+      const dateKey = `${y}-${mo}-${dy}`;
+      if (workDays.has(dow) && !publicHolidays.has(dateKey)) {
+        leaveDateKeys.add(dateKey); // Set deduplicates overlapping leave records
       }
       cur.setDate(cur.getDate() + 1);
     }
   }
 
-  return leaveDays;
+  return leaveDateKeys.size;
 }
 
 // Re-export task cache extractors for convenience

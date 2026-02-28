@@ -83,33 +83,43 @@ export const timeEntryCache = {
     const cached = [];
     const uncachedDays = [];
 
-    // Iterate each day in range
+    // Collect all day keys in the range first
+    const allDayKeys = [];
     const current = new Date(startDate);
     current.setHours(0, 0, 0, 0);
     const end = new Date(endDate);
     end.setHours(23, 59, 59, 999);
-
     while (current <= end) {
-      const dayKey = toLocalDateKey(current);
+      allDayKeys.push(toLocalDateKey(current));
+      current.setDate(current.getDate() + 1);
+    }
 
+    // Single bulk IndexedDB read for all past days (much faster than N sequential .get() calls)
+    const pastDayKeys = allDayKeys.filter(k => k !== today);
+    let rowMap = new Map();
+    if (pastDayKeys.length > 0) {
+      try {
+        const rows = await db.timeEntryCache.bulkGet(pastDayKeys);
+        rows.forEach((row, i) => {
+          if (row) rowMap.set(pastDayKeys[i], row);
+        });
+      } catch {
+        // If bulk read fails, treat all past days as uncached
+      }
+    }
+
+    // Classify each day: today → uncached, past → check TTL
+    for (const dayKey of allDayKeys) {
       if (dayKey === today) {
-        // Today always fetched fresh — add as uncached
         uncachedDays.push(dayKey);
       } else {
-        // Check cache
-        try {
-          const row = await db.timeEntryCache.get(dayKey);
-          if (row && (now - row.fetchedAt) < CACHE_TTL_MS) {
-            cached.push(...row.entries);
-          } else {
-            uncachedDays.push(dayKey);
-          }
-        } catch {
+        const row = rowMap.get(dayKey);
+        if (row && (now - row.fetchedAt) < CACHE_TTL_MS) {
+          cached.push(...row.entries);
+        } else {
           uncachedDays.push(dayKey);
         }
       }
-
-      current.setDate(current.getDate() + 1);
     }
 
     const uncachedChunks = buildChunks(uncachedDays);

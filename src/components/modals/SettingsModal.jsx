@@ -269,7 +269,6 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
   const handleClearCache = async () => {
     try {
       await db.members.clear();
-      if (db.timeEntries) await db.timeEntries.clear();
       // Also clear time entry cache (historical day-level cache)
       const { timeEntryCache } = await import('../../services/timeEntryCacheService');
       await timeEntryCache.clearAll();
@@ -286,13 +285,18 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
       await timeEntryCache.clearAll();
       await db.clickUpTasks.clear();
       await db.taskSyncMeta.clear();
-      // Force a full re-sync by re-applying the current date range
+      // Force a full re-sync by momentarily switching to a dummy preset then back.
+      // This guarantees the dateRange useEffect detects a change even if the
+      // current range values are identical to the previous ones.
       const { dateRange, setDateRange } = useAppStore.getState();
-      setDateRange(
-        dateRange?.startDate || null,
-        dateRange?.endDate || null,
-        dateRange?.preset || 'today'
-      );
+      setDateRange(null, null, '__reload__');
+      setTimeout(() => {
+        setDateRange(
+          dateRange?.startDate || null,
+          dateRange?.endDate || null,
+          dateRange?.preset || 'today'
+        );
+      }, 50);
       showToast('Cache cleared — reloading all data from ClickUp...');
     } catch (error) {
       showToast(`Failed to reload data: ${error.message}`, 'error');
