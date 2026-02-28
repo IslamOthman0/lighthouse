@@ -448,6 +448,33 @@ export function useClickUpSync(config = {}) {
     }
 
     /**
+     * Returns true if the date range's end date is strictly before today.
+     * Fully historical ranges never change — no need to poll them.
+     */
+    function isRangeFullyPast(dr) {
+      if (!dr?.endDate) return false;
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth() + 1).padStart(2, '0');
+      const d = String(today.getDate()).padStart(2, '0');
+      return dr.endDate < `${y}-${m}-${d}`;
+    }
+
+    /**
+     * Returns an effective polling interval scaled to the date range size.
+     * Longer ranges that include today still poll, just less frequently.
+     */
+    function getEffectiveInterval(dr, base) {
+      if (!dr?.startDate || dr.preset === 'today') return base;
+      const start = new Date(dr.startDate + 'T00:00:00');
+      const end = new Date((dr.endDate || dr.startDate) + 'T00:00:00');
+      const days = Math.ceil((end - start) / 86400000) + 1;
+      if (days > 180) return Math.max(base, 120000); // >6 months → 2 min
+      if (days > 90)  return Math.max(base, 60000);  // >3 months → 1 min
+      return base;
+    }
+
+    /**
      * Sync function - polls ClickUp API and updates state
      * Supports abort via AbortController for cancellation on date change
      */
@@ -471,6 +498,12 @@ export function useClickUpSync(config = {}) {
       // Get FRESH members and dateRange from store using getState() to avoid stale closures
       const allMembers = useAppStore.getState().members;
       const currentDateRange = useAppStore.getState().dateRange;
+
+      // Skip polling for fully historical ranges — data can't change
+      if (isRangeFullyPast(currentDateRange)) {
+        console.log('⏭️ Skipping poll — date range is fully historical (no live data)');
+        return;
+      }
 
       // Load settings to get monitored members filter
       const settings = loadSettings();
@@ -497,9 +530,11 @@ export function useClickUpSync(config = {}) {
       }
 
       try {
-        setIsSyncing(true);
+        // Poll-mode syncs use cache — don't show "Loading..." to avoid UI flicker.
+        // Full syncs (date-range changes) set isSyncing via the dateRange useEffect below.
+        // setIsSyncing(false) is always called in finally to clear any prior state.
 
-        console.log(`🔄 Syncing ${currentMembers.length} members from ClickUp...`);
+        console.log(`🔄 Syncing ${currentMembers.length} members from ClickUp (poll mode)...`);
 
         // Get baseline for score calculation (uses cached value or fetches fresh)
         const assigneeIds = currentMembers.map(m => m.clickUpId).filter(Boolean);
@@ -509,17 +544,15 @@ export function useClickUpSync(config = {}) {
         // Update team baseline in store (used by updateStats for team workload)
         setTeamBaseline(avgTasksBaseline);
 
-        // Progress callback for loading UI
+        // Progress callback for loading UI (suppressed in poll mode to avoid flicker)
         const onProgress = (progress) => {
-          // Only update progress if not aborted
           if (!signal.aborted) {
             setSyncProgress(progress);
           }
         };
 
-        // Sync all members (two-level polling) - now returns { members, projectBreakdown, dateRangeInfo }
-        // Pass dateRange (null = today, object with startDate/endDate = date range) and abort signal
-        const syncResult = await syncMemberData(currentMembers, avgTasksBaseline, settings, currentDateRange, onProgress, signal);
+        // Sync all members — poll mode uses cache for past days, only fetches today fresh
+        const syncResult = await syncMemberData(currentMembers, avgTasksBaseline, settings, currentDateRange, onProgress, signal, { pollMode: true });
 
         // Check if sync was skipped due to lock
         if (syncResult.skipped) {
@@ -635,8 +668,11 @@ export function useClickUpSync(config = {}) {
       sync();
     }, 1000); // Wait 1 second for database to load
 
-    // Set up polling interval
-    intervalRef.current = setInterval(sync, interval);
+    // Set up polling interval — adaptive: longer ranges poll less frequently
+    const currentDr = useAppStore.getState().dateRange;
+    const effectiveInterval = getEffectiveInterval(currentDr, interval);
+    console.log(`⏱️ Polling interval: ${effectiveInterval / 1000}s (base: ${interval / 1000}s)`);
+    intervalRef.current = setInterval(sync, effectiveInterval);
 
     // Cleanup on unmount or dependency change
     return () => {
@@ -734,7 +770,8 @@ export function useClickUpSync(config = {}) {
           settings,
           freshDateRange,
           onProgress,
-          signal
+          signal,
+          { pollMode: false }  // Full sync: fills cache, eager list fetch
         );
 
         if (syncResult.skipped || signal.aborted) {

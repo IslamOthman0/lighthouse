@@ -23,6 +23,7 @@
 
 import { clickup } from '../clickup';
 import { taskCacheV2 } from '../taskCacheV2';
+import { timeEntryCache } from '../timeEntryCacheService';
 import { transformMember } from './transform';
 import { calculateFastProjectBreakdown } from './projects';
 import { calculateWorkingDays } from './calculations';
@@ -276,9 +277,10 @@ async function fetchAllRunningTimers(members) {
  * @param {AbortSignal|null} signal - Optional AbortSignal to cancel sync
  * @returns {Promise<Object>} { members: Array, projectBreakdown: Object, dateRangeInfo: Object }
  */
-export async function syncMemberData(members, avgTasksBaseline = 3, settings = null, dateRange = null, onProgress = null, signal = null) {
+export async function syncMemberData(members, avgTasksBaseline = 3, settings = null, dateRange = null, onProgress = null, signal = null, options = {}) {
   const syncStartTime = Date.now();
   const syncId = generateSyncId();
+  const { pollMode = false } = options;
 
   // Check if already aborted before starting
   checkAbort(signal);
@@ -317,6 +319,11 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
       endOfDay.setHours(23, 59, 59, 999);
     }
 
+    // Check if the date range includes today (needed to decide whether to fetch timers)
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+    const rangeIncludesToday = endOfDay >= todayMidnight;
+
     // Calculate working days for dynamic target calculation
     const workingDays = calculateWorkingDays(startOfDay, endOfDay);
     const isMultiDay = workingDays > 1;
@@ -339,51 +346,84 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
     const assigneeIds = members.map(m => m.clickUpId).filter(Boolean);
     console.log(`👥 Fetching data for ${assigneeIds.length} members...`);
 
-    let allTimeEntries = [];
-    let runningTimersMap;
     const globalTaskCache = {};
 
-    // Phase 1: Fetch 90-day time entries and running timers
-    // ClickUp time entry API max: 30 days per request → fetch in 3 chunks
-    if (onProgress) {
-      onProgress({ phase: 'fetching', message: 'Fetching 90-day time entries...', progress: 10 });
+    // Phase 1: Fetch time entries (with cache) + running timers
+    // POLL MODE: use cache for past days, only fetch today if range includes it
+    // FULL MODE: fetch all chunks, then cache the results
+
+    let allTimeEntries = [];
+    let runningTimersMap;
+
+    if (pollMode) {
+      // Use cache: get cached entries + chunks that still need fetching
+      const { cached, uncachedChunks } = await timeEntryCache.getEntries(startOfDay, endOfDay);
+
+      // Fetch only uncached chunks (typically just today's chunk) + running timers
+      const freshPromises = uncachedChunks.map(({ startSec, endSec }) =>
+        clickup.getTimeEntries(startSec, endSec, assigneeIds)
+      );
+
+      // Only fetch running timers if range includes today
+      const [timersMap, ...freshChunks] = await Promise.all([
+        rangeIncludesToday ? fetchAllRunningTimers(members) : Promise.resolve({}),
+        ...freshPromises
+      ]);
+
+      const freshEntries = freshChunks.flat();
+      allTimeEntries = [...cached, ...freshEntries];
+      runningTimersMap = timersMap;
+
+      // Cache today's new entries won't store today (storeEntries skips today by design)
+      if (freshEntries.length > 0) {
+        await timeEntryCache.storeEntries(freshEntries);
+      }
+
+      console.log(`📊 [${syncId}] Poll mode: ${cached.length} cached + ${freshEntries.length} fresh entries, ${uncachedChunks.length} chunks fetched`);
+    } else {
+      // FULL MODE: fetch all chunks in parallel, then cache them
+      const spanDays = Math.ceil((endOfDay.getTime() - startOfDay.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const chunkSizeDays = 30;
+      const numChunks = Math.ceil(spanDays / chunkSizeDays);
+
+      if (onProgress) {
+        onProgress({ phase: 'fetching', message: `Fetching time entries (${numChunks} chunk${numChunks > 1 ? 's' : ''})...`, progress: 10 });
+      }
+
+      console.log(`📊 Fetching time entries for date range (${spanDays} days, ${numChunks} chunks) and running timers...`);
+
+      // Generate chunks of at most 30 days covering [startOfDay, endOfDay]
+      const timeEntryPromises = [];
+      for (let i = 0; i < numChunks; i++) {
+        const chunkStart = new Date(startOfDay.getTime() + i * chunkSizeDays * 24 * 60 * 60 * 1000);
+        chunkStart.setHours(0, 0, 0, 0);
+        const chunkEnd = new Date(Math.min(
+          chunkStart.getTime() + (chunkSizeDays - 1) * 24 * 60 * 60 * 1000,
+          endOfDay.getTime()
+        ));
+        chunkEnd.setHours(23, 59, 59, 999);
+        const chunkStartSeconds = Math.floor(chunkStart.getTime() / 1000);
+        const chunkEndSeconds = Math.floor(chunkEnd.getTime() / 1000);
+        timeEntryPromises.push(clickup.getTimeEntries(chunkStartSeconds, chunkEndSeconds, assigneeIds));
+      }
+
+      // Fetch all chunks + running timers in parallel
+      // Skip running timers for fully past ranges (they can't be active)
+      const [timersMap, ...entryChunks] = await Promise.all([
+        rangeIncludesToday ? fetchAllRunningTimers(members) : Promise.resolve({}),
+        ...timeEntryPromises
+      ]);
+
+      allTimeEntries = entryChunks.flat();
+      runningTimersMap = timersMap;
+
+      // Cache historical entries for future polls
+      if (allTimeEntries.length > 0) {
+        await timeEntryCache.storeEntries(allTimeEntries);
+      }
+
+      console.log(`📊 [${syncId}] Full mode: Got ${allTimeEntries.length} time entries (${numChunks} chunks), ${Object.keys(runningTimersMap).length} running timers`);
     }
-
-    console.log(`📊 Fetching 90-day time entries (3 chunks) and running timers...`);
-
-    // Fetch time entries in 3 × 30-day chunks (ClickUp limitation)
-    const now = new Date();
-    const timeEntryChunks = [
-      { start: 90, end: 61 }, // Days 90-61 ago
-      { start: 60, end: 31 }, // Days 60-31 ago
-      { start: 30, end: 0 }   // Days 30-0 ago (most recent)
-    ];
-
-    const timeEntryPromises = timeEntryChunks.map(chunk => {
-      const chunkStart = new Date(now);
-      chunkStart.setDate(chunkStart.getDate() - chunk.start);
-      chunkStart.setHours(0, 0, 0, 0);
-
-      const chunkEnd = new Date(now);
-      chunkEnd.setDate(chunkEnd.getDate() - chunk.end);
-      chunkEnd.setHours(23, 59, 59, 999);
-
-      const chunkStartSeconds = Math.floor(chunkStart.getTime() / 1000);
-      const chunkEndSeconds = Math.floor(chunkEnd.getTime() / 1000);
-
-      return clickup.getTimeEntries(chunkStartSeconds, chunkEndSeconds, assigneeIds);
-    });
-
-    // Fetch time entries (3 chunks) and running timers in parallel
-    const [chunk1, chunk2, chunk3, timersMap] = await Promise.all([
-      ...timeEntryPromises,
-      fetchAllRunningTimers(members)
-    ]);
-
-    allTimeEntries = [...chunk1, ...chunk2, ...chunk3];
-    runningTimersMap = timersMap;
-
-    console.log(`📊 [${syncId}] Got ${allTimeEntries.length} time entries (90 days), ${Object.keys(runningTimersMap).length} running timers`);
 
     // Filter time entries for selected date range (for scoring/display)
     // Use overlap check: include entry if it overlaps with the date range
@@ -407,24 +447,25 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
     // Check abort before task fetching
     checkAbort(signal);
 
-    // Phase 2: Fetch fresh tasks from filtered /task endpoint (90-day window)
-    // This replaces the old cache-based approach and provides always-fresh task data
+    // Phase 2: Fetch fresh tasks from filtered /task endpoint for the selected date range
     if (onProgress) {
       onProgress({ phase: 'tasks', message: 'Fetching fresh task data...', progress: 50 });
     }
 
-    const ninetyDaysAgoMs = Date.now() - (90 * 24 * 60 * 60 * 1000);
+    // Use the selected range start so tasks for the full period are included.
+    // Fall back to 90 days ago only for "today" (rolling live view).
+    const taskFetchSinceMs = startOfDay.getTime();
     let allTasks = [];
     let page = 0;
     let hasMore = true;
 
-    console.log(`📦 Fetching fresh tasks for ${assigneeIds.length} members (90-day window)...`);
+    console.log(`📦 Fetching fresh tasks for ${assigneeIds.length} members (since ${startOfDay.toLocaleDateString()})...`);
 
     // Fetch first page to determine if there are more pages
     try {
       const firstResult = await clickup.getFilteredTeamTasks({
         assignees: assigneeIds,
-        dateUpdatedGt: ninetyDaysAgoMs,
+        dateUpdatedGt: taskFetchSinceMs,
         includeClosed: true,
         subtasks: true,
         page: 0
@@ -461,7 +502,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
         const batchResults = await Promise.all(
           batchPages.map(p => clickup.getFilteredTeamTasks({
             assignees: assigneeIds,
-            dateUpdatedGt: ninetyDaysAgoMs,
+            dateUpdatedGt: taskFetchSinceMs,
             includeClosed: true,
             subtasks: true,
             page: p
@@ -500,6 +541,34 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
     if (allTasks.length > 0) {
       await taskCacheV2.storeTasks(allTasks);
       console.log(`✅ Updated taskCacheV2 with ${allTasks.length} fresh tasks`);
+    }
+
+    // Eager background fetch: populate taskCacheV2 from /list/{id}/task for richer task details
+    // This fires and forgets — doesn't block the sync result
+    if (!pollMode && allTimeEntries.length > 0) {
+      const discoveredListIds = clickup.discoverListIds(allTimeEntries);
+      if (discoveredListIds.length > 0) {
+        console.log(`🔍 Starting eager background fetch for ${discoveredListIds.length} lists...`);
+        // Fire and forget — don't await, don't block sync
+        (async () => {
+          for (const listId of discoveredListIds) {
+            if (signal?.aborted) break;
+            try {
+              const listTasks = await clickup.fetchAllListTasks(listId);
+              if (listTasks.length > 0) {
+                const taskMap = {};
+                listTasks.forEach(t => { taskMap[t.id] = t; });
+                await taskCacheV2.bulkLoad(taskMap);
+                console.log(`✅ Eager fetch: cached ${listTasks.length} tasks from list ${listId}`);
+              }
+            } catch (err) {
+              console.warn(`⚠️ Eager fetch failed for list ${listId}:`, err.message);
+            }
+            await clickup.delay(200); // Rate limit safety between lists
+          }
+          console.log(`✅ Eager background list fetch complete`);
+        })();
+      }
     }
 
     // Check abort before member processing
