@@ -41,7 +41,11 @@ export const useAppStore = create(devtools((set, get) => ({
     const normalizeDate = (date) => {
       if (!date) return null;
       if (date instanceof Date) {
-        return date.toISOString().split('T')[0]; // YYYY-MM-DD
+        // Use local date components to avoid UTC offset shifting the date (e.g. UTC+2 midnight)
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`; // YYYY-MM-DD in local time
       }
       if (typeof date === 'string') {
         // Already a string - extract just the date part if it's ISO datetime
@@ -288,7 +292,7 @@ export const useAppStore = create(devtools((set, get) => ({
         weights: settingsWeights,
         workingDays,
       });
-      return { ...m, score: memberScore };
+      return { ...m, score: memberScore.total };
     });
 
     set({ teamStats, scoreMetrics, members: recalculatedMembers }, false, 'updateStats');

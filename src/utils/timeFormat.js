@@ -15,6 +15,7 @@
  * - 1.0 (with 60 min rounding) → "2h" (handles 60m edge case)
  */
 export const formatHoursToHM = (decimalHours) => {
+  if (decimalHours === undefined || decimalHours === null || isNaN(decimalHours)) return '0m';
   let hours = Math.floor(decimalHours);
   let minutes = Math.round((decimalHours - hours) * 60);
 
@@ -49,6 +50,7 @@ export const formatHoursToHM = (decimalHours) => {
  * - 0 → "0m"
  */
 export const formatMinutesToHM = (totalMinutes) => {
+  if (totalMinutes === undefined || totalMinutes === null || isNaN(totalMinutes)) return '0m';
   const hours = Math.floor(totalMinutes / 60);
   const minutes = Math.round(totalMinutes % 60);
 

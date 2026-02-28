@@ -25,8 +25,15 @@ const Header = ({ theme, themes, currentTheme, setTheme, onSettingsClick }) => {
       return { text: 'Select Date', isToday: false };
     }
 
-    // Convert ISO strings to Date objects
-    const toDate = (dateStr) => dateStr instanceof Date ? dateStr : new Date(dateStr);
+    // Convert ISO strings to Date objects.
+    // Parse YYYY-MM-DD as local midnight (not UTC midnight) to avoid timezone off-by-one.
+    const toDate = (dateStr) => {
+      if (!dateStr) return null;
+      if (dateStr instanceof Date) return dateStr;
+      // "2026-02-26" → parse as local time to avoid UTC midnight = previous day in UTC+2
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return new Date(dateStr + 'T00:00:00');
+      return new Date(dateStr);
+    };
     const formatDate = (d) => toDate(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const isSameDay = (d1, d2) => {
       if (!d1 || !d2) return false;

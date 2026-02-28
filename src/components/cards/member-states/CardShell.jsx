@@ -22,8 +22,8 @@ const CardShell = ({
   const { name, status, profilePicture, clickUpColor, tracked, target, tasks, done, breaks, score } = member;
 
   // Calculate effective target and progress for multi-day ranges
-  const effectiveTarget = target * workingDays;
-  const progressPercent = (tracked / effectiveTarget) * 100;
+  const effectiveTarget = (target || 6.5) * workingDays;
+  const progressPercent = effectiveTarget > 0 ? ((tracked || 0) / effectiveTarget) * 100 : 0;
 
   // Get score color based on percentage
   const getScoreColor = (percent) => {
