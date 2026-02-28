@@ -268,11 +268,14 @@ const fetchTimelineData = async (member, selectedDate) => {
 
         // Map ClickUp status type to our status keys
         const statusType = entry.task?.status?.type || 'custom';
+        const statusName = (entry.task?.status?.status || '').toLowerCase();
         let status = 'todo';
         if (statusType === 'done' || statusType === 'closed') status = 'done';
+        else if (statusType === 'ready') status = 'ready';
         else if (statusType === 'in progress' || statusType === 'open') status = 'inProgress';
-        else if (entry.task?.status?.status?.toLowerCase()?.includes('ready')) status = 'ready';
-        else if (entry.task?.status?.status?.toLowerCase()?.includes('review')) status = 'review';
+        else if (statusName.includes('ready')) status = 'ready';
+        else if (statusName.includes('review')) status = 'review';
+        else if (statusName.includes('in progress') || statusName.includes('progress')) status = 'inProgress';
 
         // Get priority from cache or time entry
         let priority = 'Normal';
@@ -532,7 +535,7 @@ const BreakCard = ({ breakData, theme }) => (
 // Summary Metrics Component
 const SummaryMetrics = ({ tasks, breaks, member, theme }) => {
   const totalTracked = tasks.reduce((sum, t) => sum + t.trackedMinutes, 0);
-  const completedTasks = tasks.filter(t => t.status === 'done').length;
+  const completedTasks = tasks.filter(t => t.status === 'done' || t.status === 'ready').length;
   const totalBreaks = breaks.reduce((sum, b) => sum + b.durationMinutes, 0);
 
   // Calculate efficiency (tracked time / total time since first task start)
@@ -991,7 +994,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                     ...tabularNumberStyle,
                   }}
                 >
-                  {formatHoursToHM(member.tracked)} / {formatHoursToHM(member.target)} ({progressPercent}%)
+                  {formatHoursToHM(member.tracked || 0)} / {formatHoursToHM(member.target || 6.5)} ({progressPercent}%)
                 </span>
               </div>
               <div

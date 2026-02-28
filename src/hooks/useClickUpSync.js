@@ -727,12 +727,14 @@ export function useClickUpSync(config = {}) {
       abortControllerRef.current.abort();
     }
 
-    // Clear progress immediately to show we're preparing new sync
-    setSyncProgress({ phase: 'idle', message: '', progress: 0 });
-
-    // Debounce the actual sync by 300ms to handle rapid date changes
+    // Debounce the actual sync by 500ms to handle rapid date changes.
+    // Do NOT clear projectBreakdown or members here — retain old data so the UI
+    // doesn't flash blank. New data will overwrite it atomically when sync completes.
     dateRangeDebounceRef.current = setTimeout(async () => {
       console.log('📅 Debounce complete, starting sync for new date range...');
+
+      // Reset progress now that we're actually starting
+      setSyncProgress({ phase: 'idle', message: '', progress: 0 });
 
       // Get fresh members from store and filter to monitored only
       const allMembers = useAppStore.getState().members;
@@ -810,7 +812,7 @@ export function useClickUpSync(config = {}) {
       } finally {
         setIsSyncing(false);
       }
-    }, 300); // 300ms debounce
+    }, 500); // 500ms debounce — handles rapid preset switching without flicker
 
   }, [dateRange, enabled, apiKey, teamId, setMembers, setLastSync, setSyncError, setIsSyncing, setRequestCount, updateStats, setProjectBreakdown, setTeamBaseline, setDateRangeInfo, setSyncProgress]);
 
