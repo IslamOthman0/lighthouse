@@ -338,11 +338,11 @@ class ClickUpService {
 
     while (hasMore) {
       try {
-        const response = await this.getTasks(listId, { page });
-        allTasks.push(...response.tasks);
+        const tasks = await this.getTasks(listId, { page, include_closed: true, subtasks: true });
+        allTasks.push(...tasks);
 
         // ClickUp returns 100 tasks per page by default
-        hasMore = response.tasks.length === 100;
+        hasMore = tasks.length === 100;
         page++;
 
         // Progress logging
@@ -364,6 +364,44 @@ class ClickUpService {
 
     console.log(`✅ Completed bulk fetch for list ${listId}: ${allTasks.length} tasks`);
     return allTasks;
+  }
+
+  /**
+   * Fetch all tasks from a list, calling onPageFetched after each page.
+   * Unlike fetchAllListTasks, this streams pages to the caller immediately.
+   * @param {string} listId - List ID
+   * @param {Function} onPageFetched - async (pageTasks: Array) => void, called after each page
+   * @returns {Promise<void>}
+   */
+  async fetchAllListTasksWithCallback(listId, onPageFetched) {
+    let page = 0;
+    let hasMore = true;
+
+    console.log(`📦 Starting streamed fetch for list ${listId}...`);
+
+    while (hasMore) {
+      try {
+        const tasks = await this.getTasks(listId, { page, include_closed: true, subtasks: true });
+
+        hasMore = tasks.length === 100;
+        page++;
+
+        if (tasks.length > 0) {
+          await onPageFetched(tasks);
+        }
+
+        console.log(`📦 List ${listId}: page ${page} (${tasks.length} tasks)`);
+
+        if (hasMore) {
+          await this.delay(100);
+        }
+      } catch (error) {
+        console.error(`❌ Error fetching page ${page} for list ${listId}:`, error);
+        break;
+      }
+    }
+
+    console.log(`✅ Completed streamed fetch for list ${listId} (${page} pages)`);
   }
 
   /**

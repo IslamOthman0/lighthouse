@@ -28,6 +28,7 @@ import { db } from '../../db';
 import { transformMember } from './transform';
 import { calculateFastProjectBreakdown } from './projects';
 import { calculateWorkingDays, countLeaveDaysInRange } from './calculations';
+import { useAppStore } from '../../stores/useAppStore';
 
 // ========== SYNC LOCK (prevents concurrent syncs) ==========
 let syncLock = {
@@ -568,17 +569,27 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
       if (discoveredListIds.length > 0) {
         console.log(`🔍 Starting eager background fetch for ${discoveredListIds.length} lists...`);
         // Fire and forget — don't await, don't block sync
+        // Captures todayTimeEntries for re-building project breakdown after each list loads
+        const capturedTimeEntries = todayTimeEntries;
+        // Accumulates ALL tasks fetched so far across all lists/pages
+        // Passed as globalTaskCache so calculateFastProjectBreakdown can use them
+        const eagerTaskCache = {};
         (async () => {
           for (const listId of discoveredListIds) {
             if (signal?.aborted) break;
             try {
-              const listTasks = await clickup.fetchAllListTasks(listId);
-              if (listTasks.length > 0) {
+              await clickup.fetchAllListTasksWithCallback(listId, async (pageTasks) => {
+                if (signal?.aborted) return;
+                // Add this page's tasks to the running accumulator
+                pageTasks.forEach(t => { eagerTaskCache[t.id] = t; });
+                // Store in taskCacheV2 for persistence across page reloads
                 const taskMap = {};
-                listTasks.forEach(t => { taskMap[t.id] = t; });
+                pageTasks.forEach(t => { taskMap[t.id] = t; });
                 await taskCacheV2.bulkLoad(taskMap);
-                console.log(`✅ Eager fetch: cached ${listTasks.length} tasks from list ${listId}`);
-              }
+                // Re-push project breakdown using all tasks fetched so far
+                const refreshedBreakdown = calculateFastProjectBreakdown(capturedTimeEntries, eagerTaskCache);
+                useAppStore.getState().setProjectBreakdown(refreshedBreakdown);
+              });
             } catch (err) {
               console.warn(`⚠️ Eager fetch failed for list ${listId}:`, err.message);
             }
