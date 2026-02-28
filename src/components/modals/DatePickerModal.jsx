@@ -263,14 +263,16 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
     return isSameDay(date, new Date());
   };
 
-  // Check if selected range extends beyond 90 days (time entry limit)
-  const isLongRange = () => {
-    if (!tempRange.startDate || !tempRange.endDate) return false;
+  // Check if selected range is very long (> 90 days) — sync will make more API calls
+  const getLongRangeInfo = () => {
+    if (!tempRange.startDate || !tempRange.endDate) return null;
     const start = toDate(tempRange.startDate);
     const end = toDate(tempRange.endDate);
-    if (!start || !end) return false;
-    const diffDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-    return diffDays > 90;
+    if (!start || !end) return null;
+    const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays <= 90) return null;
+    const chunks = Math.ceil(diffDays / 30);
+    return { diffDays, chunks };
   };
 
   // Format display of selected range
@@ -361,9 +363,9 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
               {quickPresets.find(p => p.value === tempRange.preset)?.label}
             </div>
           )}
-          {isLongRange() && (
-            <div style={{ fontSize: '11px', color: '#F59E0B', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
-              ⚠ Time entries available for last 90 days only. Older dates show task data only.
+          {getLongRangeInfo() && (
+            <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+              ℹ Syncing {getLongRangeInfo().chunks} chunks — may take a moment
             </div>
           )}
         </div>
