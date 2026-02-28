@@ -658,7 +658,10 @@ export function useClickUpSync(config = {}) {
 
         // Data persists in IndexedDB and Zustand, UI continues working with last known state
       } finally {
-        setIsSyncing(false);
+        // Do NOT call setIsSyncing(false) here.
+        // Poll-mode syncs never set isSyncing=true, so calling false here would race
+        // with the date-range useEffect's setIsSyncing(true) and prematurely clear
+        // the loading indicator for a concurrent full sync.
       }
     };
 
