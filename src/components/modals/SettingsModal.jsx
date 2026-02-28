@@ -270,9 +270,32 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
     try {
       await db.members.clear();
       if (db.timeEntries) await db.timeEntries.clear();
+      // Also clear time entry cache (historical day-level cache)
+      const { timeEntryCache } = await import('../../services/timeEntryCacheService');
+      await timeEntryCache.clearAll();
       showToast('Cache cleared successfully');
     } catch (error) {
       showToast(`Failed to clear cache: ${error.message}`, 'error');
+    }
+  };
+
+  const handleReloadAllData = async () => {
+    try {
+      // Clear time entry cache + task caches
+      const { timeEntryCache } = await import('../../services/timeEntryCacheService');
+      await timeEntryCache.clearAll();
+      await db.clickUpTasks.clear();
+      await db.taskSyncMeta.clear();
+      // Force a full re-sync by re-applying the current date range
+      const { dateRange, setDateRange } = useAppStore.getState();
+      setDateRange(
+        dateRange?.startDate || null,
+        dateRange?.endDate || null,
+        dateRange?.preset || 'today'
+      );
+      showToast('Cache cleared — reloading all data from ClickUp...');
+    } catch (error) {
+      showToast(`Failed to reload data: ${error.message}`, 'error');
     }
   };
 
@@ -857,11 +880,16 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                 </div>
               </div>
 
-              <div>
-                <button onClick={handleClearCache} style={{ padding: '10px 20px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', color: '#EF4444', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
-                  Clear Cache Now
-                </button>
-                <FieldHint theme={theme}>Manually clear all cached data from IndexedDB</FieldHint>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <button onClick={handleClearCache} style={{ padding: '10px 20px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', color: '#EF4444', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
+                    Clear Cache Now
+                  </button>
+                  <button onClick={handleReloadAllData} style={{ padding: '10px 20px', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '8px', color: '#818cf8', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
+                    Reload All Data
+                  </button>
+                </div>
+                <FieldHint theme={theme}>Clear Cache removes local data. Reload All Data clears the time entry and task cache then forces a full re-sync from ClickUp.</FieldHint>
               </div>
             </div>
           )}
