@@ -367,24 +367,35 @@ export function calculatePreviousTimer(taskDetails) {
 }
 
 /**
- * Calculate the number of working days in a date range
- * (Excludes weekends - Friday/Saturday for Egypt work week)
+ * Calculate the number of working days in a date range.
+ * Respects custom work days and public holidays from settings.
+ *
  * @param {Date} startDate - Start date
  * @param {Date} endDate - End date
- * @returns {number} Number of working days
+ * @param {Object|null} settings - Optional settings with schedule.workDays and schedule.publicHolidays
+ * @returns {number} Number of working days (minimum 1)
  */
-export function calculateWorkingDays(startDate, endDate) {
+export function calculateWorkingDays(startDate, endDate, settings = null) {
   let count = 0;
   const current = new Date(startDate);
   current.setHours(0, 0, 0, 0);
   const end = new Date(endDate);
   end.setHours(23, 59, 59, 999);
 
+  // Work days: use settings if provided, else default Sun-Thu (Egypt)
+  const workDays = new Set(settings?.schedule?.workDays ?? [0, 1, 2, 3, 4]);
+
+  // Public holidays: Set of "YYYY-MM-DD" strings to skip
+  const publicHolidays = new Set(settings?.schedule?.publicHolidays ?? []);
+
   while (current <= end) {
     const dayOfWeek = current.getDay();
-    // Sunday = 0, Friday = 5, Saturday = 6
-    // Egypt work week: Sunday-Thursday (skip Friday & Saturday)
-    if (dayOfWeek !== 5 && dayOfWeek !== 6) {
+    const y = current.getFullYear();
+    const m = String(current.getMonth() + 1).padStart(2, '0');
+    const d = String(current.getDate()).padStart(2, '0');
+    const dateKey = `${y}-${m}-${d}`;
+
+    if (workDays.has(dayOfWeek) && !publicHolidays.has(dateKey)) {
       count++;
     }
     current.setDate(current.getDate() + 1);
@@ -393,5 +404,58 @@ export function calculateWorkingDays(startDate, endDate) {
   return Math.max(count, 1); // At least 1 day
 }
 
+/**
+ * Count how many working days in a range are covered by a member's leave records.
+ * Used to deduct leave days from the working-day target for accurate scoring.
+ *
+ * @param {Array} leaves - Array of leave records from db.leaves for this member
+ * @param {Date} startDate - Range start
+ * @param {Date} endDate - Range end
+ * @param {Object|null} settings - Settings for work days / holidays
+ * @returns {number} Number of leave days that fall within the date range
+ */
+export function countLeaveDaysInRange(leaves, startDate, endDate, settings = null) {
+  if (!leaves || leaves.length === 0) return 0;
+
+  const workDays = new Set(settings?.schedule?.workDays ?? [0, 1, 2, 3, 4]);
+  const publicHolidays = new Set(settings?.schedule?.publicHolidays ?? []);
+  let leaveDays = 0;
+
+  for (const leave of leaves) {
+    // Only count approved/confirmed leaves
+    if (leave.status && !['approved', 'confirmed', 'active'].includes(String(leave.status).toLowerCase())) {
+      continue;
+    }
+
+    const leaveStart = new Date((leave.startDate || leave.start) + 'T00:00:00');
+    const leaveEnd = new Date((leave.endDate || leave.end || leave.startDate || leave.start) + 'T00:00:00');
+
+    if (isNaN(leaveStart.getTime())) continue;
+
+    // Intersect leave range with query range
+    const overlapStart = new Date(Math.max(leaveStart.getTime(), startDate.getTime()));
+    const overlapEnd = new Date(Math.min(leaveEnd.getTime(), endDate.getTime()));
+
+    if (overlapStart > overlapEnd) continue;
+
+    // Count working days in the overlap
+    const cur = new Date(overlapStart);
+    cur.setHours(0, 0, 0, 0);
+    while (cur <= overlapEnd) {
+      const dow = cur.getDay();
+      const y = cur.getFullYear();
+      const mo = String(cur.getMonth() + 1).padStart(2, '0');
+      const dy = String(cur.getDate()).padStart(2, '0');
+      if (workDays.has(dow) && !publicHolidays.has(`${y}-${mo}-${dy}`)) {
+        leaveDays++;
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+  }
+
+  return leaveDays;
+}
+
 // Re-export task cache extractors for convenience
 export { extractCustomFields, extractPriority, extractStatus, extractStatusColor };
+// Note: calculateWorkingDays and countLeaveDaysInRange are exported as named exports above

@@ -24,9 +24,10 @@
 import { clickup } from '../clickup';
 import { taskCacheV2 } from '../taskCacheV2';
 import { timeEntryCache } from '../timeEntryCacheService';
+import { db } from '../../db';
 import { transformMember } from './transform';
 import { calculateFastProjectBreakdown } from './projects';
-import { calculateWorkingDays } from './calculations';
+import { calculateWorkingDays, countLeaveDaysInRange } from './calculations';
 
 // ========== SYNC LOCK (prevents concurrent syncs) ==========
 let syncLock = {
@@ -140,7 +141,7 @@ async function fetchTaskDetailsInBatches(taskIds, globalTaskCache, batchSize = 1
  * @param {number} workingDays - Number of working days in the date range (defaults to 1)
  * @returns {Promise<Object>} Updated member data
  */
-async function syncSingleMember(member, todayTimeEntries, avgTasksBaseline = 3, settings = null, runningEntry = null, globalTaskCache = {}, workingDays = 1) {
+async function syncSingleMember(member, todayTimeEntries, avgTasksBaseline = 3, settings = null, runningEntry = null, globalTaskCache = {}, workingDays = 1, startDate = null, endDate = null) {
   try {
     // Skip if no ClickUp ID
     if (!member.clickUpId) {
@@ -218,8 +219,24 @@ async function syncSingleMember(member, todayTimeEntries, avgTasksBaseline = 3, 
       }
     }
 
+    // Deduct personal leave days from working days for accurate per-member target
+    let memberWorkingDays = workingDays;
+    if (member.id && startDate && endDate) {
+      try {
+        const memberLeaves = await db.leaves.where('memberId').equals(member.id).toArray();
+        const leaveDays = countLeaveDaysInRange(memberLeaves, startDate, endDate, settings);
+        memberWorkingDays = Math.max(workingDays - leaveDays, 1);
+        if (leaveDays > 0) {
+          console.log(`📅 ${member.name}: ${leaveDays} leave day(s) in range → memberWorkingDays=${memberWorkingDays}`);
+        }
+      } catch (leaveErr) {
+        // Non-critical — fall back to team working days
+        console.warn(`⚠️ Could not load leaves for ${member.name}:`, leaveErr.message);
+      }
+    }
+
     // Transform and return updated member data
-    return transformMember(member, runningEntry, taskDetails, memberTimeEntries, taskDetailsCache, avgTasksBaseline, settings, workingDays);
+    return transformMember(member, runningEntry, taskDetails, memberTimeEntries, taskDetailsCache, avgTasksBaseline, settings, memberWorkingDays);
   } catch (error) {
     console.error(`❌ Failed to sync member ${member.name}:`, error);
     // Return member unchanged on error
@@ -325,7 +342,8 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
     const rangeIncludesToday = endOfDay >= todayMidnight;
 
     // Calculate working days for dynamic target calculation
-    const workingDays = calculateWorkingDays(startOfDay, endOfDay);
+    // Uses settings for work-day mask and public holidays (e.g. Egyptian holidays)
+    const workingDays = calculateWorkingDays(startOfDay, endOfDay, settings);
     const isMultiDay = workingDays > 1;
 
     // ClickUp API expects Unix timestamps in SECONDS, not milliseconds
@@ -583,7 +601,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
       // Use string key for consistency
       const key = String(member.clickUpId);
       const runningEntry = runningTimersMap[key] || null;
-      return syncSingleMember(member, todayTimeEntries, avgTasksBaseline, settings, runningEntry, globalTaskCache, workingDays);
+      return syncSingleMember(member, todayTimeEntries, avgTasksBaseline, settings, runningEntry, globalTaskCache, workingDays, startOfDay, endOfDay);
     });
 
     const results = await Promise.all(memberPromises);
