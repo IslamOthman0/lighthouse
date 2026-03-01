@@ -152,17 +152,15 @@ function App() {
   // Load members from IndexedDB using Dexie
   const dbMembers = useLiveQuery(() => db.members.toArray(), []);
 
-  // ClickUp API configuration from environment variables
-  const useClickUpAPI = import.meta.env.VITE_USE_CLICKUP_API === 'true';
-  const apiKey = import.meta.env.VITE_CLICKUP_API_KEY;
-  const teamId = import.meta.env.VITE_CLICKUP_TEAM_ID;
+  // ClickUp API credentials from auth state (set at login)
+  const auth = useAppStore(state => state.auth);
 
-  // Initialize ClickUp sync (only if enabled)
+  // Initialize ClickUp sync (only if authenticated)
   // Sync interval comes from settings (default: 30000ms / 30 seconds)
   useClickUpSync({
-    enabled: useClickUpAPI,
-    apiKey,
-    teamId,
+    enabled: auth.isAuthenticated && !!auth.apiKey,
+    apiKey: auth.apiKey,
+    teamId: auth.teamId,
     interval: settings.sync.intervalMs
   });
 
@@ -542,11 +540,10 @@ function App() {
               setActiveMainTab('dashboard');
             } else if (tab === 'leaves') {
               setActiveMainTab('leaves');
-            } else if (tab === 'settings') {
-              setIsSettingsOpen(true);
             }
             // TODO: Add feed view
           }}
+          onSettingsClick={() => setIsSettingsOpen(true)}
         />
       )}
       </div>

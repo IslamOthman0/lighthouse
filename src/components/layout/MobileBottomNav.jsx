@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import { useAppStore } from '../../stores/useAppStore';
 
 // SVG icon components (outline style, matching reference design)
 const FeedIcon = ({ color, size = 24 }) => (
@@ -28,32 +30,37 @@ const LeavesIcon = ({ color, size = 24 }) => (
   </svg>
 );
 
-const AlertsIcon = ({ color, size = 24 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-  </svg>
-);
-
-const SettingsIcon = ({ color, size = 24 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-  </svg>
-);
-
 // Mobile bottom navigation bar (fixed at bottom on mobile)
-const MobileBottomNav = ({ theme, activeTab, onTabChange, alertCount = 0 }) => {
+const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alertCount = 0 }) => {
+  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
+  const avatarMenuRef = useRef(null);
+  const { auth, logout } = useAuth();
+  const authUser = useAppStore(state => state.auth.user);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!isAvatarMenuOpen) return;
+    const handleOutside = (e) => {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target)) {
+        setIsAvatarMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [isAvatarMenuOpen]);
+
   const tabs = [
     { id: 'feed', label: 'Feed', Icon: FeedIcon },
     { id: 'dashboard', label: 'Dashboard', Icon: DashboardIcon },
     { id: 'leaves', label: 'Leaves', Icon: LeavesIcon },
-    { id: 'alert', label: 'Alerts', Icon: AlertsIcon, badge: alertCount },
-    { id: 'settings', label: 'Settings', Icon: SettingsIcon },
   ];
 
   const activeColor = '#ffffff';
   const inactiveColor = theme.textMuted || '#6b7280';
+
+  const navBg = theme.type === 'dark'
+    ? 'rgba(24, 24, 24, 0.92)'
+    : 'rgba(255, 255, 255, 0.92)';
 
   return (
     <div
@@ -72,9 +79,7 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, alertCount = 0 }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-around',
-          background: theme.type === 'dark'
-            ? 'rgba(24, 24, 24, 0.92)'
-            : 'rgba(255, 255, 255, 0.92)',
+          background: navBg,
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
           borderRadius: '22px',
@@ -84,6 +89,7 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, alertCount = 0 }) => {
             : '0 8px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.04)',
         }}
       >
+        {/* Regular tabs */}
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const color = isActive ? activeColor : inactiveColor;
@@ -104,53 +110,176 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, alertCount = 0 }) => {
                 borderRadius: '16px',
                 cursor: 'pointer',
                 transition: 'all 0.25s ease',
-                position: 'relative',
                 minWidth: '48px',
               }}
             >
-              {/* Icon with optional badge */}
-              <div style={{ position: 'relative', lineHeight: 0 }}>
-                <tab.Icon color={color} size={22} />
-                {tab.badge > 0 && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: '-5px',
-                      right: '-8px',
-                      background: '#ef4444',
-                      color: '#ffffff',
-                      fontSize: '9px',
-                      fontWeight: '700',
-                      width: '16px',
-                      height: '16px',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      lineHeight: 1,
-                    }}
-                  >
-                    {tab.badge > 9 ? '9+' : tab.badge}
-                  </span>
-                )}
-              </div>
-
-              {/* Label */}
-              <span
-                style={{
-                  fontSize: '10px',
-                  fontWeight: isActive ? '600' : '400',
-                  color: color,
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.25s ease',
-                  letterSpacing: '0.2px',
-                }}
-              >
+              <tab.Icon color={color} size={22} />
+              <span style={{
+                fontSize: '10px',
+                fontWeight: isActive ? '600' : '400',
+                color,
+                whiteSpace: 'nowrap',
+                transition: 'all 0.25s ease',
+                letterSpacing: '0.2px',
+              }}>
                 {tab.label}
               </span>
             </button>
           );
         })}
+
+        {/* Avatar tab with dropdown */}
+        <div ref={avatarMenuRef} style={{ position: 'relative' }}>
+          <button
+            onClick={() => setIsAvatarMenuOpen(prev => !prev)}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '3px',
+              padding: '10px 12px',
+              background: isAvatarMenuOpen ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+              border: 'none',
+              borderRadius: '16px',
+              cursor: 'pointer',
+              transition: 'all 0.25s ease',
+              minWidth: '48px',
+            }}
+          >
+            {/* Avatar image */}
+            <div style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '7px',
+              overflow: 'hidden',
+              background: isAvatarMenuOpen ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              {authUser?.profilePicture ? (
+                <img
+                  src={authUser.profilePicture}
+                  alt={authUser?.username || 'User'}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <span style={{ fontSize: '10px', fontWeight: '600', color: activeColor }}>
+                  {(authUser?.username || 'U').substring(0, 2).toUpperCase()}
+                </span>
+              )}
+            </div>
+            <span style={{
+              fontSize: '10px',
+              fontWeight: '400',
+              color: isAvatarMenuOpen ? activeColor : inactiveColor,
+              whiteSpace: 'nowrap',
+              letterSpacing: '0.2px',
+            }}>
+              {authUser?.username?.split(' ')[0] || 'Me'}
+            </span>
+          </button>
+
+          {/* Dropdown — opens upward */}
+          {isAvatarMenuOpen && (
+            <div style={{
+              position: 'absolute',
+              bottom: 'calc(100% + 10px)',
+              right: 0,
+              minWidth: '190px',
+              background: theme.type === 'dark'
+                ? 'rgba(18,18,18,0.97)'
+                : 'rgba(255,255,255,0.97)',
+              border: `1px solid ${theme.border}`,
+              borderRadius: '14px',
+              boxShadow: '0 -8px 32px rgba(0,0,0,0.35)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              overflow: 'hidden',
+              zIndex: 200,
+            }}>
+              {/* User info header */}
+              <div style={{
+                padding: '12px 14px 10px',
+                borderBottom: `1px solid ${theme.border}`,
+              }}>
+                <div style={{ fontSize: '13px', fontWeight: '600', color: theme.text }}>
+                  {authUser?.username || 'User'}
+                </div>
+                {authUser?.email && (
+                  <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '2px' }}>
+                    {authUser.email}
+                  </div>
+                )}
+                {auth.role === 'admin' && (
+                  <div style={{
+                    display: 'inline-block',
+                    marginTop: '5px',
+                    padding: '1px 7px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    fontWeight: '600',
+                    background: 'rgba(139,92,246,0.15)',
+                    color: '#A78BFA',
+                    letterSpacing: '0.3px',
+                  }}>
+                    ADMIN
+                  </div>
+                )}
+              </div>
+
+              {/* Settings */}
+              <button
+                onClick={() => {
+                  setIsAvatarMenuOpen(false);
+                  if (onSettingsClick) onSettingsClick();
+                }}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '11px 14px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: theme.text,
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <span>⚙️</span>
+                Settings
+              </button>
+
+              {/* Sign Out */}
+              <button
+                onClick={() => { setIsAvatarMenuOpen(false); logout(); }}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '11px 14px',
+                  background: 'transparent',
+                  border: 'none',
+                  borderTop: `1px solid ${theme.border}`,
+                  color: theme.danger || '#EF4444',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <span>↪</span>
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

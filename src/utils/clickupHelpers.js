@@ -117,6 +117,7 @@ export const fetchTeamMembers = async (apiKey, teamId) => {
       color: member.user.color,
       initials: member.user.initials,
       profilePicture: member.user.profilePicture,
+      role: member.user.role, // ClickUp role: 1=owner, 2=admin, 3=member, 4=viewer
     }));
   } catch (error) {
     console.error('Failed to fetch team members:', error);

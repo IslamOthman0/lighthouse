@@ -309,16 +309,32 @@ export const useAppStore = create(devtools((set, get) => ({
   setIsSyncing: (syncing) => set({ isSyncing: syncing }, false, 'setIsSyncing'),
   setRequestCount: (count) => set({ requestCount: count }, false, 'setRequestCount'),
 
-  // ===== ClickUp API Config =====
-  apiConfig: {
-    enabled: false,
+  // ===== Auth State =====
+  auth: {
+    isAuthenticated: false,
+    role: null,        // 'admin' (Islam Othman) | 'user' (everyone else)
+    user: null,        // { id, username, email, profilePicture }
+    apiKey: null,      // Persisted in IndexedDB via authUser table
     teamId: null,
-    apiKey: null
+    auditLogId: null,
+    loginTime: null,
   },
 
-  setApiConfig: (config) => set((state) => ({
-    apiConfig: { ...state.apiConfig, ...config }
-  }), false, 'setApiConfig'),
+  setAuth: (authData) => set((state) => ({
+    auth: { ...state.auth, ...authData }
+  }), false, 'setAuth'),
+
+  clearAuth: () => set({
+    auth: {
+      isAuthenticated: false,
+      role: null,
+      user: null,
+      apiKey: null,
+      teamId: null,
+      auditLogId: null,
+      loginTime: null,
+    }
+  }, false, 'clearAuth'),
 
   // ===== Daily Snapshot (for score comparison) =====
   yesterdaySnapshot: null,
@@ -408,3 +424,7 @@ export const useSyncStatus = () => useAppStore(state => ({
   error: state.syncError,
   isSyncing: state.isSyncing
 }));
+
+// Auth selectors
+export const useAuthState = () => useAppStore(state => state.auth);
+export const useIsAdmin = () => useAppStore(state => state.auth.role === 'admin');

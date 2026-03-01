@@ -92,6 +92,26 @@ db.version(20).stores({
 });
 
 /**
+ * Database Schema v21 - Authentication & audit logging
+ * v21: Added authUser (persisted login credentials) and auditLogs (session tracking)
+ */
+db.version(21).stores({
+  members: '++id, name, status, project, clickUpId',
+  sessions: '++id, memberId, date, startTime, endTime, totalMinutes, timestamp',
+  breaks: '++id, sessionId, memberId, startTime, endTime, duration, timestamp',
+  tasks: '++id, memberId, clickUpId, status, project, name',
+  leaves: '++id, memberId, type, startDate, endDate, returnDate',
+  syncQueue: '++id, type, status, timestamp',
+  baselines: 'key, value, updatedAt',
+  clickUpTasks: 'id, dateUpdated, *assigneeIds',
+  taskSyncMeta: 'key',
+  dailySnapshots: 'date',
+  timeEntryCache: 'dateKey',
+  authUser: 'user_id',              // Persisted login: { user_id, user_name, email, apiKey, teamId, role, profilePicture }
+  auditLogs: '++id, user_id, login_time, logout_time'  // Session audit trail
+});
+
+/**
  * Seeds the database with mock data on first run
  * @param {Array} mockMembers - Array of member objects
  */

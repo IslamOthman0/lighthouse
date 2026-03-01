@@ -1,12 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Logo from './Logo';
 import { useAppStore } from '../../stores/useAppStore';
 import { useWindowSize } from '../../hooks/useWindowSize';
+import { useAuth } from '../../hooks/useAuth';
 import DatePickerModal from '../modals/DatePickerModal';
 
 const Header = ({ theme, themes, currentTheme, setTheme, onSettingsClick }) => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
+  const avatarMenuRef = useRef(null);
   const { isMobile } = useWindowSize();
+  const { auth, logout } = useAuth();
+  const authUser = auth.user;
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!isAvatarMenuOpen) return;
+    const handleOutside = (e) => {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target)) {
+        setIsAvatarMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [isAvatarMenuOpen]);
 
   const syncStatus = useAppStore(state => ({
     lastSync: state.lastSync,
@@ -229,30 +246,146 @@ const Header = ({ theme, themes, currentTheme, setTheme, onSettingsClick }) => {
             </button>
           )}
 
-          {/* Settings Button — desktop only (mobile uses bottom nav) */}
-          {!isMobile && (
-            <button
-              onClick={onSettingsClick}
-              className="rounded-full cursor-pointer transition-all duration-200"
-              style={{
-                ...pillStyle,
-                padding: '6px 10px',
-                border: 'none',
-                color: theme.text,
-                fontSize: '13px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = theme.innerBg;
-                e.currentTarget.style.transform = 'rotate(90deg)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = theme.cardBg;
-                e.currentTarget.style.transform = 'rotate(0deg)';
-              }}
-              title="Settings"
-            >
-              ⚙️
-            </button>
+          {/* Avatar + Dropdown Menu (Settings & Sign Out) — desktop & mobile */}
+          {authUser && (
+            <div ref={avatarMenuRef} style={{ position: 'relative', flexShrink: 0 }}>
+              {/* Avatar button */}
+              <button
+                onClick={() => setIsAvatarMenuOpen(prev => !prev)}
+                style={{
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: '8px',
+                  border: isAvatarMenuOpen
+                    ? `1px solid ${theme.border}`
+                    : '1px solid transparent',
+                  padding: 0,
+                  overflow: 'hidden',
+                  background: theme.innerBg,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.15s, border-color 0.15s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.75'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+                title={authUser.username || 'User'}
+              >
+                {authUser.profilePicture ? (
+                  <img
+                    src={authUser.profilePicture}
+                    alt={authUser.username || 'User'}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: theme.text, letterSpacing: '0.5px' }}>
+                    {(authUser.username || 'U').substring(0, 2).toUpperCase()}
+                  </span>
+                )}
+              </button>
+
+              {/* Dropdown menu */}
+              {isAvatarMenuOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
+                  right: 0,
+                  minWidth: '180px',
+                  background: currentTheme === 'trueBlack'
+                    ? 'rgba(18,18,18,0.97)'
+                    : 'rgba(255,255,255,0.97)',
+                  border: `1px solid ${theme.border}`,
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  overflow: 'hidden',
+                  zIndex: 500,
+                }}>
+                  {/* User info */}
+                  <div style={{
+                    padding: '12px 14px 10px',
+                    borderBottom: `1px solid ${theme.border}`,
+                  }}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: theme.text }}>
+                      {authUser.username || 'User'}
+                    </div>
+                    {authUser.email && (
+                      <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '2px' }}>
+                        {authUser.email}
+                      </div>
+                    )}
+                    {auth.role === 'admin' && (
+                      <div style={{
+                        display: 'inline-block',
+                        marginTop: '5px',
+                        padding: '1px 7px',
+                        borderRadius: '4px',
+                        fontSize: '10px',
+                        fontWeight: '600',
+                        background: 'rgba(139,92,246,0.15)',
+                        color: '#A78BFA',
+                        letterSpacing: '0.3px',
+                      }}>
+                        ADMIN
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Settings */}
+                  <button
+                    onClick={() => { setIsAvatarMenuOpen(false); onSettingsClick(); }}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '10px 14px',
+                      background: 'transparent',
+                      border: 'none',
+                      color: theme.text,
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = theme.innerBg; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <span style={{ fontSize: '15px' }}>⚙️</span>
+                    Settings
+                  </button>
+
+                  {/* Sign Out */}
+                  <button
+                    onClick={() => { setIsAvatarMenuOpen(false); logout(); }}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '10px 14px',
+                      background: 'transparent',
+                      border: 'none',
+                      color: theme.danger || '#EF4444',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background 0.15s',
+                      borderTop: `1px solid ${theme.border}`,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <span style={{ fontSize: '15px' }}>↪</span>
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

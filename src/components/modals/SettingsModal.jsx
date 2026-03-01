@@ -25,7 +25,9 @@ import {
   WORK_DAYS,
   DEFAULT_MEMBER_QUOTAS,
 } from '../../constants/defaults';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db';
+import { useIsAdmin } from '../../stores/useAppStore';
 import { fetchTeamMembers, fetchClickUpLists } from '../../utils/clickupHelpers';
 import { hexToRgba } from '../../utils/colorHelpers';
 import { lockScroll, unlockScroll } from '../../utils/scrollLock';
@@ -139,6 +141,11 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
   const { settings, updateSettings, resetSettings } = useSettings();
   const { isMobile } = useWindowSize();
   const storeMembers = useAppStore(state => state.members);
+  const isAdmin = useIsAdmin();
+  const auditLogs = useLiveQuery(
+    () => db.auditLogs.orderBy('login_time').reverse().limit(200).toArray(),
+    []
+  );
   const [activeTab, setActiveTab] = useState('clickup');
   const [apiValidation, setApiValidation] = useState({ status: 'idle', message: '', user: null });
   const [isValidating, setIsValidating] = useState(false);
@@ -389,6 +396,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
     { id: 'sync', label: 'Sync', icon: '🔄' },
     { id: 'calendar', label: 'Calendar', icon: '📅' },
     { id: 'display', label: 'Display', icon: '🎨' },
+    ...(isAdmin ? [{ id: 'audit', label: 'Audit', icon: '🔐' }] : []),
   ];
 
   const selectedCount = (settings.team?.membersToMonitor || []).length;
@@ -1002,6 +1010,105 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                   <p style={{ margin: '4px 0 0', fontSize: '12px', color: theme.textMuted }}>Show sync timing, request counts, and cache stats</p>
                 </div>
                 <ToggleSwitch value={settings.display.developerMode} onChange={() => updateSettings({ display: { ...settings.display, developerMode: !settings.display.developerMode } })} theme={theme} />
+              </div>
+            </div>
+          )}
+
+          {/* ===== AUDIT TAB (Admin Only) ===== */}
+          {activeTab === 'audit' && isAdmin && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ fontSize: '13px', color: theme.textMuted, marginBottom: '4px' }}>
+                Login sessions for all users. Active sessions are highlighted.
+              </div>
+
+              {/* Audit Log Table */}
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                  <thead>
+                    <tr style={{ borderBottom: `1px solid ${theme.border}` }}>
+                      {['User', 'Role', 'Login', 'Logout', 'Duration'].map((h) => (
+                        <th key={h} style={{
+                          textAlign: 'left',
+                          padding: '8px 10px',
+                          color: theme.textMuted,
+                          fontWeight: '500',
+                          fontSize: '11px',
+                          letterSpacing: '0.5px',
+                          textTransform: 'uppercase',
+                        }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(auditLogs || []).map((log) => {
+                      const isActive = log.logout_time === null;
+                      const formatTime = (ts) => {
+                        if (!ts) return '—';
+                        const d = new Date(ts);
+                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' +
+                               d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                      };
+                      const formatDuration = (ms) => {
+                        if (!ms) return '—';
+                        const hours = Math.floor(ms / 3600000);
+                        const mins = Math.floor((ms % 3600000) / 60000);
+                        return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                      };
+
+                      return (
+                        <tr key={log.id} style={{
+                          borderBottom: `1px solid ${theme.borderLight}`,
+                          background: isActive ? 'rgba(16, 185, 129, 0.05)' : 'transparent',
+                        }}>
+                          <td style={{ padding: '10px', color: theme.text, fontWeight: '500' }}>
+                            {log.user_name}
+                          </td>
+                          <td style={{ padding: '10px' }}>
+                            <span style={{
+                              display: 'inline-block',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              fontWeight: '500',
+                              background: log.role === 'admin' ? 'rgba(139, 92, 246, 0.15)' : 'rgba(107, 114, 128, 0.15)',
+                              color: log.role === 'admin' ? '#A78BFA' : theme.textSecondary,
+                            }}>
+                              {log.role}
+                            </span>
+                          </td>
+                          <td style={{ padding: '10px', color: theme.textSecondary, fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>
+                            {formatTime(log.login_time)}
+                          </td>
+                          <td style={{ padding: '10px', color: theme.textSecondary, fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>
+                            {isActive ? (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: theme.working }}>
+                                <span style={{
+                                  width: '6px', height: '6px',
+                                  borderRadius: '50%',
+                                  background: theme.working,
+                                  animation: 'statusPulse 2s ease-in-out infinite',
+                                }} />
+                                Active
+                              </span>
+                            ) : formatTime(log.logout_time)}
+                          </td>
+                          <td style={{ padding: '10px', color: theme.textSecondary, fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>
+                            {isActive
+                              ? formatDuration(Date.now() - log.login_time)
+                              : formatDuration(log.session_duration)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {(auditLogs || []).length === 0 && (
+                      <tr>
+                        <td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: theme.textMuted, fontSize: '13px' }}>
+                          No login sessions recorded yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
