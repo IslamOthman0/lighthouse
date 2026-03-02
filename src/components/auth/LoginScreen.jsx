@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { trueBlack as theme } from '../../constants/themes';
 import { db } from '../../db';
 
 const LoginScreen = () => {
@@ -39,47 +38,30 @@ const LoginScreen = () => {
     await login(apiKey.trim(), teamId.trim());
   };
 
-  const inputStyle = {
-    width: '100%',
-    padding: '12px 14px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '10px',
-    color: '#ffffff',
-    fontSize: '14px',
-    fontFamily: "'Inter', sans-serif",
-    outline: 'none',
-    transition: 'border-color 0.2s, box-shadow 0.2s',
-  };
-
-  const inputFocusStyle = {
-    borderColor: 'rgba(255, 255, 255, 0.25)',
-    boxShadow: '0 0 0 3px rgba(255, 255, 255, 0.05)',
-  };
-
   return (
     <div style={{
       minHeight: '100vh',
+      minHeight: '100dvh',
       background: '#0A0A0A',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '20px',
+      padding: '16px',
       fontFamily: "'Inter', sans-serif",
+      boxSizing: 'border-box',
     }}>
       <div style={{
         width: '100%',
-        maxWidth: '400px',
+        maxWidth: '420px',
       }}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <span style={{
-            fontSize: '36px',
+            fontSize: 'clamp(22px, 7vw, 34px)',
             fontWeight: 'normal',
             fontFamily: "'Dune Rise', sans-serif",
-            letterSpacing: '4px',
+            letterSpacing: 'clamp(2px, 1.5vw, 4px)',
             color: '#ffffff',
-            textShadow: '0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.25)',
           }}>
             LIGHTHOUSE
           </span>
@@ -100,7 +82,7 @@ const LoginScreen = () => {
             background: 'rgba(255, 255, 255, 0.03)',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '16px',
-            padding: '28px',
+            padding: 'clamp(20px, 5vw, 28px)',
           }}
         >
           {/* API Key Field */}
@@ -121,8 +103,23 @@ const LoginScreen = () => {
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="pk_..."
-                style={inputStyle}
-                onFocus={(e) => Object.assign(e.target.style, inputFocusStyle)}
+                style={{
+                  width: '100%',
+                  padding: '12px 50px 12px 14px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '10px',
+                  color: '#ffffff',
+                  fontSize: '14px',
+                  fontFamily: "'Inter', sans-serif",
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(255, 255, 255, 0.05)';
+                }}
                 onBlur={(e) => {
                   e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                   e.target.style.boxShadow = 'none';
@@ -142,7 +139,8 @@ const LoginScreen = () => {
                   color: '#606060',
                   cursor: 'pointer',
                   fontSize: '13px',
-                  padding: '4px',
+                  padding: '4px 6px',
+                  flexShrink: 0,
                 }}
               >
                 {showKey ? 'Hide' : 'Show'}
@@ -167,8 +165,23 @@ const LoginScreen = () => {
               value={teamId}
               onChange={(e) => setTeamId(e.target.value)}
               placeholder="Your ClickUp Team ID"
-              style={inputStyle}
-              onFocus={(e) => Object.assign(e.target.style, inputFocusStyle)}
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '10px',
+                color: '#ffffff',
+                fontSize: '14px',
+                fontFamily: "'Inter', sans-serif",
+                outline: 'none',
+                boxSizing: 'border-box',
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                e.target.style.boxShadow = '0 0 0 3px rgba(255, 255, 255, 0.05)';
+              }}
               onBlur={(e) => {
                 e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                 e.target.style.boxShadow = 'none';
@@ -179,6 +192,7 @@ const LoginScreen = () => {
               marginTop: '4px',
               fontSize: '11px',
               color: '#606060',
+              wordBreak: 'break-all',
             }}>
               Found in your ClickUp workspace URL: app.clickup.com/{'{team_id}'}/...
             </div>
@@ -194,6 +208,7 @@ const LoginScreen = () => {
               borderRadius: '8px',
               color: '#EF4444',
               fontSize: '13px',
+              wordBreak: 'break-word',
             }}>
               {authError}
             </div>
@@ -205,17 +220,18 @@ const LoginScreen = () => {
             disabled={isAuthenticating || !apiKey.trim() || !teamId.trim()}
             style={{
               width: '100%',
-              padding: '12px',
+              padding: '13px',
               background: isAuthenticating ? 'rgba(255,255,255,0.1)' : '#ffffff',
               color: isAuthenticating ? '#a0a0a0' : '#000000',
               border: 'none',
               borderRadius: '10px',
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: '600',
               cursor: isAuthenticating ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s',
               fontFamily: "'Inter', sans-serif",
               opacity: (!apiKey.trim() || !teamId.trim()) ? 0.4 : 1,
+              touchAction: 'manipulation',
             }}
           >
             {isAuthenticating ? (
@@ -237,7 +253,7 @@ const LoginScreen = () => {
         {/* Footer */}
         <div style={{
           textAlign: 'center',
-          marginTop: '24px',
+          marginTop: '20px',
           fontSize: '11px',
           color: '#404040',
         }}>
@@ -249,6 +265,8 @@ const LoginScreen = () => {
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
+        * { box-sizing: border-box; }
+        input::placeholder { color: #404040; }
       `}</style>
     </div>
   );
