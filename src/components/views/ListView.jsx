@@ -17,6 +17,7 @@ const isRTL = (text) => /[\u0600-\u06FF]/.test(text);
 
 const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDashboardCardClick, controls }) => {
   const { isMobile } = useWindowSize();
+  const lightMode = theme.type !== 'dark';
   const [sortBy, setSortBy] = useState('tracked'); // tracked, tasks, breaks, timeSpan, status, firstActivity, lastActivity
   const [sortOrder, setSortOrder] = useState('desc'); // asc, desc
   const [expandedRows, setExpandedRows] = useState({}); // Track expanded rows by member id
@@ -203,7 +204,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
             subValue={teamStats?.tasks.sub || '0% done'}
             label="Tasks Progress"
             progress={teamStats?.tasks.progress || 0}
-            color={getMetricColor(teamStats?.tasks.progress || 0)}
+            color={getMetricColor(teamStats?.tasks.progress || 0, { lightMode })}
             onClick={() => onDashboardCardClick?.('tasks')}
           />
         </div>
@@ -1003,8 +1004,8 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                           style={{
                             padding: '2px 5px',
                             borderRadius: '4px',
-                            background: getMetricColor(member.trackedPercent) + '18',
-                            color: getMetricColor(member.trackedPercent),
+                            background: getMetricColor(member.trackedPercent, { lightMode }) + '18',
+                            color: getMetricColor(member.trackedPercent, { lightMode }),
                             fontWeight: '600',
                             fontSize: '10px',
                             ...tabularNumberStyle,

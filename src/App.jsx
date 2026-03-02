@@ -412,7 +412,7 @@ function App() {
                       subValue={displayTeamStats?.tasks.sub || '0% done'}
                       label="Tasks Progress"
                       progress={displayTeamStats?.tasks.progress || 0}
-                      color={getMetricColor(displayTeamStats?.tasks.progress || 0)}
+                      color={getMetricColor(displayTeamStats?.tasks.progress || 0, { lightMode: theme.type !== 'dark' })}
                       onClick={() => handleDashboardCardClick('tasks')}
                     />
                   </div>

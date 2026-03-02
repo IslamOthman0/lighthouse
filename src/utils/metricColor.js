@@ -33,11 +33,12 @@ export function getMetricColorClass(pct, { isTime = false } = {}) {
  * @param {number} pct - Percentage value (0-100+)
  * @param {Object} options
  * @param {boolean} options.isTime - If true, values >100% use overwork color
+ * @param {boolean} options.lightMode - If true, uses dark color for "perfect" instead of white
  * @returns {string} Hex color code
  */
-export function getMetricColor(pct, { isTime = false } = {}) {
+export function getMetricColor(pct, { isTime = false, lightMode = false } = {}) {
   if (isTime && pct > 100) return '#f97316'; // orange
-  if (pct >= 100) return '#ffffff'; // white
+  if (pct >= 100) return lightMode ? '#059669' : '#ffffff'; // dark green on light, white on dark
   if (pct >= 70) return '#22c55e'; // green
   if (pct >= 50) return '#f59e0b'; // amber
   if (pct >= 30) return '#f97316'; // orange

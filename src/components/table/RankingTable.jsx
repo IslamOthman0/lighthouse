@@ -8,6 +8,7 @@ import { getMetricColor } from '../../utils/metricColor';
 const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
   const { isMobile } = useWindowSize();
   const workingDays = dateRangeInfo?.workingDays || 1;
+  const lightMode = theme.type !== 'dark';
   const [sortBy, setSortBy] = useState('score');
   const [sortOrder, setSortOrder] = useState('desc');
   const [isMobileSortOpen, setIsMobileSortOpen] = useState(false);
@@ -299,7 +300,7 @@ const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
                     </div>
                     <div style={{ ...tabularNumberStyle }}>
                       <div style={{ fontSize: '10px', color: theme.textMuted, fontWeight: '400', marginBottom: '2px', fontFamily: getFontFamily('english') }}>Compliance</div>
-                      <div style={{ fontSize: '13px', color: getMetricColor(compliance.pct), fontWeight: '600' }}>{compliance.label}</div>
+                      <div style={{ fontSize: '13px', color: getMetricColor(compliance.pct, { lightMode }), fontWeight: '600' }}>{compliance.label}</div>
                     </div>
                   </div>
                 )}
@@ -560,7 +561,7 @@ const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
                       ...tabularNumberStyle,
                     }}
                   >
-                    <span style={{ color: getMetricColor(compliance.pct), fontWeight: '600' }}>
+                    <span style={{ color: getMetricColor(compliance.pct, { lightMode }), fontWeight: '600' }}>
                       {compliance.label}
                     </span>
                   </td>
