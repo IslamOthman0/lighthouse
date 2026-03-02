@@ -84,7 +84,7 @@ const ModalShell = ({
             position: 'relative',
             width: '100%',
             maxWidth: maxWidth,
-            maxHeight: '85vh',
+            maxHeight: isMobile ? '88dvh' : '85vh',
             background: theme.type === 'dark'
               ? 'linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06))'
               : 'linear-gradient(155deg, rgb(255,255,255), rgb(252,252,252))',
@@ -157,7 +157,7 @@ const ModalShell = ({
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '14px' : '20px' }}>
           {children}
         </div>
         </div>
