@@ -55,12 +55,20 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
     { id: 'leaves', label: 'Leaves', Icon: LeavesIcon },
   ];
 
-  const activeColor = '#ffffff';
-  const inactiveColor = theme.textMuted || '#6b7280';
+  const isDark = theme.type === 'dark';
 
-  const navBg = theme.type === 'dark'
-    ? 'rgba(24, 24, 24, 0.92)'
-    : 'rgba(255, 255, 255, 0.92)';
+  // Colors: active always high-contrast; inactive uses real muted color
+  const activeColor = isDark ? '#ffffff' : '#111827';
+  const inactiveColor = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)';
+  const activeTabBg = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+
+  const navBg = isDark
+    ? 'rgba(20, 20, 20, 0.94)'
+    : 'rgba(255, 255, 255, 0.96)';
+
+  const navShadow = isDark
+    ? '0 8px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06)'
+    : '0 8px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06)';
 
   return (
     <div
@@ -84,9 +92,7 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
           WebkitBackdropFilter: 'blur(24px)',
           borderRadius: '22px',
           padding: '6px 4px',
-          boxShadow: theme.type === 'dark'
-            ? '0 8px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06)'
-            : '0 8px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.04)',
+          boxShadow: navShadow,
         }}
       >
         {/* Regular tabs */}
@@ -105,7 +111,7 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
                 justifyContent: 'center',
                 gap: '3px',
                 padding: isActive ? '10px 16px' : '10px 12px',
-                background: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                background: isActive ? activeTabBg : 'transparent',
                 border: 'none',
                 borderRadius: '16px',
                 cursor: 'pointer',
@@ -139,7 +145,7 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
               justifyContent: 'center',
               gap: '3px',
               padding: '10px 12px',
-              background: isAvatarMenuOpen ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+              background: isAvatarMenuOpen ? activeTabBg : 'transparent',
               border: 'none',
               borderRadius: '16px',
               cursor: 'pointer',
@@ -147,17 +153,21 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
               minWidth: '48px',
             }}
           >
-            {/* Avatar image */}
+            {/* Avatar image — circle */}
             <div style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '7px',
+              width: '26px',
+              height: '26px',
+              borderRadius: '50%',
               overflow: 'hidden',
-              background: isAvatarMenuOpen ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)',
+              background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
+              border: isAvatarMenuOpen
+                ? `1.5px solid ${isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.25)'}`
+                : '1.5px solid transparent',
+              transition: 'border-color 0.2s',
             }}>
               {authUser?.profilePicture ? (
                 <img
@@ -166,7 +176,7 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
-                <span style={{ fontSize: '10px', fontWeight: '600', color: activeColor }}>
+                <span style={{ fontSize: '10px', fontWeight: '600', color: isAvatarMenuOpen ? activeColor : inactiveColor }}>
                   {(authUser?.username || 'U').substring(0, 2).toUpperCase()}
                 </span>
               )}
@@ -188,13 +198,15 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
               position: 'absolute',
               bottom: 'calc(100% + 10px)',
               right: 0,
-              minWidth: '190px',
-              background: theme.type === 'dark'
+              minWidth: '200px',
+              background: isDark
                 ? 'rgba(18,18,18,0.97)'
-                : 'rgba(255,255,255,0.97)',
+                : 'rgba(255,255,255,0.98)',
               border: `1px solid ${theme.border}`,
               borderRadius: '14px',
-              boxShadow: '0 -8px 32px rgba(0,0,0,0.35)',
+              boxShadow: isDark
+                ? '0 -8px 32px rgba(0,0,0,0.5)'
+                : '0 -8px 32px rgba(0,0,0,0.15)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               overflow: 'hidden',

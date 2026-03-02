@@ -10,7 +10,7 @@ const Logo = ({ theme, compact = false }) => {
           fontFamily: "'Dune Rise', sans-serif",
           letterSpacing: compact ? '2px' : '3px',
           color: theme.accent,
-          textShadow: `0 0 20px ${theme.accent}80, 0 0 40px ${theme.accent}40`,
+          textShadow: 'none',
         }}
       >
         LIGHTHOUSE
