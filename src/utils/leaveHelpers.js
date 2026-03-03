@@ -13,7 +13,10 @@ import { db } from '../db';
  */
 export function getMemberLeaveToday(memberId, allLeaves) {
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+  const y = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${y}-${mm}-${dd}`; // YYYY-MM-DD (local, avoids UTC shift)
 
   return allLeaves.find(l => {
     // Match member

@@ -65,3 +65,16 @@ export const formatMinutesToHM = (totalMinutes) => {
   }
   return `${hours}h ${minutes}m`;
 };
+
+/**
+ * Returns a local YYYY-MM-DD date string, avoiding UTC shifts (e.g., UTC+2).
+ * @param {Date} [date] - Date to format; defaults to today
+ * @returns {string} YYYY-MM-DD
+ */
+export function toLocalDateStr(date) {
+  const d = date instanceof Date ? date : new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
