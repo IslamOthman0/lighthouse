@@ -87,6 +87,9 @@ export const DEFAULT_SETTINGS = {
 export const DEFAULT_MEMBER_QUOTAS = {
   annualLeave: 30, // Days per year
   wfhDays: 2, // Days per month
+  sickLeaveQuota: 10, // Days per year
+  bonusLeaveQuota: 5, // Days per year
+  maxTransferDays: 10, // Max annual leave days transferable to next year
 };
 
 /**

@@ -769,9 +769,9 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
 
         setLeavesData({
           year: currentYear,
-          annual: { total: leaveQuota, used: annualUsed, maxTransfer: 10 },
-          sick: { total: 10, used: sickUsed },
-          bonus: { total: 5, used: bonusUsed },
+          annual: { total: leaveQuota, used: annualUsed, maxTransfer: DEFAULT_MEMBER_QUOTAS.maxTransferDays },
+          sick: { total: DEFAULT_MEMBER_QUOTAS.sickLeaveQuota, used: sickUsed },
+          bonus: { total: DEFAULT_MEMBER_QUOTAS.bonusLeaveQuota, used: bonusUsed },
           wfh: { monthlyQuota: wfhQuota, usedThisMonth: wfhThisMonth },
           upcoming,
           suggestions: annualUsed < leaveQuota / 2 ? [`${leaveQuota - annualUsed} days remaining - consider planning vacation`] : [],
@@ -782,9 +782,9 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
         // Set default values if fetch fails
         setLeavesData({
           year: new Date().getFullYear(),
-          annual: { total: DEFAULT_MEMBER_QUOTAS.annualLeave, used: 0, maxTransfer: 10 },
-          sick: { total: 10, used: 0 },
-          bonus: { total: 5, used: 0 },
+          annual: { total: DEFAULT_MEMBER_QUOTAS.annualLeave, used: 0, maxTransfer: DEFAULT_MEMBER_QUOTAS.maxTransferDays },
+          sick: { total: DEFAULT_MEMBER_QUOTAS.sickLeaveQuota, used: 0 },
+          bonus: { total: DEFAULT_MEMBER_QUOTAS.bonusLeaveQuota, used: 0 },
           wfh: { monthlyQuota: DEFAULT_MEMBER_QUOTAS.wfhDays, usedThisMonth: 0 },
           upcoming: [],
           suggestions: [],
