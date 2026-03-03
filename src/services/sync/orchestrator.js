@@ -29,6 +29,7 @@ import { transformMember } from './transform';
 import { calculateFastProjectBreakdown } from './projects';
 import { calculateWorkingDays, countLeaveDaysInRange } from './calculations';
 import { useAppStore } from '../../stores/useAppStore';
+import { toLocalDateStr } from '../../utils/timeFormat.js';
 
 // ========== SYNC LOCK (prevents concurrent syncs) ==========
 let syncLock = {
@@ -805,6 +806,32 @@ export async function syncLeaveAndWfh(settings, members) {
     return null;
   };
 
+  // Helper: search task.custom_fields for a text/dropdown value matching any of the given name patterns
+  // Handles string values, {id, label} objects, and arrays of options
+  const getCustomFieldText = (task, namePatterns) => {
+    const fields = task?.custom_fields || [];
+    for (const field of fields) {
+      const name = (field.name || '').toLowerCase();
+      if (namePatterns.some(p => name.includes(p))) {
+        const v = field.value;
+        if (!v && v !== 0) continue;
+        // String value
+        if (typeof v === 'string') return v.trim();
+        // Object with label (ClickUp dropdown)
+        if (typeof v === 'object' && !Array.isArray(v) && v.label) return String(v.label).trim();
+        // Array of options (multi-select), take first
+        if (Array.isArray(v) && v.length > 0) {
+          const first = v[0];
+          if (typeof first === 'string') return first.trim();
+          if (first?.label) return String(first.label).trim();
+        }
+        // Fallback: stringify
+        return String(v).trim();
+      }
+    }
+    return null;
+  };
+
   // Helper to map ClickUp status to our status
   const mapLeaveStatus = (clickUpStatus) => {
     const statusLower = (clickUpStatus?.status || '').toLowerCase();
@@ -866,17 +893,28 @@ export async function syncLeaveAndWfh(settings, members) {
         // Extract "Requested Days" custom field if available
         const requestedDays = getCustomFieldNumber(task, ['requested day', 'requested days', 'days requested', 'number of days']);
 
+        // Parse leave type from "Request Type" custom field
+        const requestTypeRaw = getCustomFieldText(task, ['request type', 'leave type', 'type']);
+        const leaveType = (() => {
+          if (!requestTypeRaw) return 'annual';
+          const rt = requestTypeRaw.toLowerCase();
+          if (rt.includes('sick') || rt.includes('medical')) return 'sick';
+          if (rt.includes('bonus') || rt.includes('extra')) return 'bonus';
+          if (rt.includes('holiday') || rt.includes('public')) return 'holiday';
+          return 'annual'; // annual, vacation, other, empty → annual
+        })();
+
         leaves.push({
           id: `leave_${task.id}`,
           clickUpTaskId: task.id,
           memberId: member.id,
           memberClickUpId: member.clickUpId,
           memberName: member.name,
-          type: 'annual', // Default type for leave list
+          type: leaveType,
           description: task.name,
           requestedDays: requestedDays, // From "Requested Days" custom field
-          startDate: startDate.toISOString().split('T')[0], // YYYY-MM-DD format
-          endDate: endDate ? endDate.toISOString().split('T')[0] : null,
+          startDate: toLocalDateStr(startDate),
+          endDate: endDate ? toLocalDateStr(endDate) : null,
           status: mapLeaveStatus(task.status),
           createdAt: task.date_created ? new Date(parseInt(task.date_created)) : new Date(),
           updatedAt: Date.now()
@@ -912,7 +950,7 @@ export async function syncLeaveAndWfh(settings, members) {
         let endDate   = task.due_date   ? new Date(parseInt(task.due_date))   : null;
 
         if (!startDate) {
-          startDate = getCustomFieldDate(task, ['wfh date', 'work from home', 'wfh start', 'remote date']);
+          startDate = getCustomFieldDate(task, ['wfh date request', 'wfh date', 'work from home', 'wfh start', 'remote date']);
         }
         if (!endDate) {
           endDate = getCustomFieldDate(task, ['wfh end', 'end date']);
@@ -932,8 +970,8 @@ export async function syncLeaveAndWfh(settings, members) {
           memberName: member.name,
           type: 'wfh',
           description: task.name,
-          startDate: startDate.toISOString().split('T')[0],
-          endDate: endDate ? endDate.toISOString().split('T')[0] : null,
+          startDate: toLocalDateStr(startDate),
+          endDate: endDate ? toLocalDateStr(endDate) : null,
           status: mapLeaveStatus(task.status),
           createdAt: task.date_created ? new Date(parseInt(task.date_created)) : new Date(),
           updatedAt: Date.now()
