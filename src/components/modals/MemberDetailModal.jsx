@@ -557,30 +557,21 @@ const BreakCard = ({ breakData, theme }) => (
     style={{
       display: 'flex',
       alignItems: 'center',
-      gap: '12px',
-      padding: '8px 12px',
-      marginLeft: '87px',
-      borderLeft: `2px dashed ${theme.break}40`,
+      justifyContent: 'center',
+      gap: '8px',
+      padding: '6px 14px',
+      marginLeft: '40px',
+      borderRadius: '20px',
+      background: hexToRgba(theme.break || '#f59e0b', 0.08),
+      border: `1px dashed ${hexToRgba(theme.break || '#f59e0b', 0.3)}`,
+      alignSelf: 'flex-start',
     }}
   >
-    <span style={{ fontSize: '14px' }}>☕</span>
-    <span
-      style={{
-        fontSize: '11px',
-        color: theme.break,
-        fontWeight: '500',
-        ...tabularNumberStyle,
-      }}
-    >
-      {formatMinutesToHM(breakData.durationMinutes)} break
+    <span style={{ fontSize: '13px' }}>☕</span>
+    <span style={{ fontSize: '12px', color: theme.break || '#f59e0b', fontWeight: '600', ...tabularNumberStyle }}>
+      {formatMinutesToHM(breakData.durationMinutes)}
     </span>
-    <span
-      style={{
-        fontSize: '10px',
-        color: theme.textMuted,
-        ...tabularNumberStyle,
-      }}
-    >
+    <span style={{ fontSize: '11px', color: theme.textMuted, ...tabularNumberStyle }}>
       {formatTime12h(breakData.startTime)} → {formatTime12h(breakData.endTime)}
     </span>
   </div>
