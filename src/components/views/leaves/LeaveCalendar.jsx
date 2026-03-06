@@ -249,7 +249,8 @@ const LeaveCalendar = ({ leaves, members, theme, isMobile, typeFilter, onTypeFil
                       fontSize: 12,
                     }}>
                       <Avatar name={member.name} status={member.status} theme={theme} size={20}
-                        profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
+                        profilePicture={member.profilePicture} clickUpColor={member.clickUpColor}
+                        ringColor={TYPE_COLORS[leave.type] || TYPE_COLORS.annual} />
                       <span style={{ color: theme.text, flex: 1 }}>{member.name}</span>
                       <span style={{
                         fontSize: 10,
