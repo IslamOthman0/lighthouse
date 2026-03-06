@@ -292,9 +292,9 @@ const QuotaMini = ({ label, used, total, color, theme }) => {
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
-        fontSize: 10,
+        fontSize: 11,
         color: theme.textSecondary,
-        marginBottom: 2,
+        marginBottom: 3,
       }}>
         <span>{label}</span>
         <span style={{ ...tabularNumberStyle, fontWeight: 600, color: used > 0 ? theme.text : theme.textSecondary }}>
@@ -302,15 +302,15 @@ const QuotaMini = ({ label, used, total, color, theme }) => {
         </span>
       </div>
       <div style={{
-        height: 3,
-        borderRadius: 2,
+        height: 5,
+        borderRadius: 3,
         background: theme.type === 'light' ? `${color}15` : `${theme.text}10`,
         overflow: 'hidden',
       }}>
         <div style={{
           height: '100%',
           width: `${pct}%`,
-          borderRadius: 2,
+          borderRadius: 3,
           background: color,
           transition: 'width 0.3s ease',
         }} />
