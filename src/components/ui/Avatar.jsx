@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 // Avatar with initials and status indicator
-const Avatar = ({ name, status, theme, size = 48, profilePicture = null, clickUpColor = null }) => {
+const Avatar = ({ name, status, theme, size = 48, profilePicture = null, clickUpColor = null, ringColor = null }) => {
   const [imageError, setImageError] = useState(false);
 
   // Extract initials from name
@@ -58,7 +58,7 @@ const Avatar = ({ name, status, theme, size = 48, profilePicture = null, clickUp
           height: size,
           borderRadius: '12px',
           background: backgroundColor,
-          border: `2px solid ${theme.border}`,
+          border: ringColor ? `3px solid ${ringColor}` : `2px solid ${theme.border}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
