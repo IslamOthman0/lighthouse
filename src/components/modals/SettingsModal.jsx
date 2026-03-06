@@ -645,11 +645,19 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                 <div>
                   <SectionHeader title="Leave & WFH Quotas" description="Set annual leave and monthly WFH allowance per member" theme={theme} />
                   <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                    <div style={{ padding: '10px 16px', background: theme.innerBg, borderRadius: '8px', border: `1px solid ${theme.border}`, flex: 1, minWidth: '140px' }}>
+                    <div style={{ padding: '10px 16px', background: theme.innerBg, borderRadius: '8px', border: `1px solid ${theme.border}`, flex: 1, minWidth: '120px' }}>
                       <div style={{ fontSize: '11px', color: theme.textMuted, textTransform: 'uppercase' }}>Default Annual</div>
                       <div style={{ fontSize: '18px', fontWeight: '600', color: theme.text }}>{DEFAULT_MEMBER_QUOTAS.annualLeave} days/yr</div>
                     </div>
-                    <div style={{ padding: '10px 16px', background: theme.innerBg, borderRadius: '8px', border: `1px solid ${theme.border}`, flex: 1, minWidth: '140px' }}>
+                    <div style={{ padding: '10px 16px', background: theme.innerBg, borderRadius: '8px', border: `1px solid ${theme.border}`, flex: 1, minWidth: '120px' }}>
+                      <div style={{ fontSize: '11px', color: theme.textMuted, textTransform: 'uppercase' }}>Default Sick</div>
+                      <div style={{ fontSize: '18px', fontWeight: '600', color: theme.text }}>{DEFAULT_MEMBER_QUOTAS.sickLeaveQuota} days/yr</div>
+                    </div>
+                    <div style={{ padding: '10px 16px', background: theme.innerBg, borderRadius: '8px', border: `1px solid ${theme.border}`, flex: 1, minWidth: '120px' }}>
+                      <div style={{ fontSize: '11px', color: theme.textMuted, textTransform: 'uppercase' }}>Default Bonus</div>
+                      <div style={{ fontSize: '18px', fontWeight: '600', color: theme.text }}>{DEFAULT_MEMBER_QUOTAS.bonusLeaveQuota} days/yr</div>
+                    </div>
+                    <div style={{ padding: '10px 16px', background: theme.innerBg, borderRadius: '8px', border: `1px solid ${theme.border}`, flex: 1, minWidth: '120px' }}>
                       <div style={{ fontSize: '11px', color: theme.textMuted, textTransform: 'uppercase' }}>Default WFH</div>
                       <div style={{ fontSize: '18px', fontWeight: '600', color: theme.text }}>{DEFAULT_MEMBER_QUOTAS.wfhDays} days/mo</div>
                     </div>
