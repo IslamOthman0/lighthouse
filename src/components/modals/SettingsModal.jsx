@@ -362,6 +362,24 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
     updateSettings({ team: { ...settings.team, wfhQuotas: { ...(settings.team?.wfhQuotas || {}), [memberId]: days } } });
   };
 
+  const handleUpdateSickQuota = (memberId, days) => {
+    updateSettings({
+      team: {
+        ...settings.team,
+        sickQuotas: { ...(settings.team?.sickQuotas || {}), [memberId]: days },
+      },
+    });
+  };
+
+  const handleUpdateBonusQuota = (memberId, days) => {
+    updateSettings({
+      team: {
+        ...settings.team,
+        bonusQuotas: { ...(settings.team?.bonusQuotas || {}), [memberId]: days },
+      },
+    });
+  };
+
   const handleAddHoliday = () => {
     const cur = settings.schedule?.publicHolidays || [];
     updateSettings({ schedule: { ...settings.schedule, publicHolidays: [...cur, { date: '', name: '' }] } });
