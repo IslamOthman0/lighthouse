@@ -643,7 +643,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
               {/* Leave & WFH Quotas */}
               {selectedCount > 0 && (
                 <div>
-                  <SectionHeader title="Leave & WFH Quotas" description="Set annual leave and monthly WFH allowance per member" theme={theme} />
+                  <SectionHeader title="Leave & WFH Quotas" description="Set annual, sick, bonus, and WFH allowances per member" theme={theme} />
                   <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
                     <div style={{ padding: '10px 16px', background: theme.innerBg, borderRadius: '8px', border: `1px solid ${theme.border}`, flex: 1, minWidth: '120px' }}>
                       <div style={{ fontSize: '11px', color: theme.textMuted, textTransform: 'uppercase' }}>Default Annual</div>
@@ -664,9 +664,11 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                   </div>
 
                   <div style={{ background: theme.innerBg, border: `1px solid ${theme.border}`, borderRadius: '8px', overflow: 'hidden' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 100px', gap: '8px', padding: '10px 16px', borderBottom: `1px solid ${theme.border}` }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 90px 90px', gap: '8px', padding: '10px 16px', borderBottom: `1px solid ${theme.border}` }}>
                       <span style={{ fontSize: '11px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase' }}>Member</span>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>Leave/yr</span>
+                      <span style={{ fontSize: '11px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>Annual/yr</span>
+                      <span style={{ fontSize: '11px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>Sick/yr</span>
+                      <span style={{ fontSize: '11px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>Bonus/yr</span>
                       <span style={{ fontSize: '11px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>WFH/mo</span>
                     </div>
                     {(settings.team?.membersToMonitor || []).map((memberId) => {
@@ -675,16 +677,24 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                       const storeMember = !member ? storeMembers.find(m => String(m.clickUpId) === String(memberId) || String(m.id) === String(memberId)) : null;
                       const memberName = member?.username || storeMember?.name || `Member ${memberId}`;
                       const leaveQuota = settings.team?.leaveQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.annualLeave;
+                      const sickQuota = settings.team?.sickQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.sickLeaveQuota;
+                      const bonusQuota = settings.team?.bonusQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.bonusLeaveQuota;
                       const wfhQuota = settings.team?.wfhQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.wfhDays;
                       return (
-                        <div key={memberId} style={{ display: 'grid', gridTemplateColumns: '1fr 100px 100px', gap: '8px', padding: '10px 16px', borderBottom: `1px solid ${theme.border}`, alignItems: 'center' }}>
+                        <div key={memberId} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 90px 90px', gap: '8px', padding: '10px 16px', borderBottom: `1px solid ${theme.border}`, alignItems: 'center' }}>
                           <span style={{ fontSize: '13px', color: theme.text, fontFamily: getAdaptiveFontFamily(memberName) }}>{memberName}</span>
                           <input type="number" min="0" max="365" value={leaveQuota}
                             onChange={(e) => handleUpdateLeaveQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '80px', padding: '6px 8px', background: theme.subtleBg || theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.text, fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.text, fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                          <input type="number" min="0" max="365" value={sickQuota}
+                            onChange={(e) => handleUpdateSickQuota(memberId, parseInt(e.target.value) || 0)}
+                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.text, fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                          <input type="number" min="0" max="365" value={bonusQuota}
+                            onChange={(e) => handleUpdateBonusQuota(memberId, parseInt(e.target.value) || 0)}
+                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.text, fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
                           <input type="number" min="0" max="31" value={wfhQuota}
                             onChange={(e) => handleUpdateWfhQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '80px', padding: '6px 8px', background: theme.subtleBg || theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.text, fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.text, fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
                         </div>
                       );
                     })}
