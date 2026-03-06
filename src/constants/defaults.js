@@ -23,6 +23,8 @@ export const DEFAULT_SETTINGS = {
       '87708246', // Merit Fouad
     ],
     leaveQuotas: {}, // Per member annual leave days (per year)
+    sickQuotas: {}, // Per member sick leave days (per year)
+    bonusQuotas: {}, // Per member bonus leave days (per year)
     wfhQuotas: {}, // Per member WFH days (per month)
   },
 
