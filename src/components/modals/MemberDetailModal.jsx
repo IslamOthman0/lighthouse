@@ -399,10 +399,11 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
       style={{
         display: 'flex',
         gap: '12px',
-        padding: '12px',
+        padding: '16px',
         background: theme.secondaryBg,
         borderRadius: '8px',
         border: `1px solid ${theme.borderLight}`,
+        borderLeft: `4px solid ${taskStatusStyle.dot}`,
         cursor: task.clickUpUrl ? 'pointer' : 'default',
         transition: 'all 0.15s',
         animation: isLive ? 'softPulse 2s ease-in-out infinite' : 'none',
@@ -412,23 +413,25 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
       onMouseEnter={(e) => {
         e.currentTarget.style.background = theme.tertiaryBg || theme.cardBg;
         e.currentTarget.style.borderColor = hexToRgba(theme.accent, 0.25);
+        e.currentTarget.style.borderLeftColor = taskStatusStyle.dot;
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = theme.secondaryBg;
         e.currentTarget.style.borderColor = theme.borderLight;
+        e.currentTarget.style.borderLeftColor = taskStatusStyle.dot;
       }}
     >
       {/* Time Column */}
       <div
         style={{
-          minWidth: '75px',
+          minWidth: '85px',
           textAlign: 'right',
-          paddingRight: '8px',
+          paddingRight: '10px',
           borderRight: `2px solid ${taskStatusStyle.dot}`,
           ...tabularNumberStyle,
         }}
       >
-        <div style={{ fontSize: '12px', fontWeight: '600', color: theme.text }}>
+        <div style={{ fontSize: '14px', fontWeight: '700', color: theme.text }}>
           {formatTime12h(task.startTime)}
         </div>
         <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '2px' }}>
@@ -436,79 +439,113 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
             <span style={{ color: theme.working }}>ongoing</span>
           )}
         </div>
+        {task.trackedMinutes > 0 && (
+          <div style={{ fontSize: '11px', color: theme.break || '#f59e0b', marginTop: '4px', fontWeight: '500' }}>
+            {formatMinutesToHM(task.trackedMinutes)}
+          </div>
+        )}
       </div>
 
       {/* Task Details */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        {/* Task Name */}
+        {/* Task Name row: status badge + name + LIVE badge */}
         <div
           style={{
             fontSize: '13px',
             fontWeight: '600',
             color: theme.text,
             fontFamily: getAdaptiveFontFamily(task.name),
-            marginBottom: '6px',
+            marginBottom: '8px',
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
           }}
         >
-          {/* Status dot */}
-          <span style={{ color: taskStatusStyle.dot, fontSize: '8px' }}>●</span>
-          <span
-            style={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <span style={{
+            fontSize: '9px',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            background: taskStatusStyle.bg,
+            color: taskStatusStyle.dot,
+            fontWeight: '600',
+            flexShrink: 0,
+            fontFamily: getFontFamily('english'),
+          }}>
+            {taskStatusStyle.label || task.status}
+          </span>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {task.name}
           </span>
           {isLive && (
-            <span
-              style={{
-                fontSize: '9px',
-                padding: '2px 6px',
-                background: hexToRgba(theme.working, 0.12),
-                color: theme.working,
-                borderRadius: '4px',
-                fontWeight: '600',
-                fontFamily: getFontFamily('english'),
-              }}
-            >
+            <span style={{
+              fontSize: '9px',
+              padding: '2px 6px',
+              background: hexToRgba(theme.working, 0.12),
+              color: theme.working,
+              borderRadius: '4px',
+              fontWeight: '600',
+              fontFamily: getFontFamily('english'),
+              flexShrink: 0,
+            }}>
               LIVE
             </span>
           )}
         </div>
 
-        {/* Task Meta */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            fontSize: '11px',
-            color: theme.textSecondary,
-          }}
-        >
-          {/* Project */}
+        {/* Meta Row */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          fontSize: '11px',
+          color: theme.textSecondary,
+          flexWrap: 'wrap',
+        }}>
           <span style={{ fontFamily: getFontFamily('english') }}>
             📁 {task.project}
           </span>
-
-          {/* Time tracked */}
-          <span style={{ ...tabularNumberStyle }}>
-            ⏱️ {formatMinutesToHM(task.trackedMinutes)}
-          </span>
-
-          {/* Priority */}
-          <PriorityFlag priority={task.priority} showLabel={false} size={13} />
-
-          {/* ClickUp link indicator */}
+          <PriorityFlag priority={task.priority} showLabel={true} size={11} />
           {task.clickUpUrl && (
-            <span style={{ fontSize: '10px', opacity: 0.5 }}>↗</span>
+            <button
+              onClick={(e) => { e.stopPropagation(); window.open(task.clickUpUrl, '_blank'); }}
+              style={{
+                fontSize: '10px',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                border: `1px solid ${theme.border}`,
+                background: 'transparent',
+                color: theme.textSecondary,
+                cursor: 'pointer',
+                fontFamily: getFontFamily('english'),
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = theme.text; e.currentTarget.style.borderColor = theme.accent; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = theme.textSecondary; e.currentTarget.style.borderColor = theme.border; }}
+            >
+              ↗ Open
+            </button>
           )}
         </div>
+
+        {/* Tags row */}
+        {Array.isArray(task.tags) && task.tags.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+            {task.tags.map((tag, i) => (
+              <span
+                key={i}
+                style={{
+                  fontSize: '9px',
+                  padding: '1px 5px',
+                  borderRadius: '3px',
+                  background: tag.tag_bg ? `${tag.tag_bg}30` : `${theme.text}10`,
+                  color: tag.tag_fg || theme.textSecondary,
+                  fontFamily: getFontFamily('english'),
+                }}
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
