@@ -536,12 +536,12 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
                   fontSize: '9px',
                   padding: '1px 5px',
                   borderRadius: '3px',
-                  background: tag.tag_bg ? `${tag.tag_bg}30` : `${theme.text}10`,
-                  color: tag.tag_fg || theme.textSecondary,
+                  background: hexToRgba(theme.text, 0.08),
+                  color: theme.textSecondary,
                   fontFamily: getFontFamily('english'),
                 }}
               >
-                {tag.name}
+                {tag}
               </span>
             ))}
           </div>
