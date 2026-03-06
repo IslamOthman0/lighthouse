@@ -1,4 +1,4 @@
-import { getMemberLeaveToday, calculateReturnDate, calculateLeaveDays } from '../leaveHelpers';
+import { getMemberLeaveToday, calculateReturnDate, calculateLeaveDays, getMemberLeaveBalance } from '../leaveHelpers';
 
 describe('getMemberLeaveToday', () => {
   const today = new Date().toISOString().split('T')[0];
@@ -93,5 +93,36 @@ describe('calculateLeaveDays', () => {
   it('returns 0 for weekend-only range', () => {
     // Fri Feb 20 to Sat Feb 21 (with Sun-Thu workdays) = 0 working days
     expect(calculateLeaveDays('2026-02-20', '2026-02-21', [0, 1, 2, 3, 4])).toBe(0);
+  });
+});
+
+describe('getMemberLeaveBalance', () => {
+  const memberId = '123';
+  const emptyLeaves = [];
+
+  test('uses default quotas when settings is empty', () => {
+    const balance = getMemberLeaveBalance(memberId, emptyLeaves, {});
+    expect(balance.annual.total).toBe(30);
+    expect(balance.sick.total).toBe(10);
+    expect(balance.bonus.total).toBe(5);
+    expect(balance.wfh.monthly).toBe(2);
+  });
+
+  test('reads sickQuota from settings.team.sickQuotas', () => {
+    const settings = { team: { sickQuotas: { '123': 15 } } };
+    const balance = getMemberLeaveBalance(memberId, emptyLeaves, settings);
+    expect(balance.sick.total).toBe(15);
+  });
+
+  test('reads bonusQuota from settings.team.bonusQuotas', () => {
+    const settings = { team: { bonusQuotas: { '123': 8 } } };
+    const balance = getMemberLeaveBalance(memberId, emptyLeaves, settings);
+    expect(balance.bonus.total).toBe(8);
+  });
+
+  test('reads annualQuota from settings.team.leaveQuotas as flat number', () => {
+    const settings = { team: { leaveQuotas: { '123': 21 } } };
+    const balance = getMemberLeaveBalance(memberId, emptyLeaves, settings);
+    expect(balance.annual.total).toBe(21);
   });
 });
