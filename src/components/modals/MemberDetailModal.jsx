@@ -16,12 +16,15 @@ import { lockScroll, unlockScroll } from '../../utils/scrollLock';
 
 // ClickUp status colors
 const statusColors = {
-  todo: { bg: '#6b7280', dot: '#6b7280' },
-  inProgress: { bg: '#f59e0b', dot: '#f59e0b' },
-  done: { bg: '#10b981', dot: '#10b981' },
-  ready: { bg: '#10b981', dot: '#10b981' },
-  review: { bg: '#8b5cf6', dot: '#8b5cf6' },
-  blocked: { bg: '#ef4444', dot: '#ef4444' },
+  todo:       { bg: 'rgba(107,114,128,0.12)', dot: '#6b7280', label: 'To Do' },
+  inProgress: { bg: 'rgba(245,158,11,0.12)',  dot: '#f59e0b', label: 'In Progress' },
+  done:       { bg: 'rgba(16,185,129,0.12)',  dot: '#10b981', label: 'Done' },
+  ready:      { bg: 'rgba(16,185,129,0.12)',  dot: '#10b981', label: 'Ready' },
+  review:     { bg: 'rgba(139,92,246,0.12)',  dot: '#8b5cf6', label: 'Review' },
+  blocked:    { bg: 'rgba(239,68,68,0.12)',   dot: '#ef4444', label: 'Blocked' },
+  stopped:    { bg: 'rgba(239,68,68,0.12)',   dot: '#ef4444', label: 'Stopped' },
+  hold:       { bg: 'rgba(107,114,128,0.12)', dot: '#6b7280', label: 'Hold' },
+  help:       { bg: 'rgba(245,158,11,0.12)',  dot: '#f59e0b', label: 'Help' },
 };
 
 // Priority config (kept for backward compat in grouping logic)
@@ -185,13 +188,22 @@ const fetchWeeklyPerformanceData = async (member) => {
   }
 };
 
-// Calculate number of days between two dates (inclusive)
+// Calculate working days between two dates (inclusive), consistent with leaveHelpers
 const calculateDays = (startDate, endDate) => {
-  const start = new Date(startDate);
-  const end = new Date(endDate || startDate);
-  const diffTime = Math.abs(end - start);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-  return diffDays;
+  if (!startDate) return 0;
+  const start = new Date(startDate + (startDate.includes('T') ? '' : 'T00:00:00'));
+  const end = new Date((endDate || startDate) + ((endDate || startDate).includes('T') ? '' : 'T00:00:00'));
+  let count = 0;
+  const current = new Date(start);
+  // Default work days: Sun-Thu (0-4)
+  const workDays = [0, 1, 2, 3, 4];
+  while (current <= end) {
+    if (workDays.includes(current.getDay())) {
+      count++;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+  return count || 1; // At least 1 day
 };
 
 // Format leave date range for display
@@ -206,17 +218,22 @@ const formatLeaveDate = (startDate, endDate) => {
   return `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
 };
 
-// Build calendar events object from leaves array
-const buildCalendarEvents = (leaves) => {
+// Build calendar events object from leaves array for a given month/year
+const buildCalendarEvents = (leaves, month, year) => {
   const events = {};
+  const targetMonth = month !== undefined ? month : new Date().getMonth();
+  const targetYear = year !== undefined ? year : new Date().getFullYear();
+
   leaves.forEach(leave => {
-    const start = new Date(leave.startDate);
-    const end = new Date(leave.endDate || leave.startDate);
+    const start = new Date(leave.startDate + (leave.startDate.includes('T') ? '' : 'T00:00:00'));
+    const end = new Date((leave.endDate || leave.startDate) + ((leave.endDate || leave.startDate).includes('T') ? '' : 'T00:00:00'));
     const current = new Date(start);
 
     while (current <= end) {
-      const day = current.getDate();
-      events[day] = leave.type === 'wfh' ? 'wfh' : 'leave';
+      if (current.getMonth() === targetMonth && current.getFullYear() === targetYear) {
+        const day = current.getDate();
+        events[day] = leave.type === 'wfh' ? 'wfh' : leave.type === 'holiday' ? 'holiday' : 'leave';
+      }
       current.setDate(current.getDate() + 1);
     }
   });
@@ -615,6 +632,8 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [timelineData, setTimelineData] = useState({ tasks: [], breaks: [] });
   const [leavesData, setLeavesData] = useState(null);
+  const [calendarDate, setCalendarDate] = useState(new Date()); // For month navigation in leaves calendar
+  const [memberLeavesRaw, setMemberLeavesRaw] = useState([]); // Raw leaves for calendar rebuild
   const [performanceData, setPerformanceData] = useState(null);
   const [isPerfLoading, setIsPerfLoading] = useState(false);
 
@@ -775,8 +794,10 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
           wfh: { monthlyQuota: wfhQuota, usedThisMonth: wfhThisMonth },
           upcoming,
           suggestions: annualUsed < leaveQuota / 2 ? [`${leaveQuota - annualUsed} days remaining - consider planning vacation`] : [],
-          calendarEvents: buildCalendarEvents(memberLeaves),
+          calendarEvents: buildCalendarEvents(memberLeaves, now.getMonth(), now.getFullYear()),
         });
+        setMemberLeavesRaw(memberLeaves);
+        setCalendarDate(new Date());
       } catch (error) {
         console.error('Error fetching leaves data:', error);
         // Set default values if fetch fails
@@ -1569,10 +1590,14 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
               );
             }
 
-            const annualRemaining = leavesData.annual.total - leavesData.annual.used;
-            const usedPercent = leavesData.annual.total > 0
-              ? Math.round((leavesData.annual.used / leavesData.annual.total) * 100)
+            // Total leave balance = annual + sick + bonus quotas combined
+            const totalQuota = leavesData.annual.total + leavesData.sick.total + leavesData.bonus.total;
+            const totalUsed = leavesData.annual.used + leavesData.sick.used + leavesData.bonus.used;
+            const totalRemaining = totalQuota - totalUsed;
+            const usedPercent = totalQuota > 0
+              ? Math.round((totalUsed / totalQuota) * 100)
               : 0;
+            const annualRemaining = leavesData.annual.total - leavesData.annual.used;
             const daysToLose = Math.max(0, annualRemaining - leavesData.annual.maxTransfer);
 
             // Generate mini calendar for current month
@@ -1603,11 +1628,11 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px' }}>
                     <div style={{ fontSize: '28px', fontWeight: '700', color: theme.text, ...tabularNumberStyle }}>
-                      {annualRemaining}
+                      {totalRemaining}
                     </div>
                     <div style={{ fontSize: '14px', color: theme.textMuted }}>days remaining</div>
                     <div style={{ fontSize: '12px', color: theme.textSecondary, ...tabularNumberStyle }}>
-                      (of {leavesData.annual.total})
+                      (of {totalQuota})
                     </div>
                   </div>
                   {/* Progress bar */}
@@ -1654,78 +1679,104 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                   ))}
                 </div>
 
-                {/* Mini Calendar */}
-                <div
-                  style={{
-                    background: theme.secondaryBg,
-                    padding: '12px',
-                    borderRadius: '8px',
-                    border: `1px solid ${theme.borderLight}`,
-                    marginBottom: '12px',
-                  }}
-                >
-                  <div style={{ fontSize: '11px', fontWeight: '600', color: theme.text, marginBottom: '10px', fontFamily: getFontFamily('english') }}>
-                    🗓️ {monthName}
-                  </div>
-                  {/* Day headers */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', marginBottom: '4px' }}>
-                    {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-                      <div key={d} style={{ fontSize: '8px', color: theme.textMuted, textAlign: 'center', fontFamily: getFontFamily('english') }}>
-                        {d}
+                {/* Mini Calendar with Month Navigation */}
+                {(() => {
+                  const calMonth = calendarDate.getMonth();
+                  const calYear = calendarDate.getFullYear();
+                  const calFirstDay = new Date(calYear, calMonth, 1).getDay();
+                  const calDaysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+                  const calMonthName = calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                  const calEvents = buildCalendarEvents(memberLeavesRaw, calMonth, calYear);
+                  const isCurrentMonth = calMonth === today.getMonth() && calYear === today.getFullYear();
+
+                  // Leave type colors (not theme.accent — use explicit colors)
+                  const leaveColor = '#3b82f6'; // blue
+                  const wfhColor = '#8b5cf6'; // purple
+                  const holidayColor = '#f59e0b'; // amber
+
+                  return (
+                    <div
+                      style={{
+                        background: theme.secondaryBg,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: `1px solid ${theme.borderLight}`,
+                        marginBottom: '12px',
+                      }}
+                    >
+                      {/* Month navigation */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                        <button
+                          onClick={() => setCalendarDate(new Date(calYear, calMonth - 1, 1))}
+                          style={{ background: 'none', border: `1px solid ${theme.border}`, borderRadius: '4px', color: theme.text, cursor: 'pointer', padding: '2px 8px', fontSize: '14px' }}
+                        >&lsaquo;</button>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: theme.text, fontFamily: getFontFamily('english') }}>
+                          {calMonthName}
+                        </span>
+                        <button
+                          onClick={() => setCalendarDate(new Date(calYear, calMonth + 1, 1))}
+                          style={{ background: 'none', border: `1px solid ${theme.border}`, borderRadius: '4px', color: theme.text, cursor: 'pointer', padding: '2px 8px', fontSize: '14px' }}
+                        >&rsaquo;</button>
                       </div>
-                    ))}
-                  </div>
-                  {/* Calendar grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
-                    {/* Empty cells before first day */}
-                    {Array.from({ length: firstDay }).map((_, i) => (
-                      <div key={`empty-${i}`} style={{ height: '24px' }} />
-                    ))}
-                    {/* Day cells */}
-                    {Array.from({ length: daysInMonth }).map((_, i) => {
-                      const day = i + 1;
-                      const isToday = day === today.getDate();
-                      const event = calendarEvents[day];
-                      let bgColor = 'transparent';
-                      let textColor = theme.textSecondary;
-                      if (event === 'leave') { bgColor = theme.accent; textColor = '#fff'; }
-                      if (event === 'wfh') { bgColor = '#8b5cf6'; textColor = '#fff'; }
-                      if (event === 'holiday') { bgColor = theme.warning; textColor = '#fff'; }
-                      return (
-                        <div
-                          key={day}
-                          style={{
-                            height: '24px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '9px',
-                            fontWeight: isToday ? '700' : '500',
-                            color: textColor,
-                            background: bgColor,
-                            borderRadius: '4px',
-                            border: isToday ? `2px solid ${theme.text}` : 'none',
-                            ...tabularNumberStyle,
-                          }}
-                        >
-                          {day}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {/* Legend */}
-                  <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: '8px', color: theme.textMuted, fontFamily: getFontFamily('english') }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ width: '8px', height: '8px', background: theme.accent, borderRadius: '2px' }} /> Leave
-                    </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ width: '8px', height: '8px', background: '#8b5cf6', borderRadius: '2px' }} /> WFH
-                    </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ width: '8px', height: '8px', background: theme.warning, borderRadius: '2px' }} /> Holiday
-                    </span>
-                  </div>
-                </div>
+                      {/* Day headers */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', marginBottom: '4px' }}>
+                        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+                          <div key={d} style={{ fontSize: '8px', color: theme.textMuted, textAlign: 'center', fontFamily: getFontFamily('english') }}>
+                            {d}
+                          </div>
+                        ))}
+                      </div>
+                      {/* Calendar grid */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
+                        {Array.from({ length: calFirstDay }).map((_, i) => (
+                          <div key={`empty-${i}`} style={{ height: '24px' }} />
+                        ))}
+                        {Array.from({ length: calDaysInMonth }).map((_, i) => {
+                          const day = i + 1;
+                          const isTodayDay = isCurrentMonth && day === today.getDate();
+                          const event = calEvents[day];
+                          let bgColor = 'transparent';
+                          let textColor = theme.textSecondary;
+                          if (event === 'leave') { bgColor = leaveColor; textColor = '#fff'; }
+                          if (event === 'wfh') { bgColor = wfhColor; textColor = '#fff'; }
+                          if (event === 'holiday') { bgColor = holidayColor; textColor = '#fff'; }
+                          return (
+                            <div
+                              key={day}
+                              style={{
+                                height: '24px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '9px',
+                                fontWeight: isTodayDay ? '700' : '500',
+                                color: textColor,
+                                background: bgColor,
+                                borderRadius: '4px',
+                                border: isTodayDay ? `2px solid ${theme.text}` : 'none',
+                                ...tabularNumberStyle,
+                              }}
+                            >
+                              {day}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {/* Legend */}
+                      <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: '8px', color: theme.textMuted, fontFamily: getFontFamily('english') }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ width: '8px', height: '8px', background: leaveColor, borderRadius: '2px' }} /> Leave
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ width: '8px', height: '8px', background: wfhColor, borderRadius: '2px' }} /> WFH
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ width: '8px', height: '8px', background: holidayColor, borderRadius: '2px' }} /> Holiday
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Upcoming (Combined Leaves + WFH) */}
                 <div
