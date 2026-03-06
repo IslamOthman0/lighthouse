@@ -230,7 +230,7 @@ const MemberQuotaCard = ({ member, balance, leaveToday, nextLeave, theme, isMobi
         background: theme.cardBg,
         border: `1px solid ${isOnLeave ? `${TYPE_COLORS.annual}50` : isWfh ? `${TYPE_COLORS.wfh}50` : theme.border}`,
         borderRadius: 10,
-        padding: isMobile ? 12 : 10,
+        padding: isMobile ? 14 : 16,
         cursor: 'pointer',
         transition: 'border-color 0.2s, transform 0.15s',
       }}
@@ -238,28 +238,31 @@ const MemberQuotaCard = ({ member, balance, leaveToday, nextLeave, theme, isMobi
       onMouseLeave={e => { e.currentTarget.style.borderColor = isOnLeave ? `${TYPE_COLORS.annual}50` : isWfh ? `${TYPE_COLORS.wfh}50` : theme.border; e.currentTarget.style.transform = 'none'; }}
     >
       {/* Header: Avatar + Name */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-        <Avatar name={member.name} status={member.status} theme={theme} size={28}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+        <Avatar name={member.name} status={member.status} theme={theme} size={40}
           profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: theme.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: theme.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {member.name}
           </div>
           {isOnLeave && (
-            <span style={{ fontSize: 10, color: TYPE_COLORS.annual, fontWeight: 600 }}>
+            <span style={{ fontSize: 11, color: TYPE_COLORS.annual, fontWeight: 600 }}>
               {TYPE_ICONS[leaveToday.type]} On Leave
             </span>
           )}
           {isWfh && (
-            <span style={{ fontSize: 10, color: TYPE_COLORS.wfh, fontWeight: 600 }}>
+            <span style={{ fontSize: 11, color: TYPE_COLORS.wfh, fontWeight: 600 }}>
               {TYPE_ICONS.wfh} WFH
             </span>
+          )}
+          {!isOnLeave && !isWfh && (
+            <span style={{ fontSize: 11, color: theme.textSecondary }}>Available</span>
           )}
         </div>
       </div>
 
-      {/* Compact Quota Summary — 2x2 grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 10px' }}>
+      {/* Compact Quota Summary — 4-column single row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 }}>
         <QuotaMini label="Annual" used={balance.annual.used} total={balance.annual.total} color={TYPE_COLORS.annual} theme={theme} />
         <QuotaMini label="Sick" used={balance.sick.used} total={balance.sick.total} color={TYPE_COLORS.sick} theme={theme} />
         <QuotaMini label="Bonus" used={balance.bonus.used} total={balance.bonus.total} color={TYPE_COLORS.bonus} theme={theme} />
