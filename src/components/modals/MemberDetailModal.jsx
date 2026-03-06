@@ -609,32 +609,23 @@ const SummaryMetrics = ({ tasks, breaks, member, theme }) => {
       }}
     >
       {[
-        { label: 'Tracked', value: formatMinutesToHM(totalTracked), icon: '⏱️' },
-        { label: 'Tasks', value: `${completedTasks}/${tasks.length}`, icon: '✅' },
-        { label: 'Breaks', value: formatMinutesToHM(totalBreaks), icon: '☕' },
-        { label: 'Efficiency', value: `${efficiency}%`, icon: '📊' },
+        { label: 'Tracked', value: formatMinutesToHM(totalTracked), icon: '⏱️', subtitle: null },
+        { label: 'Tasks Done', value: `${completedTasks}/${tasks.length}`, icon: '✅', subtitle: 'completed' },
+        { label: 'Breaks', value: formatMinutesToHM(totalBreaks), icon: '☕', subtitle: null },
+        { label: 'Efficiency', value: `${efficiency}%`, icon: '📊', subtitle: 'tracked / session span' },
       ].map((metric, i) => (
         <div key={i} style={{ textAlign: 'center', flex: 1 }}>
-          <div
-            style={{
-              fontSize: '10px',
-              color: theme.textMuted,
-              marginBottom: '2px',
-              fontFamily: getFontFamily('english'),
-            }}
-          >
+          <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '2px', fontFamily: getFontFamily('english') }}>
             {metric.icon} {metric.label}
           </div>
-          <div
-            style={{
-              fontSize: '14px',
-              fontWeight: '700',
-              color: theme.text,
-              ...tabularNumberStyle,
-            }}
-          >
+          <div style={{ fontSize: '14px', fontWeight: '700', color: theme.text, ...tabularNumberStyle }}>
             {metric.value}
           </div>
+          {metric.subtitle && (
+            <div style={{ fontSize: '9px', color: theme.textMuted, marginTop: '2px', fontFamily: getFontFamily('english') }}>
+              {metric.subtitle}
+            </div>
+          )}
         </div>
       ))}
     </div>
