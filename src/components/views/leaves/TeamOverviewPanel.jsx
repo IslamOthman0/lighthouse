@@ -226,6 +226,8 @@ const PendingRequestsSection = ({ leaves, members, theme }) => {
   const pending = leaves.filter(l => l.status === 'pending');
   if (pending.length === 0) return null;
 
+  const rejectColor = '#ef4444';
+
   const handleApprove = async (leave) => {
     await db.leaves.update(leave.id, { status: 'approved', updated: Date.now() });
   };
@@ -245,7 +247,7 @@ const PendingRequestsSection = ({ leaves, members, theme }) => {
         ⏳ Pending Requests ({pending.length})
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {pending.map(l => {
+        {pending.map((l, index) => {
           const member = getMember(l, members);
           const days = l.requestedDays || calculateLeaveDays(l.startDate, l.endDate);
           return (
@@ -254,7 +256,7 @@ const PendingRequestsSection = ({ leaves, members, theme }) => {
               alignItems: 'center',
               gap: 8,
               padding: '6px 0',
-              borderBottom: `1px solid ${theme.border}`,
+              borderBottom: index < pending.length - 1 ? `1px solid ${theme.border}` : 'none',
               fontSize: 12,
             }}>
               {member && (
@@ -283,9 +285,9 @@ const PendingRequestsSection = ({ leaves, members, theme }) => {
                   fontSize: 10,
                   padding: '3px 8px',
                   borderRadius: 4,
-                  border: `1px solid #10b98160`,
-                  background: '#10b98115',
-                  color: '#10b981',
+                  border: `1px solid ${STATUS_COLORS_MAP.approved}60`,
+                  background: `${STATUS_COLORS_MAP.approved}15`,
+                  color: STATUS_COLORS_MAP.approved,
                   cursor: 'pointer',
                   fontWeight: 600,
                 }}
@@ -298,9 +300,9 @@ const PendingRequestsSection = ({ leaves, members, theme }) => {
                   fontSize: 10,
                   padding: '3px 8px',
                   borderRadius: 4,
-                  border: `1px solid #ef444460`,
-                  background: '#ef444415',
-                  color: '#ef4444',
+                  border: `1px solid ${rejectColor}60`,
+                  background: `${rejectColor}15`,
+                  color: rejectColor,
                   cursor: 'pointer',
                   fontWeight: 600,
                 }}
