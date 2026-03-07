@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import Avatar from '../../ui/Avatar';
 import QuotaBar from './QuotaBar';
-import { TYPE_ICONS, TYPE_COLORS, TYPE_LABELS, STATUS_COLORS_MAP, formatDateShort, getMember, toLocalDateStr } from './constants';
+import { TYPE_ICONS, TYPE_COLORS, TYPE_LABELS, STATUS_COLORS_MAP, formatDateShort, formatDateRange, getMember, toLocalDateStr } from './constants';
+import { db } from '../../../db';
 import { getMemberLeaveBalance, calculateLeaveDays } from '../../../utils/leaveHelpers';
 import { tabularNumberStyle } from '../../../utils/typography';
 
@@ -107,6 +108,8 @@ const TeamOverviewPanel = ({ leaves, members, theme, settings, isMobile, onSelec
           theme={theme}
         />
       </div>
+
+      <PendingRequestsSection leaves={leaves} members={members} theme={theme} />
 
       {/* Member Quota Cards Grid — 4 per row desktop, 2 tablet, 1 mobile */}
       <div style={{
@@ -219,6 +222,99 @@ const StatusChip = ({ icon, count, label, items, color, theme }) => (
   </div>
 );
 
+const PendingRequestsSection = ({ leaves, members, theme }) => {
+  const pending = leaves.filter(l => l.status === 'pending');
+  if (pending.length === 0) return null;
+
+  const handleApprove = async (leave) => {
+    await db.leaves.update(leave.id, { status: 'approved', updated: Date.now() });
+  };
+
+  const handleReject = async (leave) => {
+    await db.leaves.update(leave.id, { status: 'rejected', updated: Date.now() });
+  };
+
+  return (
+    <div style={{
+      background: theme.cardBg,
+      border: `1px solid ${TYPE_COLORS.annual}40`,
+      borderRadius: 10,
+      padding: 14,
+    }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: theme.text, marginBottom: 10 }}>
+        ⏳ Pending Requests ({pending.length})
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {pending.map(l => {
+          const member = getMember(l, members);
+          const days = l.requestedDays || calculateLeaveDays(l.startDate, l.endDate);
+          return (
+            <div key={l.id} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '6px 0',
+              borderBottom: `1px solid ${theme.border}`,
+              fontSize: 12,
+            }}>
+              {member && (
+                <Avatar name={member.name} status={member.status} theme={theme} size={22}
+                  profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
+              )}
+              <span style={{ color: theme.text, flex: 1, fontWeight: 500 }}>
+                {member?.name || l.memberName}
+              </span>
+              <span style={{
+                fontSize: 10,
+                padding: '2px 6px',
+                borderRadius: 4,
+                background: `${TYPE_COLORS[l.type] || TYPE_COLORS.annual}20`,
+                color: TYPE_COLORS[l.type] || TYPE_COLORS.annual,
+                fontWeight: 600,
+              }}>
+                {TYPE_ICONS[l.type]} {TYPE_LABELS[l.type] || 'Leave'}
+              </span>
+              <span style={{ color: theme.textSecondary, fontSize: 11, ...tabularNumberStyle }}>
+                {formatDateRange(l.startDate, l.endDate)} · {days}d
+              </span>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleApprove(l); }}
+                style={{
+                  fontSize: 10,
+                  padding: '3px 8px',
+                  borderRadius: 4,
+                  border: `1px solid #10b98160`,
+                  background: '#10b98115',
+                  color: '#10b981',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                Approve
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleReject(l); }}
+                style={{
+                  fontSize: 10,
+                  padding: '3px 8px',
+                  borderRadius: 4,
+                  border: `1px solid #ef444460`,
+                  background: '#ef444415',
+                  color: '#ef4444',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                Reject
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const MemberQuotaCard = ({ member, balance, leaveToday, nextLeave, theme, isMobile, onClick }) => {
   const isOnLeave = leaveToday && leaveToday.type !== 'wfh';
   const isWfh = leaveToday && leaveToday.type === 'wfh';
@@ -261,12 +357,12 @@ const MemberQuotaCard = ({ member, balance, leaveToday, nextLeave, theme, isMobi
         </div>
       </div>
 
-      {/* Compact Quota Summary — 4-column single row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 }}>
-        <QuotaMini label="Annual" used={balance.annual.used} total={balance.annual.total} color={TYPE_COLORS.annual} theme={theme} />
-        <QuotaMini label="Sick" used={balance.sick.used} total={balance.sick.total} color={TYPE_COLORS.sick} theme={theme} />
-        <QuotaMini label="Bonus" used={balance.bonus.used} total={balance.bonus.total} color={TYPE_COLORS.bonus} theme={theme} />
-        <QuotaMini label="WFH" used={balance.wfh.usedThisMonth} total={balance.wfh.monthly} color={TYPE_COLORS.wfh} theme={theme} />
+      {/* Stacked Quota Bars */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 }}>
+        <QuotaBar label="Annual" used={balance.annual.used} total={balance.annual.total} color={TYPE_COLORS.annual} theme={theme} compact />
+        <QuotaBar label="Sick" used={balance.sick.used} total={balance.sick.total} color={TYPE_COLORS.sick} theme={theme} compact />
+        <QuotaBar label="Bonus" used={balance.bonus.used} total={balance.bonus.total} color={TYPE_COLORS.bonus} theme={theme} compact />
+        <QuotaBar label="WFH" used={balance.wfh.usedThisMonth} total={balance.wfh.monthly} color={TYPE_COLORS.wfh} theme={theme} compact />
       </div>
 
       {/* Footer: Next leave */}
@@ -279,42 +375,6 @@ const MemberQuotaCard = ({ member, balance, leaveToday, nextLeave, theme, isMobi
           Next: {formatDateShort(nextLeave.startDate)}
         </div>
       )}
-    </div>
-  );
-};
-
-/** Compact quota display for card grid — single line with mini bar */
-const QuotaMini = ({ label, used, total, color, theme }) => {
-  const pct = total > 0 ? Math.min((used / total) * 100, 100) : 0;
-
-  return (
-    <div>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        fontSize: 11,
-        color: theme.textSecondary,
-        marginBottom: 3,
-      }}>
-        <span>{label}</span>
-        <span style={{ ...tabularNumberStyle, fontWeight: 600, color: used > 0 ? theme.text : theme.textSecondary }}>
-          {used}/{total}
-        </span>
-      </div>
-      <div style={{
-        height: 5,
-        borderRadius: 3,
-        background: theme.type === 'light' ? `${color}15` : `${theme.text}10`,
-        overflow: 'hidden',
-      }}>
-        <div style={{
-          height: '100%',
-          width: `${pct}%`,
-          borderRadius: 3,
-          background: color,
-          transition: 'width 0.3s ease',
-        }} />
-      </div>
     </div>
   );
 };
