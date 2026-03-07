@@ -141,14 +141,14 @@ const WorkingCard = ({ member, theme, onClick, workingDays = 1 }) => {
               {task || 'No task assigned'}
             </div>
 
-            {/* Task Status Badge */}
+            {/* Task Status Badge - solid pill style matching ProjectBreakdown */}
             {taskStatus && (
               <div className="mb-2">
                 <div
                   className="inline-block px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-tight"
                   style={{
-                    background: taskStatusColor ? `${taskStatusColor}20` : 'rgba(100,116,139,0.2)',
-                    color: taskStatusColor || '#64748b',
+                    background: taskStatusColor || '#64748b',
+                    color: '#fff',
                   }}
                 >
                   {taskStatus}

@@ -1,12 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Logo from './Logo';
 import { useAppStore } from '../../stores/useAppStore';
 import { useWindowSize } from '../../hooks/useWindowSize';
+import { useAuth } from '../../hooks/useAuth';
 import DatePickerModal from '../modals/DatePickerModal';
 
 const Header = ({ theme, themes, currentTheme, setTheme, onSettingsClick }) => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
+  const avatarMenuRef = useRef(null);
   const { isMobile } = useWindowSize();
+  const { auth, logout } = useAuth();
+  const authUser = useAppStore(state => state.auth.user);
+
+  useEffect(() => {
+    if (!isAvatarMenuOpen) return;
+    const handleOutside = (e) => {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target)) {
+        setIsAvatarMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [isAvatarMenuOpen]);
 
   const syncStatus = useAppStore(state => ({
     lastSync: state.lastSync,
@@ -227,6 +243,133 @@ const Header = ({ theme, themes, currentTheme, setTheme, onSettingsClick }) => {
             >
               {currentTheme === 'trueBlack' ? '☀️' : '🌙'}
             </button>
+          )}
+
+          {/* Avatar + dropdown — desktop only */}
+          {!isMobile && (
+            <div ref={avatarMenuRef} style={{ position: 'relative' }}>
+              <button
+                onClick={() => setIsAvatarMenuOpen(p => !p)}
+                style={{
+                  ...pillStyle,
+                  border: 'none',
+                  padding: '4px 10px 4px 6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  cursor: 'pointer',
+                  borderRadius: '20px',
+                  background: isAvatarMenuOpen
+                    ? (theme.type === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)')
+                    : (pillStyle.background || theme.cardBg),
+                  transition: 'background 0.2s',
+                }}
+                title="Account & Settings"
+              >
+                <div style={{
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  background: theme.type === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  border: isAvatarMenuOpen
+                    ? `1.5px solid ${theme.type === 'dark' ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.25)'}`
+                    : '1.5px solid transparent',
+                  transition: 'border-color 0.2s',
+                }}>
+                  {authUser?.profilePicture ? (
+                    <img
+                      src={authUser.profilePicture}
+                      alt={authUser?.username || 'User'}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: '10px', fontWeight: '600', color: theme.text }}>
+                      {(authUser?.username || 'U').substring(0, 2).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <span style={{ fontSize: '13px', fontWeight: '500', color: theme.text }}>
+                  {authUser?.username?.split(' ')[0] || 'Me'}
+                </span>
+              </button>
+
+              {/* Dropdown — opens downward */}
+              {isAvatarMenuOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
+                  right: 0,
+                  minWidth: '200px',
+                  background: theme.type === 'dark' ? 'rgba(18,18,18,0.97)' : 'rgba(255,255,255,0.98)',
+                  border: `1px solid ${theme.border}`,
+                  borderRadius: '14px',
+                  boxShadow: theme.type === 'dark'
+                    ? '0 8px 32px rgba(0,0,0,0.5)'
+                    : '0 8px 32px rgba(0,0,0,0.15)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  overflow: 'hidden',
+                  zIndex: 200,
+                }}>
+                  {/* User info */}
+                  <div style={{ padding: '12px 14px 10px', borderBottom: `1px solid ${theme.border}` }}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: theme.text }}>
+                      {authUser?.username || 'User'}
+                    </div>
+                    {authUser?.email && (
+                      <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '2px' }}>
+                        {authUser.email}
+                      </div>
+                    )}
+                    {auth?.role === 'admin' && (
+                      <div style={{
+                        display: 'inline-block', marginTop: '5px',
+                        padding: '1px 7px', borderRadius: '4px',
+                        fontSize: '10px', fontWeight: '600',
+                        background: 'rgba(139,92,246,0.15)', color: '#A78BFA',
+                        letterSpacing: '0.3px',
+                      }}>
+                        ADMIN
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Settings */}
+                  <button
+                    onClick={() => { setIsAvatarMenuOpen(false); if (onSettingsClick) onSettingsClick(); }}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+                      padding: '11px 14px', background: 'transparent', border: 'none',
+                      color: theme.text, fontSize: '14px', fontWeight: '500',
+                      cursor: 'pointer', textAlign: 'left',
+                    }}
+                  >
+                    <span>⚙️</span>
+                    Settings
+                  </button>
+
+                  {/* Sign Out */}
+                  <button
+                    onClick={() => { setIsAvatarMenuOpen(false); logout(); }}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+                      padding: '11px 14px', background: 'transparent', border: 'none',
+                      borderTop: `1px solid ${theme.border}`,
+                      color: theme.danger || '#EF4444', fontSize: '14px', fontWeight: '500',
+                      cursor: 'pointer', textAlign: 'left',
+                    }}
+                  >
+                    <span>↪</span>
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

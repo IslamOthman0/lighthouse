@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const STORAGE_STATE_PATH = path.join(__dirname, 'tests/results/storage-state.json');
 
 /**
  * Lighthouse Dashboard - Playwright Test Configuration
@@ -6,6 +11,9 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests',
+
+  /* Global setup: pre-warms app and saves storage state (IndexedDB) */
+  globalSetup: './tests/scripts/global-setup.js',
 
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -16,8 +24,8 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
 
-  /* Opt out of parallel tests on CI */
-  workers: process.env.CI ? 1 : undefined,
+  /* Limit workers to avoid OOM on Windows — each worker spawns a Chrome process */
+  workers: process.env.CI ? 1 : 2,
 
   /* Reporter to use */
   reporter: [
@@ -29,6 +37,9 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('/')` */
     baseURL: 'http://localhost:5173',
+
+    /* Pre-populated browser state so tests don't need API on first load */
+    storageState: STORAGE_STATE_PATH,
 
     /* Collect trace when retrying the failed test */
     trace: 'on-first-retry',
