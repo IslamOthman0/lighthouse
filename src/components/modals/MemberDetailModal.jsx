@@ -319,6 +319,7 @@ const fetchTimelineData = async (member, selectedDate) => {
           project: entry.task_location?.list_name || cachedTask?.list?.name || 'Unknown',
           status,
           statusLabel: entry.task?.status?.status || null,
+          statusColor: entry.task?.status?.color || null,
           priority,
           publisher: taskCustomFields.publisher || null,
           genre: taskCustomFields.genre || null,
@@ -473,13 +474,15 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
         >
           <span style={{
             fontSize: '9px',
-            padding: '2px 6px',
+            padding: '2px 7px',
             borderRadius: '4px',
-            background: taskStatusStyle.bg,
-            color: taskStatusStyle.dot,
-            fontWeight: '600',
+            background: task.statusColor || taskStatusStyle.dot,
+            color: '#fff',
+            fontWeight: '700',
             flexShrink: 0,
             fontFamily: getFontFamily('english'),
+            textTransform: 'uppercase',
+            letterSpacing: '0.02em',
           }}>
             {task.statusLabel || taskStatusStyle.label || task.status}
           </span>
@@ -527,12 +530,12 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
           </span>
           <PriorityFlag priority={task.priority} showLabel={true} size={11} />
           {task.publisher && (
-            <span style={{ fontFamily: getFontFamily('english') }}>
+            <span style={{ fontFamily: getAdaptiveFontFamily(task.publisher) }}>
               🏢 {task.publisher}
             </span>
           )}
           {task.genre && (
-            <span style={{ fontFamily: getFontFamily('english') }}>
+            <span style={{ fontFamily: getAdaptiveFontFamily(task.genre) }}>
               📚 {task.genre}
             </span>
           )}
@@ -546,14 +549,16 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
                 key={i}
                 style={{
                   fontSize: '9px',
-                  padding: '1px 5px',
+                  padding: '1px 6px',
                   borderRadius: '3px',
-                  background: hexToRgba(theme.text, 0.08),
+                  background: hexToRgba(theme.text, 0.06),
                   color: theme.textSecondary,
                   fontFamily: getFontFamily('english'),
+                  border: `1px solid ${hexToRgba(theme.text, 0.12)}`,
+                  fontWeight: '600',
                 }}
               >
-                {tag}
+                #{typeof tag === 'string' ? tag : tag.name}
               </span>
             ))}
           </div>
