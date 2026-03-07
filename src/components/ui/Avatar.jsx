@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Avatar with initials and status indicator
 const Avatar = ({ name, status, theme, size = 48, profilePicture = null, clickUpColor = null, ringColor = null }) => {
   const [imageError, setImageError] = useState(false);
+
+  // Reset error state when profilePicture URL changes
+  useEffect(() => {
+    setImageError(false);
+  }, [profilePicture]);
 
   // Extract initials from name
   const getInitials = (name) => {
@@ -75,6 +80,7 @@ const Avatar = ({ name, status, theme, size = 48, profilePicture = null, clickUp
           <img
             src={profilePicture}
             alt={name}
+            referrerPolicy="no-referrer"
             onError={() => setImageError(true)}
             style={{
               width: '100%',

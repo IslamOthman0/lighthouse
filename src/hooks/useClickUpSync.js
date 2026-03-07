@@ -93,6 +93,14 @@ function markLeaveSyncComplete() {
  */
 async function performLeaveSync(members, settings) {
   try {
+    // Skip if no list IDs configured — nothing to fetch
+    const leaveListId = settings?.clickup?.leaveListId;
+    const wfhListId = settings?.clickup?.wfhListId;
+    if (!leaveListId && !wfhListId) {
+      console.log('⏭️ Leave/WFH sync skipped: No list IDs configured in Settings');
+      return;
+    }
+
     console.log('📅 Checking if leave/WFH sync is needed...');
 
     if (!shouldSyncLeaves()) {
@@ -103,12 +111,12 @@ async function performLeaveSync(members, settings) {
     console.log('📅 Performing daily leave/WFH sync...');
     const leaves = await syncLeaveAndWfh(settings, members);
 
+    // Always clear and replace — even if 0 records (clears stale data)
+    await db.leaves.clear();
     if (leaves.length > 0) {
-      // Clear existing leaves and add new ones
-      await db.leaves.clear();
       await db.leaves.bulkPut(leaves);
-      console.log(`✅ Stored ${leaves.length} leave/WFH records in database`);
     }
+    console.log(`✅ Stored ${leaves.length} leave/WFH records in database`);
 
     markLeaveSyncComplete();
   } catch (error) {
@@ -148,7 +156,7 @@ async function discoverAndMergeTeamMembers() {
         const existing = existingMembers.find(m => String(m.clickUpId) === cuId);
         if (existing) {
           await db.members.update(existing.id, {
-            profilePicture: user.profilePicture || existing.profilePicture || null,
+            profilePicture: user.profilePicture || user.avatar || existing.profilePicture || null,
             clickUpColor: user.color || existing.clickUpColor || null,
             updatedAt: Date.now(),
           });
@@ -162,7 +170,7 @@ async function discoverAndMergeTeamMembers() {
           name,
           initials,
           clickUpId: Number(user.id) || user.id,
-          profilePicture: user.profilePicture || null,
+          profilePicture: user.profilePicture || user.avatar || null,
           clickUpColor: user.color || null,
           status: 'noActivity',
           timer: null,
@@ -566,9 +574,15 @@ export function useClickUpSync(config = {}) {
           return;
         }
 
-        const updatedMembers = await enrichMembersWithLeaveStatus(syncResult.members);
         const projectBreakdown = syncResult.projectBreakdown;
         const dateRangeInfo = syncResult.dateRangeInfo;
+
+        // Perform daily leave/WFH sync FIRST so db.leaves is fresh for enrichment
+        const allMembersForLeave = await db.members.toArray();
+        await performLeaveSync(allMembersForLeave.length > 0 ? allMembersForLeave : syncResult.members, settings);
+
+        // Now enrich with leave status using freshly-synced db.leaves
+        const updatedMembers = await enrichMembersWithLeaveStatus(syncResult.members);
 
         // Update date range info for dynamic target calculation
         if (dateRangeInfo) {
@@ -632,11 +646,6 @@ export function useClickUpSync(config = {}) {
         // Update request count from ClickUp service (per-sync count, not rolling window)
         const { clickup } = await import('../services/clickup');
         setRequestCount(clickup.getSyncRequestCount());
-
-        // NOTE: TaskCacheV2 background sync removed - tasks now fetched fresh each sync via filtered endpoint
-
-        // Perform daily leave/WFH sync (once per day)
-        await performLeaveSync(updatedMembers, settings);
 
         console.log('✅ Sync completed successfully');
       } catch (error) {
@@ -907,9 +916,16 @@ export function useManualSync() {
 
       // Sync members and get project breakdown
       const syncResult = await syncMemberData(members, avgTasksBaseline, settings, dateRange, onProgress);
-      const updatedMembers = await enrichMembersWithLeaveStatus(syncResult.members);
       const projectBreakdown = syncResult.projectBreakdown;
       const dateRangeInfo = syncResult.dateRangeInfo;
+
+      // Perform daily leave/WFH sync FIRST (force sync on manual refresh)
+      localStorage.removeItem(LEAVE_SYNC_KEY);
+      const allMembersForLeave = await db.members.toArray();
+      await performLeaveSync(allMembersForLeave.length > 0 ? allMembersForLeave : syncResult.members, settings);
+
+      // Now enrich with leave status using freshly-synced db.leaves
+      const updatedMembers = await enrichMembersWithLeaveStatus(syncResult.members);
 
       // Update date range info for dynamic target calculation
       if (dateRangeInfo) {
@@ -929,10 +945,6 @@ export function useManualSync() {
 
       // Reset sync progress
       setSyncProgress({ phase: 'idle', message: '', progress: 0 });
-
-      // Perform daily leave/WFH sync (force sync on manual refresh)
-      localStorage.removeItem(LEAVE_SYNC_KEY); // Force sync on manual refresh
-      await performLeaveSync(updatedMembers, settings);
 
       setLastSync(Date.now());
       setSyncError(null);

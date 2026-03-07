@@ -721,7 +721,7 @@ export async function mapClickUpUsers(members, clickUpUsers) {
       return {
         ...member,
         clickUpId: clickUpUser.user.id,
-        profilePicture: clickUpUser.user.profilePicture || null,
+        profilePicture: clickUpUser.user.profilePicture || clickUpUser.user.avatar || null,
         clickUpColor: clickUpUser.user.color || null,
         updatedAt: Date.now()
       };
@@ -862,11 +862,12 @@ export async function syncLeaveAndWfh(settings, members) {
       }
 
       leaveTasks.forEach(task => {
-        // Get the assignee (first one if multiple)
-        const assignee = task.assignees?.[0];
-        const member = findMemberByAssignee(assignee);
+        // Match ALL assignees (not just first) so members as 2nd/3rd assignee are not missed
+        const matchedMembers = (task.assignees || [])
+          .map(a => findMemberByAssignee(a))
+          .filter(Boolean);
 
-        if (!member) {
+        if (matchedMembers.length === 0) {
           console.log(`⚠️ Leave task "${task.name}" has no matching member`);
           return;
         }
@@ -904,20 +905,25 @@ export async function syncLeaveAndWfh(settings, members) {
           return 'annual'; // annual, vacation, other, empty → annual
         })();
 
-        leaves.push({
-          id: `leave_${task.id}`,
-          clickUpTaskId: task.id,
-          memberId: member.id,
-          memberClickUpId: member.clickUpId,
-          memberName: member.name,
-          type: leaveType,
-          description: task.name,
-          requestedDays: requestedDays, // From "Requested Days" custom field
-          startDate: toLocalDateStr(startDate),
-          endDate: endDate ? toLocalDateStr(endDate) : null,
-          status: mapLeaveStatus(task.status),
-          createdAt: task.date_created ? new Date(parseInt(task.date_created)) : new Date(),
-          updatedAt: Date.now()
+        const leaveStatus = mapLeaveStatus(task.status);
+        const leaveCreatedAt = task.date_created ? new Date(parseInt(task.date_created)) : new Date();
+
+        matchedMembers.forEach(member => {
+          leaves.push({
+            id: `leave_${task.id}_${member.clickUpId}`,
+            clickUpTaskId: task.id,
+            memberId: member.id,
+            memberClickUpId: member.clickUpId,
+            memberName: member.name,
+            type: leaveType,
+            description: task.name,
+            requestedDays: requestedDays,
+            startDate: toLocalDateStr(startDate),
+            endDate: endDate ? toLocalDateStr(endDate) : null,
+            status: leaveStatus,
+            createdAt: leaveCreatedAt,
+            updatedAt: Date.now()
+          });
         });
       });
     } catch (error) {
@@ -936,10 +942,12 @@ export async function syncLeaveAndWfh(settings, members) {
       }
 
       wfhTasks.forEach(task => {
-        const assignee = task.assignees?.[0];
-        const member = findMemberByAssignee(assignee);
+        // Match ALL assignees (not just first)
+        const matchedMembers = (task.assignees || [])
+          .map(a => findMemberByAssignee(a))
+          .filter(Boolean);
 
-        if (!member) {
+        if (matchedMembers.length === 0) {
           console.log(`⚠️ WFH task "${task.name}" has no matching member`);
           return;
         }
@@ -962,19 +970,24 @@ export async function syncLeaveAndWfh(settings, members) {
           return;
         }
 
-        leaves.push({
-          id: `wfh_${task.id}`,
-          clickUpTaskId: task.id,
-          memberId: member.id,
-          memberClickUpId: member.clickUpId,
-          memberName: member.name,
-          type: 'wfh',
-          description: task.name,
-          startDate: toLocalDateStr(startDate),
-          endDate: endDate ? toLocalDateStr(endDate) : null,
-          status: mapLeaveStatus(task.status),
-          createdAt: task.date_created ? new Date(parseInt(task.date_created)) : new Date(),
-          updatedAt: Date.now()
+        const wfhStatus = mapLeaveStatus(task.status);
+        const wfhCreatedAt = task.date_created ? new Date(parseInt(task.date_created)) : new Date();
+
+        matchedMembers.forEach(member => {
+          leaves.push({
+            id: `wfh_${task.id}_${member.clickUpId}`,
+            clickUpTaskId: task.id,
+            memberId: member.id,
+            memberClickUpId: member.clickUpId,
+            memberName: member.name,
+            type: 'wfh',
+            description: task.name,
+            startDate: toLocalDateStr(startDate),
+            endDate: endDate ? toLocalDateStr(endDate) : null,
+            status: wfhStatus,
+            createdAt: wfhCreatedAt,
+            updatedAt: Date.now()
+          });
         });
       });
     } catch (error) {
