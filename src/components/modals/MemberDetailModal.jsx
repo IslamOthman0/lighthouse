@@ -982,7 +982,9 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-            <Avatar name={member.name} status={member.status} theme={theme} size={50} />
+            <Avatar name={member.name} status={member.status} theme={theme} size={50}
+              profilePicture={member.profilePicture}
+              clickUpColor={member.clickUpColor} />
 
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
