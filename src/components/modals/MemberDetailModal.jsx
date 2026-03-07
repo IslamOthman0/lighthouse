@@ -283,16 +283,21 @@ const fetchTimelineData = async (member, selectedDate) => {
         // Get task details from cache
         const cachedTask = taskCacheV2.get(entry.task.id);
 
-        // Map ClickUp status type to our status keys
+        // Map ClickUp status name/type to our status keys
+        // Check name first (more specific) before falling back to type
         const statusType = entry.task?.status?.type || 'custom';
         const statusName = (entry.task?.status?.status || '').toLowerCase();
         let status = 'todo';
-        if (statusType === 'done' || statusType === 'closed') status = 'done';
-        else if (statusType === 'ready') status = 'ready';
-        else if (statusType === 'in progress' || statusType === 'open') status = 'inProgress';
-        else if (statusName.includes('ready')) status = 'ready';
-        else if (statusName.includes('review')) status = 'review';
+        if (statusName.includes('ready')) status = 'ready';
         else if (statusName.includes('in progress') || statusName.includes('progress')) status = 'inProgress';
+        else if (statusName.includes('review')) status = 'review';
+        else if (statusName.includes('stopped') || statusName.includes('rejected')) status = 'stopped';
+        else if (statusName.includes('hold') || statusName.includes('deferred')) status = 'hold';
+        else if (statusName.includes('help') || statusName.includes('assistance')) status = 'help';
+        else if (statusName.includes('blocked')) status = 'blocked';
+        else if (statusName.includes('done') || statusName.includes('complete') || statusName.includes('closed')) status = 'done';
+        else if (statusType === 'done' || statusType === 'closed') status = 'done';
+        else if (statusType === 'in progress' || statusType === 'open') status = 'inProgress';
 
         // Get priority from cache or time entry
         let priority = 'Normal';
@@ -310,6 +315,7 @@ const fetchTimelineData = async (member, selectedDate) => {
           name: entry.task.name || 'Unknown Task',
           project: entry.task_location?.list_name || cachedTask?.list?.name || 'Unknown',
           status,
+          statusLabel: entry.task?.status?.status || null,
           priority,
           startTime,
           endTime,
@@ -471,7 +477,7 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
             flexShrink: 0,
             fontFamily: getFontFamily('english'),
           }}>
-            {taskStatusStyle.label || task.status}
+            {task.statusLabel || taskStatusStyle.label || task.status}
           </span>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {task.name}
