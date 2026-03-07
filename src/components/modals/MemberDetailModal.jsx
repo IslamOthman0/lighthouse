@@ -7,6 +7,7 @@ import { getFontFamily, getAdaptiveFontFamily, tabularNumberStyle } from '../../
 import { formatHoursToHM, formatMinutesToHM } from '../../utils/timeFormat';
 import { clickup } from '../../services/clickup';
 import { taskCacheV2 } from '../../services/taskCacheV2';
+import { extractCustomFields } from '../../services/taskCache';
 import { useSettings } from '../../hooks/useSettings';
 import { DEFAULT_MEMBER_QUOTAS } from '../../constants/defaults';
 import { db } from '../../db';
@@ -309,6 +310,8 @@ const fetchTimelineData = async (member, selectedDate) => {
           else if (p === 'low' || p === 4) priority = 'Low';
         }
 
+        const taskCustomFields = cachedTask ? extractCustomFields(cachedTask) : {};
+
         return {
           id: entry.id,
           taskId: entry.task.id,
@@ -317,6 +320,9 @@ const fetchTimelineData = async (member, selectedDate) => {
           status,
           statusLabel: entry.task?.status?.status || null,
           priority,
+          publisher: taskCustomFields.publisher || null,
+          genre: taskCustomFields.genre || null,
+          tags: taskCustomFields.tags || [],
           startTime,
           endTime,
           trackedMinutes,
@@ -410,12 +416,10 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
         borderRadius: '8px',
         border: `1px solid ${theme.borderLight}`,
         borderLeft: `4px solid ${taskStatusStyle.dot}`,
-        cursor: task.clickUpUrl ? 'pointer' : 'default',
         transition: 'all 0.15s',
         animation: isLive ? 'softPulse 2s ease-in-out infinite' : 'none',
         boxShadow: isLive ? `0 0 12px ${theme.working}30` : 'none',
       }}
-      onClick={() => task.clickUpUrl && window.open(task.clickUpUrl, '_blank')}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = theme.tertiaryBg || theme.cardBg;
         e.currentTarget.style.borderColor = hexToRgba(theme.accent, 0.25);
@@ -479,7 +483,18 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
           }}>
             {task.statusLabel || taskStatusStyle.label || task.status}
           </span>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <span
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              cursor: task.clickUpUrl ? 'pointer' : 'default',
+              textDecoration: task.clickUpUrl ? 'none' : undefined,
+            }}
+            onClick={(e) => { e.stopPropagation(); task.clickUpUrl && window.open(task.clickUpUrl, '_blank'); }}
+            onMouseEnter={(e) => { if (task.clickUpUrl) e.currentTarget.style.textDecoration = 'underline'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
+          >
             {task.name}
           </span>
           {isLive && (
@@ -511,24 +526,15 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
             📁 {task.project}
           </span>
           <PriorityFlag priority={task.priority} showLabel={true} size={11} />
-          {task.clickUpUrl && (
-            <button
-              onClick={(e) => { e.stopPropagation(); window.open(task.clickUpUrl, '_blank'); }}
-              style={{
-                fontSize: '10px',
-                padding: '2px 6px',
-                borderRadius: '4px',
-                border: `1px solid ${theme.border}`,
-                background: 'transparent',
-                color: theme.textSecondary,
-                cursor: 'pointer',
-                fontFamily: getFontFamily('english'),
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = theme.text; e.currentTarget.style.borderColor = theme.accent; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = theme.textSecondary; e.currentTarget.style.borderColor = theme.border; }}
-            >
-              ↗ Open
-            </button>
+          {task.publisher && (
+            <span style={{ fontFamily: getFontFamily('english') }}>
+              🏢 {task.publisher}
+            </span>
+          )}
+          {task.genre && (
+            <span style={{ fontFamily: getFontFamily('english') }}>
+              📚 {task.genre}
+            </span>
           )}
         </div>
 
