@@ -16,6 +16,11 @@ const fs    = require('fs');
 const SOURCE = path.join(__dirname, 'icon.jpg');
 const OUT    = path.join(__dirname, 'public');
 
+// Crop region from icon.jpg: zero-padding crop
+// Left/right = beam tips (X 175–562), bottom = tower base (Y 742), square = 388px
+// Top is derived: 742 - 388 + 1 = 355 (gives spire breathing room above)
+const CROP = { left: 175, top: 355, width: 388, height: 388 };
+
 // All icon sizes needed for PWA, mobile, and desktop
 const JOBS = [
   // PWA manifest icons
@@ -35,31 +40,16 @@ async function generate() {
     process.exit(1);
   }
 
-  const sourceImg = sharp(SOURCE);
-  const meta = await sourceImg.metadata();
-  console.log(`Source: icon.jpg (${meta.width}×${meta.height})\n`);
+  const meta = await sharp(SOURCE).metadata();
+  console.log(`Source: icon.jpg (${meta.width}×${meta.height})`);
+  console.log(`Crop: ${CROP.width}×${CROP.height} from (${CROP.left},${CROP.top})\n`);
 
   for (const { file, size, maskable } of JOBS) {
-    let img = sharp(SOURCE);
+    // Start with the tight crop of the lighthouse
+    let img = sharp(SOURCE).extract(CROP);
 
-    if (maskable) {
-      // For maskable icons, add 10% padding around the icon
-      // so the safe zone (inner 80%) contains the full design
-      const padded = Math.round(size * 0.1);
-      const innerSize = size - padded * 2;
-
-      img = img
-        .resize(innerSize, innerSize, { fit: 'cover', position: 'centre' })
-        .extend({
-          top: padded,
-          bottom: padded,
-          left: padded,
-          right: padded,
-          background: '#1e4029' // match the dark green BG
-        });
-    } else {
-      img = img.resize(size, size, { fit: 'cover', position: 'centre' });
-    }
+    // Same resize for both regular and maskable — beam tips and base at edges
+    img = img.resize(size, size, { fit: 'cover', position: 'centre' });
 
     const outPath = path.join(OUT, file);
     await img.png({ quality: 100, compressionLevel: 9 }).toFile(outPath);
