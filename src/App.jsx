@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { useTheme } from './hooks/useTheme';
 import { useAppStore } from './stores/useAppStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from './db';
 import { useClickUpSync } from './hooks/useClickUpSync';
@@ -133,11 +134,11 @@ function App() {
   }, [members, memberFilter, memberSort, settings?.team?.membersToMonitor]);
 
   // Sync status
-  const syncStatus = useAppStore(state => ({
+  const syncStatus = useAppStore(useShallow(state => ({
     lastSync: state.lastSync,
     error: state.syncError,
     isSyncing: state.isSyncing
-  }));
+  })));
 
   // Handle member click to open detail modal
   const handleMemberClick = (member) => {

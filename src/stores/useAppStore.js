@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
 import { calculateMemberScore } from '../utils/scoreCalculation';
 
 /**
@@ -298,6 +299,89 @@ export const useAppStore = create(devtools((set, get) => ({
     set({ teamStats, scoreMetrics, members: recalculatedMembers }, false, 'updateStats');
   },
 
+  /**
+   * batchSyncUpdate — sets all sync result state in a SINGLE Zustand set() call.
+   * Prevents the multi-render flicker caused by sequential setState calls after sync.
+   * Also recalculates member scores (replaces the separate updateStats() call).
+   */
+  batchSyncUpdate: ({ members: rawMembers, projectBreakdown, dateRangeInfo, lastSync, syncError, requestCount, isSyncing }) => {
+    const { teamBaseline, scoreWeights } = get();
+    const workingDays = dateRangeInfo?.workingDays || 1;
+
+    // --- Recalculate member scores (same logic as updateStats) ---
+    const storedWeights = scoreWeights;
+    const WEIGHTS = storedWeights ? {
+      TIME: storedWeights.trackedTime ?? 0.40,
+      WORKLOAD: storedWeights.tasksWorked ?? 0.20,
+      COMPLETION: storedWeights.tasksDone ?? 0.30,
+      COMPLIANCE: storedWeights.compliance ?? 0.10,
+    } : { TIME: 0.40, WORKLOAD: 0.20, COMPLETION: 0.30, COMPLIANCE: 0.10 };
+
+    const settingsWeights = {
+      trackedTime: WEIGHTS.TIME, tasksWorked: WEIGHTS.WORKLOAD,
+      tasksDone: WEIGHTS.COMPLETION, compliance: WEIGHTS.COMPLIANCE,
+    };
+    const members = rawMembers.map(m => {
+      const memberScore = calculateMemberScore({
+        tracked: m.tracked || 0, tasks: m.tasks || 0, done: m.done || 0,
+        completionDenominator: m.completionDenominator,
+        complianceHours: m.complianceHours ?? (m.tracked || 0) * 0.85,
+        avgTasksBaseline: teamBaseline, weights: settingsWeights, workingDays,
+      });
+      return { ...m, score: memberScore.total };
+    });
+
+    // --- Recalculate team stats ---
+    const totalTracked = members.reduce((sum, m) => sum + (m.tracked || 0), 0);
+    const totalTarget = members.length * 6.5 * workingDays;
+    const totalTasksDone = members.reduce((sum, m) => sum + (m.done || 0), 0);
+    const totalTasks = members.reduce((sum, m) => sum + (m.tasks || 0), 0);
+    const totalComplianceHours = members.reduce((sum, m) => sum + (m.complianceHours ?? (m.tracked || 0) * 0.85), 0);
+    const taskBaseline = members.length * teamBaseline * workingDays;
+
+    const timeRatio = totalTarget > 0 ? Math.min((totalTracked / totalTarget) * 100, 100) : 0;
+    const workloadRatio = taskBaseline > 0 ? Math.min((totalTasks / taskBaseline) * 100, 100) : 0;
+    const completionRatio = totalTasks > 0 ? (totalTasksDone / totalTasks) * 100 : 0;
+    const complianceRatio = totalTarget > 0 ? Math.min((totalComplianceHours / totalTarget) * 100, 100) : 0;
+
+    const timeScore = (timeRatio / 100) * (WEIGHTS.TIME * 100);
+    const workloadScore = (workloadRatio / 100) * (WEIGHTS.WORKLOAD * 100);
+    const completionScore = (completionRatio / 100) * (WEIGHTS.COMPLETION * 100);
+    const complianceScore = (complianceRatio / 100) * (WEIGHTS.COMPLIANCE * 100);
+    const totalScore = Math.min(timeScore + workloadScore + completionScore + complianceScore, 100);
+
+    const teamStats = {
+      tracked: { value: totalTracked, target: totalTarget, progress: timeRatio },
+      tasks: { done: totalTasksDone, total: totalTasks, progress: completionRatio },
+    };
+    const scoreMetrics = {
+      total: Math.round(totalScore),
+      time: Math.round(timeRatio), workload: Math.round(workloadRatio),
+      tasks: Math.round(completionRatio), compliance: Math.round(complianceRatio),
+      weighted: {
+        time: Math.round(timeScore * 10) / 10, workload: Math.round(workloadScore * 10) / 10,
+        completion: Math.round(completionScore * 10) / 10, compliance: Math.round(complianceScore * 10) / 10,
+      },
+      weights: WEIGHTS,
+    };
+
+    // --- Single set() call — one render ---
+    const update = {
+      members,
+      teamStats,
+      scoreMetrics,
+      syncProgress: { phase: 'idle', message: '', progress: 0 },
+      lastSync: lastSync ?? Date.now(),
+      syncError: syncError ?? null,
+    };
+    if (isSyncing !== undefined) update.isSyncing = isSyncing;
+    if (dateRangeInfo) update.dateRangeInfo = dateRangeInfo;
+    if (projectBreakdown && Object.keys(projectBreakdown).length > 0) update.projectBreakdown = projectBreakdown;
+    if (requestCount !== undefined) update.requestCount = requestCount;
+
+    set(update, false, 'batchSyncUpdate');
+  },
+
   // ===== Sync Status =====
   lastSync: null,
   syncError: null,
@@ -399,19 +483,19 @@ export const useActiveView = () => useAppStore(state => state.activeView);
 export const useSelectedDate = () => useAppStore(state => state.selectedDate);
 
 // Modal selectors
-export const useMemberModal = () => useAppStore(state => ({
+export const useMemberModal = () => useAppStore(useShallow(state => ({
   selectedMember: state.selectedMember,
   isOpen: state.isMemberModalOpen,
   open: state.openMemberModal,
   close: state.closeMemberModal
-}));
+})));
 
-export const useDashboardDetailModal = () => useAppStore(state => ({
+export const useDashboardDetailModal = () => useAppStore(useShallow(state => ({
   type: state.dashboardDetailType,
   isOpen: state.isDashboardDetailOpen,
   open: state.openDashboardDetail,
   close: state.closeDashboardDetail
-}));
+})));
 
 // Members data selectors
 export const useMembers = () => useAppStore(state => state.members);
@@ -419,11 +503,11 @@ export const useTeamStats = () => useAppStore(state => state.teamStats);
 export const useScoreMetrics = () => useAppStore(state => state.scoreMetrics);
 
 // Sync status selectors
-export const useSyncStatus = () => useAppStore(state => ({
+export const useSyncStatus = () => useAppStore(useShallow(state => ({
   lastSync: state.lastSync,
   error: state.syncError,
   isSyncing: state.isSyncing
-}));
+})));
 
 // Auth selectors
 export const useAuthState = () => useAppStore(state => state.auth);

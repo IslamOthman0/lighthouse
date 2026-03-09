@@ -44,6 +44,7 @@ const CardShell = ({
         borderColor: theme.border,
         boxShadow: theme.cardShadow || 'none',
         opacity,
+        height: '100%',
       }}
       onMouseEnter={(e) => {
         if (onClick) {

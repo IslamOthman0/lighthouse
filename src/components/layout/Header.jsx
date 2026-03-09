@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Logo from './Logo';
 import { useAppStore } from '../../stores/useAppStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useWindowSize } from '../../hooks/useWindowSize';
 import { useAuth } from '../../hooks/useAuth';
 import DatePickerModal from '../modals/DatePickerModal';
@@ -24,12 +25,12 @@ const Header = ({ theme, themes, currentTheme, setTheme, onSettingsClick }) => {
     return () => document.removeEventListener('mousedown', handleOutside);
   }, [isAvatarMenuOpen]);
 
-  const syncStatus = useAppStore(state => ({
+  const syncStatus = useAppStore(useShallow(state => ({
     lastSync: state.lastSync,
     error: state.syncError,
     isSyncing: state.isSyncing,
     requestCount: state.requestCount
-  }));
+  })));
 
   const dateRange = useAppStore(state => state.dateRange);
 

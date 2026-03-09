@@ -94,23 +94,38 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
 
         {/* Task Info Box - Last task */}
         <div className="p-3 rounded-lg border" style={{ background: theme.subtleBg, borderColor: theme.borderLight }}>
-          {/* Location (Folder path) */}
-          {(location || project) && (
-            <div
-              className="text-[10px] mb-1.5"
-              style={{
-                color: theme.textMuted,
-                ...getTextFontStyle(location || project),
-                direction: isRTL(location || project) ? 'rtl' : 'ltr',
-              }}
-            >
-              {location || project}
+          {/* Location + Status Badge — same line */}
+          {((location || project) || taskStatus) && (
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              {(location || project) ? (
+                <div
+                  className="text-[10px] font-bold truncate"
+                  style={{
+                    color: theme.textMuted,
+                    ...getTextFontStyle(location || project),
+                    direction: isRTL(location || project) ? 'rtl' : 'ltr',
+                  }}
+                >
+                  {location || project}
+                </div>
+              ) : <div />}
+              {taskStatus && (
+                <div
+                  className="shrink-0 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-tight"
+                  style={{
+                    background: taskStatusColor || '#64748b',
+                    color: '#fff',
+                  }}
+                >
+                  {taskStatus}
+                </div>
+              )}
             </div>
           )}
 
           {/* Task Name */}
           <div
-            className="text-[13px] font-semibold mb-1.5 leading-snug"
+            className="text-[13px] font-semibold leading-snug"
             style={{
               color: theme.text,
               ...getTextFontStyle(task || ''),
@@ -119,21 +134,6 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
           >
             {task ? `Last: ${task}` : '—'}
           </div>
-
-          {/* Task Status Badge - solid pill style matching ProjectBreakdown */}
-          {taskStatus && (
-            <div className="mb-2">
-              <div
-                className="inline-block px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-tight"
-                style={{
-                  background: taskStatusColor || '#64748b',
-                  color: '#fff',
-                }}
-              >
-                {taskStatus}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Publisher/Genre - Separate boxes */}

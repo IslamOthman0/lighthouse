@@ -120,7 +120,7 @@ const TeamStatusCard = ({ members, theme, onMemberClick, workingDays = 1 }) => {
             gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
             gap: '24px',
             width: '100%',
-            alignItems: 'start',
+            alignItems: 'stretch',
           }}
         >
           {activeMembers.map((member) => (
