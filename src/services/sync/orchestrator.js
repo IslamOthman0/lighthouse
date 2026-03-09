@@ -28,7 +28,7 @@ import { db } from '../../db';
 import { transformMember } from './transform';
 import { calculateFastProjectBreakdown } from './projects';
 import { calculateWorkingDays, countLeaveDaysInRange } from './calculations';
-import { useAppStore } from '../../stores/useAppStore';
+// useAppStore import removed — eager fetch no longer pushes to store
 import { toLocalDateStr } from '../../utils/timeFormat.js';
 
 // ========== SYNC LOCK (prevents concurrent syncs) ==========
@@ -39,6 +39,9 @@ let syncLock = {
 
 // Track whether lastActiveDate backfill has run this session
 let lastActiveDateBackfilled = false;
+
+// Abort controller for eager background list fetch — aborted when new sync starts
+let _eagerAbortController = null;
 
 /**
  * Generate a unique sync ID for tracking
@@ -299,16 +302,31 @@ async function fetchAllRunningTimers(members) {
 export async function syncMemberData(members, avgTasksBaseline = 3, settings = null, dateRange = null, onProgress = null, signal = null, options = {}) {
   const syncStartTime = Date.now();
   const syncId = generateSyncId();
-  const { pollMode = false } = options;
+  const { pollMode = false, allMemberIds = null } = options;
 
   // Check if already aborted before starting
   checkAbort(signal);
 
   // Acquire sync lock (prevent concurrent syncs)
   if (syncLock.inProgress) {
-    console.log(`⏳ [${syncId}] Another sync in progress, waiting...`);
-    // Don't start a new sync if one is in progress - let the caller handle retry
-    return { members, projectBreakdown: {}, dateRangeInfo: { workingDays: 1 }, skipped: true };
+    if (pollMode) {
+      // Poll syncs are low-priority — skip immediately if lock is held
+      console.log(`⏳ [${syncId}] Poll sync skipped — another sync in progress`);
+      return { members, projectBreakdown: {}, dateRangeInfo: { workingDays: 1 }, skipped: true };
+    }
+    // Full syncs (date-range changes) are user-initiated — wait up to 10s for lock release
+    console.log(`⏳ [${syncId}] Full sync waiting for lock release (up to 10s)...`);
+    const lockWaitStart = Date.now();
+    while (syncLock.inProgress && Date.now() - lockWaitStart < 10000) {
+      checkAbort(signal); // Bail out immediately if user changed date again
+      await new Promise(r => setTimeout(r, 100));
+    }
+    if (syncLock.inProgress) {
+      // Lock still held after 10s — abort gracefully
+      console.warn(`⚠️ [${syncId}] Lock wait timed out, skipping full sync`);
+      return { members, projectBreakdown: {}, dateRangeInfo: { workingDays: 1 }, skipped: true };
+    }
+    console.log(`✅ [${syncId}] Lock released after ${Date.now() - lockWaitStart}ms, proceeding`);
   }
 
   syncLock.inProgress = true;
@@ -362,9 +380,14 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
       onProgress({ phase: 'starting', message: 'Starting sync...', progress: 0 });
     }
 
-    // Extract all member ClickUp IDs for the assignee parameter
-    const assigneeIds = members.map(m => m.clickUpId).filter(Boolean);
-    console.log(`👥 Fetching data for ${assigneeIds.length} members...`);
+    // Extract all member ClickUp IDs for the assignee parameter.
+    // Use allMemberIds (all team members) for time entry fetch so project breakdown
+    // includes entries from members excluded from the member card display (e.g. Islam Othman).
+    // Member card processing still uses only the `members` array passed in.
+    const assigneeIds = (allMemberIds && allMemberIds.length > 0)
+      ? allMemberIds
+      : members.map(m => m.clickUpId).filter(Boolean);
+    console.log(`👥 Fetching data for ${assigneeIds.length} members (monitored: ${members.length})...`);
 
     const globalTaskCache = {};
 
@@ -564,39 +587,40 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
     }
 
     // Eager background fetch: populate taskCacheV2 from /list/{id}/task for richer task details
-    // This fires and forgets — doesn't block the sync result
+    // This fires and forgets — doesn't block the sync result.
+    // IMPORTANT: Does NOT update projectBreakdown during fetch to avoid flicker.
+    // Only populates the cache silently — the next poll sync will use the enriched cache.
     if (!pollMode && allTimeEntries.length > 0) {
       const discoveredListIds = clickup.discoverListIds(allTimeEntries);
       if (discoveredListIds.length > 0) {
         console.log(`🔍 Starting eager background fetch for ${discoveredListIds.length} lists...`);
-        // Fire and forget — don't await, don't block sync
-        // Captures todayTimeEntries for re-building project breakdown after each list loads
-        const capturedTimeEntries = todayTimeEntries;
-        // Accumulates ALL tasks fetched so far across all lists/pages
-        // Passed as globalTaskCache so calculateFastProjectBreakdown can use them
-        const eagerTaskCache = {};
+        // Cancel any previous eager fetch still running
+        if (_eagerAbortController) _eagerAbortController.abort();
+        _eagerAbortController = new AbortController();
+        const eagerSignal = _eagerAbortController.signal;
         (async () => {
           for (const listId of discoveredListIds) {
-            if (signal?.aborted) break;
+            if (eagerSignal.aborted || signal?.aborted) break;
             try {
               await clickup.fetchAllListTasksWithCallback(listId, async (pageTasks) => {
-                if (signal?.aborted) return;
-                // Add this page's tasks to the running accumulator
-                pageTasks.forEach(t => { eagerTaskCache[t.id] = t; });
-                // Store in taskCacheV2 for persistence across page reloads
+                if (eagerSignal.aborted || signal?.aborted) return;
+                // Store in taskCacheV2 for persistence — no store update, no flicker
                 const taskMap = {};
                 pageTasks.forEach(t => { taskMap[t.id] = t; });
                 await taskCacheV2.bulkLoad(taskMap);
-                // Re-push project breakdown using all tasks fetched so far
-                const refreshedBreakdown = calculateFastProjectBreakdown(capturedTimeEntries, eagerTaskCache);
-                useAppStore.getState().setProjectBreakdown(refreshedBreakdown);
               });
             } catch (err) {
-              console.warn(`⚠️ Eager fetch failed for list ${listId}:`, err.message);
+              if (!eagerSignal.aborted) {
+                console.warn(`⚠️ Eager fetch failed for list ${listId}:`, err.message);
+              }
             }
-            await clickup.delay(200); // Rate limit safety between lists
+            if (!eagerSignal.aborted && !signal?.aborted) {
+              await clickup.delay(200); // Rate limit safety between lists
+            }
           }
-          console.log(`✅ Eager background list fetch complete`);
+          if (!eagerSignal.aborted) {
+            console.log(`✅ Eager background list fetch complete`);
+          }
         })();
       }
     }
@@ -651,7 +675,9 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
 
     // ALWAYS use fast project breakdown from time entries (no dependency on cache)
     // Time entries already contain task.list.name (project), task.status, task.name
-    let projectBreakdown = calculateFastProjectBreakdown(todayTimeEntries, globalTaskCache);
+    // Pass monitored member IDs so avatars only show monitored members
+    const monitoredMemberIds = new Set(members.map(m => String(m.clickUpId)));
+    let projectBreakdown = calculateFastProjectBreakdown(todayTimeEntries, globalTaskCache, monitoredMemberIds);
     console.log(`📂 Project breakdown from time entries: ${Object.keys(projectBreakdown).length} projects`)
 
     if (onProgress) {

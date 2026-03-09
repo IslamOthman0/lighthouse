@@ -62,67 +62,39 @@ const generateStatusColor = (statusName) => {
   return colors[index];
 };
 
-// Returns black or white text color with sufficient contrast against a hex background
-const getContrastColor = (hexBg) => {
-  if (!hexBg || !hexBg.startsWith('#')) return '#ffffff';
-  const r = parseInt(hexBg.slice(1, 3), 16);
-  const g = parseInt(hexBg.slice(3, 5), 16);
-  const b = parseInt(hexBg.slice(5, 7), 16);
-  // WCAG relative luminance
-  const toLinear = (c) => { const s = c / 255; return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
-  const L = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
-  return L > 0.179 ? '#000000' : '#ffffff';
-};
-
-// Status Pill Component - uses dynamic ClickUp status colors
+// Status Pill Component - matches WorkingCard's native ClickUp status badge style
 const StatusPill = ({ statusName, statusColor, count, theme, onClick }) => {
-  // Validate color - must be a proper hex/rgb value, not CSS variable
-  const isValidColor = statusColor &&
-                       statusColor.trim() !== '' &&
-                       !statusColor.includes('var(') &&
-                       !statusColor.startsWith('--') &&
-                       (statusColor.startsWith('#') || statusColor.startsWith('rgb'));
-
-  // Use ClickUp color if valid, otherwise generate consistent color from name
-  const bgColor = isValidColor ? statusColor : generateStatusColor(statusName);
-
-  // Debug logging
-  if (!isValidColor) {
-    console.log(`[StatusPill] Invalid/missing color for "${statusName}" (was: "${statusColor}"), generated: ${bgColor}`);
-  }
+  const bgColor = statusColor || generateStatusColor(statusName);
 
   // Capitalize first letter of status name
   const capitalizedName = statusName.charAt(0).toUpperCase() + statusName.slice(1);
 
-  // Generate test ID from status name
   const testId = `status-pill-${statusName.toLowerCase().replace(/\s+/g, '-')}`;
-
-  // Use accessible text color based on background luminance
-  const textColor = getContrastColor(bgColor);
-  const badgeBg = textColor === '#000000' ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.25)';
 
   return (
     <button
       onClick={onClick}
       data-testid={testId}
       style={{
-        display: 'flex',
+        display: 'inline-flex',
         alignItems: 'center',
-        gap: '8px',
-        padding: '6px 10px',
-        borderRadius: '12px',
-        fontSize: '12px',
-        fontWeight: '500',
-        color: textColor,
+        gap: '6px',
+        padding: '3px 8px',
+        borderRadius: '6px',
+        fontSize: '10px',
+        fontWeight: '700',
+        letterSpacing: '0.04em',
+        textTransform: 'uppercase',
+        color: '#ffffff',
         background: bgColor,
         border: 'none',
         cursor: 'pointer',
-        transition: 'all 0.2s',
+        transition: 'opacity 0.15s, transform 0.15s',
         fontFamily: getFontFamily('english'),
         whiteSpace: 'nowrap',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.opacity = '0.85';
+        e.currentTarget.style.opacity = '0.8';
         e.currentTarget.style.transform = 'translateY(-1px)';
       }}
       onMouseLeave={(e) => {
@@ -130,15 +102,14 @@ const StatusPill = ({ statusName, statusColor, count, theme, onClick }) => {
         e.currentTarget.style.transform = 'translateY(0)';
       }}
     >
-      <span style={{ fontSize: '10px' }}>●</span>
       <span>{capitalizedName}</span>
       <span
         style={{
-          background: badgeBg,
-          padding: '2px 6px',
-          borderRadius: '6px',
-          fontSize: '11px',
-          fontWeight: '600',
+          background: 'rgba(255,255,255,0.25)',
+          padding: '1px 5px',
+          borderRadius: '4px',
+          fontSize: '10px',
+          fontWeight: '700',
           ...tabularNumberStyle,
         }}
       >
@@ -322,8 +293,8 @@ const ProjectBreakdownCard = ({ theme }) => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(340px, 100%), 1fr))',
+            gap: '16px',
             maxWidth: '1600px',
             margin: '0 auto',
           }}
@@ -344,7 +315,7 @@ const ProjectBreakdownCard = ({ theme }) => {
               }}
             >
               {/* Header: Icon + Name + Subtitle */}
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 <ProjectIcon projectName={project.name} color={project.color} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
@@ -450,25 +421,16 @@ const ProjectBreakdownCard = ({ theme }) => {
                 {project.statuses.length === 0 ? (
                   <span style={{ color: theme.textMuted, fontSize: '11px' }}>No tasks</span>
                 ) : (
-                  project.statuses.map((status, j) => {
-                    // CRITICAL: Always generate a valid color (never pass undefined)
-                    const pillColor = status.color && status.color !== '' ? status.color : generateStatusColor(status.name);
-
-                    if (!status.color) {
-                      console.log(`[ProjectBreakdown] "${status.name}" missing color, generated: ${pillColor}`);
-                    }
-
-                    return (
-                      <StatusPill
-                        key={`${project.name}-${status.name}-${j}`}
-                        statusName={status.name}
-                        statusColor={pillColor}
-                        count={status.count}
-                        theme={theme}
-                        onClick={() => handlePillClick(project.name, status.name, status.tasks)}
-                      />
-                    );
-                  })
+                  project.statuses.map((status, j) => (
+                    <StatusPill
+                      key={`${project.name}-${status.name}-${j}`}
+                      statusName={status.name}
+                      statusColor={status.color}
+                      count={status.count}
+                      theme={theme}
+                      onClick={() => handlePillClick(project.name, status.name, status.tasks)}
+                    />
+                  ))
                 )}
               </div>
 

@@ -250,6 +250,7 @@ export function useClickUpSync(config = {}) {
   const setTeamBaseline = useAppStore(state => state.setTeamBaseline);
   const setDateRangeInfo = useAppStore(state => state.setDateRangeInfo);
   const setSyncProgress = useAppStore(state => state.setSyncProgress);
+  const batchSyncUpdate = useAppStore(state => state.batchSyncUpdate);
   const setScoreWeights = useAppStore(state => state.setScoreWeights);
   const setYesterdaySnapshot = useAppStore(state => state.setYesterdaySnapshot);
   const dateRange = useAppStore(state => state.dateRange);
@@ -559,8 +560,11 @@ export function useClickUpSync(config = {}) {
           }
         };
 
+        // All member IDs (including non-monitored) for full project breakdown coverage
+        const allMemberIds = allMembers.map(m => m.clickUpId).filter(Boolean);
+
         // Sync all members — poll mode uses cache for past days, only fetches today fresh
-        const syncResult = await syncMemberData(currentMembers, avgTasksBaseline, settings, currentDateRange, onProgress, signal, { pollMode: true });
+        const syncResult = await syncMemberData(currentMembers, avgTasksBaseline, settings, currentDateRange, onProgress, signal, { pollMode: true, allMemberIds });
 
         // Check if sync was skipped due to lock
         if (syncResult.skipped) {
@@ -584,31 +588,19 @@ export function useClickUpSync(config = {}) {
         // Now enrich with leave status using freshly-synced db.leaves
         const updatedMembers = await enrichMembersWithLeaveStatus(syncResult.members);
 
-        // Update date range info for dynamic target calculation
-        if (dateRangeInfo) {
-          setDateRangeInfo(dateRangeInfo);
-        }
-
-        // Update Zustand store
-        setMembers(updatedMembers);
-
-        // Update project breakdown with real ClickUp data
-        if (projectBreakdown && Object.keys(projectBreakdown).length > 0) {
-          setProjectBreakdown(projectBreakdown);
-        }
-
-        // Update IndexedDB (persistence)
+        // Update IndexedDB (persistence) before batching store update
         await bulkUpdateMembers(updatedMembers);
 
-        // Update computed stats (will use dateRangeInfo for dynamic target)
-        updateStats();
-
-        // Reset sync progress
-        setSyncProgress({ phase: 'idle', message: '', progress: 0 });
-
-        // Update sync status
-        setLastSync(Date.now());
-        setSyncError(null);
+        // Batch all state updates into a single set() call to prevent flicker
+        const { clickup: clickupForCount } = await import('../services/clickup');
+        batchSyncUpdate({
+          members: updatedMembers,
+          projectBreakdown: projectBreakdown && Object.keys(projectBreakdown).length > 0 ? projectBreakdown : undefined,
+          dateRangeInfo: dateRangeInfo || undefined,
+          lastSync: Date.now(),
+          syncError: null,
+          requestCount: clickupForCount.getSyncRequestCount(),
+        });
 
         // Save today's daily snapshot for score comparison
         const saveSnapshot = async (scoreMetricsValue) => {
@@ -642,10 +634,6 @@ export function useClickUpSync(config = {}) {
         if (currentScoreMetrics) {
           await saveSnapshot(currentScoreMetrics);
         }
-
-        // Update request count from ClickUp service (per-sync count, not rolling window)
-        const { clickup } = await import('../services/clickup');
-        setRequestCount(clickup.getSyncRequestCount());
 
         console.log('✅ Sync completed successfully');
       } catch (error) {
@@ -778,6 +766,9 @@ export function useClickUpSync(config = {}) {
         // Get fresh dateRange from store (in case it changed during debounce)
         const freshDateRange = useAppStore.getState().dateRange;
 
+        // All member IDs (including non-monitored) for full project breakdown coverage
+        const allMemberIds = allMembers.map(m => m.clickUpId).filter(Boolean);
+
         const syncResult = await syncMemberData(
           currentMembers,
           avgTasksBaseline,
@@ -785,45 +776,43 @@ export function useClickUpSync(config = {}) {
           freshDateRange,
           onProgress,
           signal,
-          { pollMode: false }  // Full sync: fills cache, eager list fetch
+          { pollMode: false, allMemberIds }  // Full sync: fills cache, eager list fetch
         );
 
         if (syncResult.skipped || signal.aborted) {
           return;
         }
 
-        // Enrich with leave status and update state
+        // Enrich with leave status, persist to IndexedDB, then batch store update
         const enrichedMembers = await enrichMembersWithLeaveStatus(syncResult.members);
-        if (syncResult.dateRangeInfo) {
-          setDateRangeInfo(syncResult.dateRangeInfo);
-        }
-        setMembers(enrichedMembers);
-        if (syncResult.projectBreakdown && Object.keys(syncResult.projectBreakdown).length > 0) {
-          setProjectBreakdown(syncResult.projectBreakdown);
-        }
         await bulkUpdateMembers(enrichedMembers);
-        updateStats();
-        setSyncProgress({ phase: 'idle', message: '', progress: 0 });
-        setLastSync(Date.now());
-        setSyncError(null);
 
         const { clickup } = await import('../services/clickup');
-        setRequestCount(clickup.getSyncRequestCount());
+        batchSyncUpdate({
+          members: enrichedMembers,
+          projectBreakdown: syncResult.projectBreakdown && Object.keys(syncResult.projectBreakdown).length > 0
+            ? syncResult.projectBreakdown : undefined,
+          dateRangeInfo: syncResult.dateRangeInfo || undefined,
+          lastSync: Date.now(),
+          syncError: null,
+          requestCount: clickup.getSyncRequestCount(),
+          isSyncing: false, // Atomically set isSyncing=false with data — prevents flicker
+        });
 
         console.log('✅ Date range sync completed');
       } catch (error) {
         if (error.name === 'AbortError') {
           console.log('⏸️ Date range sync aborted');
+          setIsSyncing(false);
           return;
         }
         console.error('❌ Date range sync failed:', error.message);
         setSyncError(error.message);
-      } finally {
         setIsSyncing(false);
       }
     }, 500); // 500ms debounce — handles rapid preset switching without flicker
 
-  }, [dateRange, enabled, apiKey, teamId, setMembers, setLastSync, setSyncError, setIsSyncing, setRequestCount, updateStats, setProjectBreakdown, setTeamBaseline, setDateRangeInfo, setSyncProgress]);
+  }, [dateRange, enabled, apiKey, teamId, setIsSyncing, batchSyncUpdate, setTeamBaseline, setSyncProgress]);
 
   // Handle reconnection - process queue and trigger sync
   useEffect(() => {
@@ -882,15 +871,11 @@ export function useClickUpSync(config = {}) {
  */
 export function useManualSync() {
   const members = useAppStore(state => state.members);
-  const setMembers = useAppStore(state => state.setMembers);
-  const setLastSync = useAppStore(state => state.setLastSync);
-  const setSyncError = useAppStore(state => state.setSyncError);
   const setIsSyncing = useAppStore(state => state.setIsSyncing);
-  const updateStats = useAppStore(state => state.updateStats);
-  const setProjectBreakdown = useAppStore(state => state.setProjectBreakdown);
+  const setSyncError = useAppStore(state => state.setSyncError);
   const setTeamBaseline = useAppStore(state => state.setTeamBaseline);
-  const setDateRangeInfo = useAppStore(state => state.setDateRangeInfo);
   const setSyncProgress = useAppStore(state => state.setSyncProgress);
+  const batchSyncUpdate = useAppStore(state => state.batchSyncUpdate);
 
   const triggerSync = async () => {
     try {
@@ -927,36 +912,25 @@ export function useManualSync() {
       // Now enrich with leave status using freshly-synced db.leaves
       const updatedMembers = await enrichMembersWithLeaveStatus(syncResult.members);
 
-      // Update date range info for dynamic target calculation
-      if (dateRangeInfo) {
-        setDateRangeInfo(dateRangeInfo);
-      }
-
-      setMembers(updatedMembers);
-
-      // Update project breakdown with real ClickUp data
-      if (projectBreakdown && Object.keys(projectBreakdown).length > 0) {
-        setProjectBreakdown(projectBreakdown);
-      }
-
       await bulkUpdateMembers(updatedMembers);
 
-      updateStats();
-
-      // Reset sync progress
-      setSyncProgress({ phase: 'idle', message: '', progress: 0 });
-
-      setLastSync(Date.now());
-      setSyncError(null);
+      // Batch all state updates into a single set() call to prevent flicker
+      batchSyncUpdate({
+        members: updatedMembers,
+        projectBreakdown: projectBreakdown && Object.keys(projectBreakdown).length > 0 ? projectBreakdown : undefined,
+        dateRangeInfo: dateRangeInfo || undefined,
+        lastSync: Date.now(),
+        syncError: null,
+        isSyncing: false,
+      });
 
       return { success: true };
     } catch (error) {
       console.error('❌ Manual sync failed:', error);
       setSyncError(error.message);
       setSyncProgress({ phase: 'idle', message: '', progress: 0 });
-      return { success: false, error: error.message };
-    } finally {
       setIsSyncing(false);
+      return { success: false, error: error.message };
     }
   };
 

@@ -242,19 +242,21 @@ export async function calculateProjectBreakdown(timeEntries, globalTaskCache = {
  * @param {Object} globalTaskCache - Pre-fetched task details cache (avoids duplicate API calls)
  * @returns {Object} Project breakdown with status pills
  */
-export function calculateFastProjectBreakdown(timeEntries, globalTaskCache = {}) {
+export function calculateFastProjectBreakdown(timeEntries, globalTaskCache = {}, monitoredMemberIds = null) {
   const projects = {};
 
-  // Debug: Log first time entry structure
+  // Debug: Log ALL unique list names seen in time entries to diagnose missing projects
   if (timeEntries.length > 0) {
-    console.log('📋 Sample time entry structure:', {
-      taskId: timeEntries[0].task?.id,
-      taskName: timeEntries[0].task?.name,
-      projectName: timeEntries[0].task_location?.list_name,  // CORRECT PATH
-      status: timeEntries[0].task?.status?.status,
-      statusType: timeEntries[0].task?.status?.type,
-      statusColor: timeEntries[0].task?.status?.color
+    const debugMap = {};
+    timeEntries.forEach(e => {
+      const listName = e.task_location?.list_name ?? '⚠️ MISSING';
+      const taskId = e.task?.id ?? 'no-task-id';
+      const duration = parseInt(e.duration, 10);
+      if (!debugMap[listName]) debugMap[listName] = { count: 0, sampleTaskId: taskId, sampleDuration: duration, hasMissingList: !e.task_location?.list_name };
+      debugMap[listName].count++;
     });
+    console.log('📋 All list_names in time entries:', debugMap);
+    console.log('📋 globalTaskCache keys:', Object.keys(globalTaskCache).length, '| taskCacheV2 size:', taskCacheV2.cache?.size ?? 'n/a');
   }
 
   timeEntries.forEach(entry => {
@@ -265,15 +267,20 @@ export function calculateFastProjectBreakdown(timeEntries, globalTaskCache = {})
     if (duration <= 0 || !taskId) return;
 
     // Use time entry directly - has all needed data via task_location and task.status
-    const projectName = entry.task_location?.list_name || 'Unknown';
-    const statusName = entry.task?.status?.status || 'unknown';
-    const statusType = entry.task?.status?.type || '';
+    // Fall back to cached task's list name if task_location is missing (some ClickUp lists omit it)
+    const cachedTaskForProject = globalTaskCache[taskId] || taskCacheV2.get(taskId);
+    const projectName = entry.task_location?.list_name
+      || cachedTaskForProject?.list?.name
+      || 'Unknown';
+    const statusName = entry.task?.status?.status || cachedTaskForProject?.status?.status || 'unknown';
+    const statusType = entry.task?.status?.type || cachedTaskForProject?.status?.type || '';
 
     // CRITICAL FIX: Generate consistent color from status name if ClickUp doesn't provide one
     // ClickUp sometimes returns:
     // - empty string or null
     // - CSS variable reference like "var(--cu-status-azure-blue)" which won't work in our app
-    const rawStatusColor = entry.task?.status?.color;
+    // Also fall back to cached task status color when time entry status color is missing
+    const rawStatusColor = entry.task?.status?.color || cachedTaskForProject?.status?.color;
     let statusColor;
 
     // Check if color is valid (not empty, not a CSS variable, is a proper hex color)
@@ -338,12 +345,15 @@ export function calculateFastProjectBreakdown(timeEntries, globalTaskCache = {})
             };
           }
 
-          // Try to get task details from cache for additional fields
-          const cachedTask = globalTaskCache[taskId] || taskCacheV2.get(taskId);
+          // Use already-resolved cache lookup (cachedTaskForProject from above)
+          const cachedTask = cachedTaskForProject;
 
           // Extract assignee from entry.user (the person who tracked time) or cached task
+          // Only use monitored members as the displayed assignee
           let assignee = null;
-          if (entry.user) {
+          const entryUserId = String(entry.user?.id);
+          const entryUserIsMonitored = !monitoredMemberIds || monitoredMemberIds.has(entryUserId);
+          if (entry.user && entryUserIsMonitored) {
             assignee = {
               id: entry.user.id,
               name: entry.user.username || entry.user.email || 'Unknown',
@@ -351,13 +361,18 @@ export function calculateFastProjectBreakdown(timeEntries, globalTaskCache = {})
               initials: entry.user.initials || (entry.user.username?.substring(0, 2).toUpperCase() || '??')
             };
           } else if (cachedTask?.assignees && cachedTask.assignees.length > 0) {
-            const firstAssignee = cachedTask.assignees[0];
-            assignee = {
-              id: firstAssignee.id,
-              name: firstAssignee.username || firstAssignee.email || 'Unknown',
-              avatar: firstAssignee.profilePicture || null,
-              initials: firstAssignee.initials || (firstAssignee.username?.substring(0, 2).toUpperCase() || '??')
-            };
+            // Find first monitored assignee from cached task
+            const monitoredAssignee = cachedTask.assignees.find(a =>
+              !monitoredMemberIds || monitoredMemberIds.has(String(a.id))
+            );
+            if (monitoredAssignee) {
+              assignee = {
+                id: monitoredAssignee.id,
+                name: monitoredAssignee.username || monitoredAssignee.email || 'Unknown',
+                avatar: monitoredAssignee.profilePicture || null,
+                initials: monitoredAssignee.initials || (monitoredAssignee.username?.substring(0, 2).toUpperCase() || '??')
+              };
+            }
           }
 
           // Extract priority from cached task
@@ -429,8 +444,10 @@ export function calculateFastProjectBreakdown(timeEntries, globalTaskCache = {})
         }
       }
 
-      // Collect unique assignees from time entry user
-      if (entry.user) {
+      // Collect unique assignees from time entry user — only monitored members
+      const userId = entry.user?.id;
+      const isMonitored = !monitoredMemberIds || monitoredMemberIds.has(String(userId));
+      if (entry.user && isMonitored) {
         const assigneeExists = projects[projectName].assignees.some(a => a.id === entry.user.id);
         if (!assigneeExists) {
           projects[projectName].assignees.push({
