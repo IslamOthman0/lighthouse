@@ -18,7 +18,7 @@
 - [x] 1.3 Audit screen data consistency — 6 active bugs found (see Bug Registry)
 - [x] 1.4 Audit member status logic — 4 bugs found (see Bug Registry)
 - [x] 1.5 Audit leave system — 1 new bug found (BUG-017); BUG-016 confirmed
-- [ ] 1.6 Compile bug report
+- [x] 1.6 Compile bug report — 16 bugs total (4 HIGH, 7 MEDIUM, 3 LOW, 1 CLOSED)
 
 ## Phase 2: Safety Net Tests
 - [ ] 2.1 Tests for calculations.js
@@ -28,7 +28,25 @@
 - [ ] 2.5 Tests for leaveHelpers
 
 ## Phase 3: Bug Fixes
-- [ ] 3.x (one entry per confirmed bug from Phase 1)
+### CRITICAL/HIGH (fix first)
+- [ ] 3.1 Fix BUG-004: App.jsx displayScoreMetrics uses hardcoded weights instead of store.scoreWeights
+- [ ] 3.2 Fix BUG-007: ListView RankingTable missing dateRangeInfo prop — compliance always uses workingDays=1
+- [ ] 3.3 Fix BUG-008: MemberDetailModal Timeline tab fetches only 1 day instead of full date range
+- [ ] 3.4 Fix BUG-009: MemberDetailModal Performance tab hardcoded to "this week" — ignores globalDateRange
+- [ ] 3.5 Fix BUG-013: calculations.js offlineThreshold declared but never used
+### MEDIUM
+- [ ] 3.6 Fix BUG-005: App.jsx taskBaseline missing workingDays multiplier
+- [ ] 3.7 Fix BUG-003: orchestrator dateRangeInfo returns Date objects instead of ISO strings
+- [ ] 3.8 Fix BUG-010: MemberDetailModal header label hardcoded "Today's Progress"
+- [ ] 3.9 Fix BUG-011: ListView "Team Tracked" label missing "(N days)" for multi-day ranges
+- [ ] 3.13 Fix BUG-014: calculations.js duration===0 not caught — zero-duration timer misclassified
+- [ ] 3.14 Fix BUG-015: calculations.js all-negative entries returns noActivity despite active timer
+- [ ] 3.15 Fix BUG-016: leaveHelpers pending leaves not filtered (only 'rejected' excluded)
+- [ ] 3.16 Fix BUG-017: LeaveCalendar/TeamOverviewPanel filter pill invisible in True Black theme
+### LOW
+- [ ] 3.10 Fix BUG-001: useClickUpSync yesterday snapshot uses UTC date
+- [ ] 3.11 Fix BUG-002: useClickUpSync today snapshot uses UTC date
+- [ ] 3.12 Fix BUG-012: ProjectBreakdownCard "Today:" label hardcoded
 
 ## Phase 4: Screen Verification
 - [ ] 4.1 Grid View data flow
@@ -48,23 +66,23 @@
 
 | Bug ID | File:Line | Description | Severity | Fix Task | Status |
 |--------|-----------|-------------|----------|----------|--------|
-| BUG-001 | useClickUpSync.js:278 | `yesterday.toISOString().split('T')[0]` uses UTC date — wrong day for Egypt at midnight | LOW | TBD | Open |
-| BUG-002 | useClickUpSync.js:608,627 | `new Date().toISOString().split('T')[0]` for snapshot date uses UTC — off-by-one at midnight | LOW | TBD | Open |
-| BUG-003 | orchestrator.js:695-700 | `dateRangeInfo.startDate` and `endDate` stored as Date objects (not ISO strings) into Zustand store — type inconsistency with `dateRange.startDate` which is always string | MEDIUM | TBD | Open |
-| BUG-004 | App.jsx:213-216 | `displayScoreMetrics` computed with hardcoded weights (40/20/30/10) — does NOT read from `store.scoreWeights` — so SettingsModal weight changes never reflect in team score display | HIGH | TBD | Open |
-| BUG-005 | App.jsx:208 | `taskBaseline` for workload ratio missing `workingDays` multiplier — `filteredMembers.length * teamBaseline` (no `* workingDays`) — workload ratio inflated for multi-day ranges vs the store's `updateStats` which correctly uses `* workingDays` | MEDIUM | TBD | Open |
-| BUG-006 | useClickUpSync.js:694-700 | Polling interval ignores settings changes — `interval` dependency in useEffect (line 694) does re-fire when `settings.sync.intervalMs` changes, BUT the `setInterval` is set on line 675 with `effectiveInterval` computed at setup time. If user changes interval from 30s→60s, the effect re-runs, clears the old interval, and re-creates with new interval. CORRECT — not a bug. |  |  | CLOSED |
-| BUG-007 | ListView.jsx:212 | `RankingTable` inside List View is called without `dateRangeInfo` prop — falls back to `workingDays=1` always — compliance % wrong for multi-day ranges. Grid View correctly passes `dateRangeInfo`. | HIGH | TBD | Open |
-| BUG-008 | MemberDetailModal.jsx:694-729 | Timeline tab fetches only a single day (`selectedDate`) while the card shows N-day aggregate — card and modal never match for any range other than "today" | HIGH | TBD | Open |
-| BUG-009 | MemberDetailModal.jsx:738 | Performance tab always uses hardcoded "this week" (`getThisWeekRange()`), ignores `globalDateRange` entirely | HIGH | TBD | Open |
-| BUG-010 | MemberDetailModal.jsx:1045 | Header label hardcoded "Today's Progress" regardless of selected date range | MEDIUM | TBD | Open |
-| BUG-011 | ListView.jsx:196 | "Team Tracked" label in List View is static; Grid View dynamically appends "(N days)" when workingDays > 1 | MEDIUM | TBD | Open |
-| BUG-012 | ProjectBreakdownCard.jsx:405 | "Today:" label hardcoded — wrong for non-today date ranges | LOW | TBD | Open |
-| BUG-013 | calculations.js:26 | `offlineThreshold` declared but never used — after `breakThreshold` check, function returns 'offline' unconditionally, ignoring the user-configured offline minutes | HIGH | TBD | Open |
-| BUG-014 | calculations.js:29 | `runningEntry.duration === 0` not caught by `< 0` — zero-duration running timer misclassifies member as noActivity/offline | MEDIUM | TBD | Open |
-| BUG-015 | calculations.js:40-42 | All entries have `duration <= 0` (running timers in entries list) → `completedEntries` empty → returns 'noActivity' instead of checking for active timers | MEDIUM | TBD | Open |
-| BUG-016 | leaveHelpers.js:30 | Pending leaves not filtered — `status === 'rejected'` is the only exclusion, so pending/unconfirmed leaves show member as 'leave' | MEDIUM | TBD | Open |
-| BUG-017 | LeaveCalendar.jsx:99, TeamOverviewPanel.jsx:86 | `${theme.accent}20` (white at 20% opacity) invisible as filter pill background in True Black theme — selected filter state not visible | MEDIUM | TBD | Open |
+| BUG-001 | useClickUpSync.js:278 | `yesterday.toISOString().split('T')[0]` uses UTC date — wrong day for Egypt at midnight | LOW | 3.10 | Open |
+| BUG-002 | useClickUpSync.js:608,627 | `new Date().toISOString().split('T')[0]` for snapshot date uses UTC — off-by-one at midnight | LOW | 3.11 | Open |
+| BUG-003 | orchestrator.js:695-700 | `dateRangeInfo.startDate` and `endDate` stored as Date objects (not ISO strings) into Zustand store — type inconsistency with `dateRange.startDate` which is always string | MEDIUM | 3.7 | Open |
+| BUG-004 | App.jsx:213-216 | `displayScoreMetrics` computed with hardcoded weights (40/20/30/10) — does NOT read from `store.scoreWeights` — so SettingsModal weight changes never reflect in team score display | HIGH | 3.1 | Open |
+| BUG-005 | App.jsx:208 | `taskBaseline` for workload ratio missing `workingDays` multiplier — inflated workload ratio for multi-day ranges | MEDIUM | 3.6 | Open |
+| BUG-006 | useClickUpSync.js:694-700 | Polling interval — CLOSED, not a bug (re-fires correctly on settings change) |  |  | CLOSED |
+| BUG-007 | ListView.jsx:212 | `RankingTable` in List View called without `dateRangeInfo` prop — compliance % wrong for multi-day ranges (always uses workingDays=1) | HIGH | 3.2 | Open |
+| BUG-008 | MemberDetailModal.jsx:694-729 | Timeline tab shows only 1 day while card shows N-day aggregate — always mismatched for any range > today | HIGH | 3.3 | Open |
+| BUG-009 | MemberDetailModal.jsx:738 | Performance tab hardcoded to "this week" — ignores globalDateRange entirely | HIGH | 3.4 | Open |
+| BUG-010 | MemberDetailModal.jsx:1045 | Header label hardcoded "Today's Progress" regardless of date range | MEDIUM | 3.8 | Open |
+| BUG-011 | ListView.jsx:196 | "Team Tracked" label static in List View — Grid View shows "(N days)" for multi-day ranges | MEDIUM | 3.9 | Open |
+| BUG-012 | ProjectBreakdownCard.jsx:405 | "Today:" label hardcoded — wrong for non-today date ranges | LOW | 3.12 | Open |
+| BUG-013 | calculations.js:26 | `offlineThreshold` declared but never used — user-configured offlineMinutes has no effect; members go offline after breakThreshold only | HIGH | 3.5 | Open |
+| BUG-014 | calculations.js:29 | `duration === 0` not caught by `< 0` — zero-duration running timer misclassifies member as noActivity | MEDIUM | 3.13 | Open |
+| BUG-015 | calculations.js:40-42 | All entries have `duration <= 0` → completedEntries empty → returns 'noActivity' despite active timer | MEDIUM | 3.14 | Open |
+| BUG-016 | leaveHelpers.js:30 | Pending leaves not filtered — only 'rejected' excluded; pending shows as 'leave' | MEDIUM | 3.15 | Open |
+| BUG-017 | LeaveCalendar.jsx:99, TeamOverviewPanel.jsx:86 | Filter pill accent color invisible in True Black theme (white 20% opacity on white) | MEDIUM | 3.16 | Open |
 
 ## Task 1.1 — Date Flow Audit Findings
 
@@ -244,3 +262,4 @@
 | 4 | 2026-03-12 | 1.3 | Screen data consistency audit: 6 active bugs (3 HIGH, 2 MEDIUM, 1 LOW). Dead code bugs in MemberRow.jsx skipped. |
 | 5 | 2026-03-12 | 1.4 | Member status audit: 4 bugs (1 HIGH offlineThreshold unused, 3 MEDIUM edge cases) |
 | 6 | 2026-03-12 | 1.5 | Leave system audit: 1 new bug (BUG-017 MEDIUM filter pill); BUG-016 confirmed. Data sync, metrics, WFH all correct. |
+| 7 | 2026-03-12 | 1.6 | Bug report compiled: 16 bugs total (4 HIGH, 7 MEDIUM, 3 LOW, 1 CLOSED). Phase 3 task list created (3.1-3.16). |
