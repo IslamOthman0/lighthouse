@@ -21,7 +21,7 @@
 - [x] 1.6 Compile bug report — 16 bugs total (4 HIGH, 7 MEDIUM, 3 LOW, 1 CLOSED)
 
 ## Phase 2: Safety Net Tests
-- [ ] 2.1 Tests for calculations.js
+- [x] 2.1 Tests for calculations.js — 38 tests (37 passing, 1 intentional FAIL for BUG-013)
 - [ ] 2.2 Tests for scoreCalculation.js
 - [ ] 2.3 Tests for settingsValidation + timeFormat
 - [ ] 2.4 Tests for useAppStore
@@ -263,3 +263,4 @@
 | 5 | 2026-03-12 | 1.4 | Member status audit: 4 bugs (1 HIGH offlineThreshold unused, 3 MEDIUM edge cases) |
 | 6 | 2026-03-12 | 1.5 | Leave system audit: 1 new bug (BUG-017 MEDIUM filter pill); BUG-016 confirmed. Data sync, metrics, WFH all correct. |
 | 7 | 2026-03-12 | 1.6 | Bug report compiled: 16 bugs total (4 HIGH, 7 MEDIUM, 3 LOW, 1 CLOSED). Phase 3 task list created (3.1-3.16). |
+| 8 | 2026-03-12 | 2.1 | calculations.js tests: 38 tests (37 pass, 1 intentional fail exposing BUG-013 offlineThreshold unused). |
