@@ -381,4 +381,43 @@ npm run test:unit   # Run unit tests once
 
 ---
 
+## Fix Plan Rules (ACTIVE -- March 2026)
+
+### Golden Rules
+1. **ONE fix per commit** -- never change more than one logical unit per commit
+2. **Run tests after EVERY change** -- `npm test -- --run`
+3. **No refactoring during fixes** -- fix the bug, don't reorganize code
+4. **If unsure, STOP and ask** -- don't guess at business logic
+5. **Preserve all existing functionality** -- if it works, don't touch it
+6. **Read PROGRESS.md first** -- check what's done and what's next
+
+### Commit Convention
+- Diagnosis: `audit: [area] - [finding summary]`
+- Tests: `test: [file] - [what's covered]`
+- Fixes: `fix: [component] - [what was wrong]`
+- Cleanup: `chore: [description]`
+
+### Date Handling Rules
+- "Today" = dateRange.preset === 'today' OR dateRange.startDate is null
+- Date range = startDate + endDate as ISO strings (YYYY-MM-DD)
+- All time comparisons use LOCAL time (Egypt UTC+2/+3)
+- Working days respect settings.schedule.workDays + publicHolidays
+- Member target = 6.5h x workingDays (after deducting leave days)
+
+### Settings Pipeline (must flow in this order)
+1. localStorage -> useSettings hook -> React state
+2. useClickUpSync effect -> store.setScoreWeights()
+3. loadSettings() in sync -> orchestrator uses for API calls
+4. calculations.js uses settings for thresholds/schedule
+5. App.jsx useMemo filters members by settings.team.membersToMonitor
+
+### Data Flow for Screens
+- Source of truth: useAppStore (Zustand)
+- Grid View: reads from store via App.jsx computed props
+- List View: receives same computed props as Grid View
+- MemberDetailModal: reads individual member from store.members
+- All must respect current dateRange from store
+
+---
+
 **For detailed implementation plan, see:** `.claude/plans/misty-juggling-teapot.md`
