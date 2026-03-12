@@ -17,7 +17,7 @@
 - [x] 1.2 Audit settings flow — 3 bugs found (see Bug Registry)
 - [x] 1.3 Audit screen data consistency — 6 active bugs found (see Bug Registry)
 - [x] 1.4 Audit member status logic — 4 bugs found (see Bug Registry)
-- [ ] 1.5 Audit leave system
+- [x] 1.5 Audit leave system — 1 new bug found (BUG-017); BUG-016 confirmed
 - [ ] 1.6 Compile bug report
 
 ## Phase 2: Safety Net Tests
@@ -64,6 +64,7 @@
 | BUG-014 | calculations.js:29 | `runningEntry.duration === 0` not caught by `< 0` — zero-duration running timer misclassifies member as noActivity/offline | MEDIUM | TBD | Open |
 | BUG-015 | calculations.js:40-42 | All entries have `duration <= 0` (running timers in entries list) → `completedEntries` empty → returns 'noActivity' instead of checking for active timers | MEDIUM | TBD | Open |
 | BUG-016 | leaveHelpers.js:30 | Pending leaves not filtered — `status === 'rejected'` is the only exclusion, so pending/unconfirmed leaves show member as 'leave' | MEDIUM | TBD | Open |
+| BUG-017 | LeaveCalendar.jsx:99, TeamOverviewPanel.jsx:86 | `${theme.accent}20` (white at 20% opacity) invisible as filter pill background in True Black theme — selected filter state not visible | MEDIUM | TBD | Open |
 
 ## Task 1.1 — Date Flow Audit Findings
 
@@ -203,6 +204,37 @@
 - CORRECT: For historical ranges, `timeEntries` contains the range entries. `deriveStatus` will return 'offline' for members who worked in the range (has completed entries from last week, `minutesSinceActivity` is large). This is expected behavior — status cards show live state; for historical views, 'offline' is the correct "was active but isn't now" state.
 - NOTE: The `todayTimeEntries` variable name in orchestrator is misleading (it's range entries, not just today's) — this is a naming issue only, not a functional bug.
 
+## Task 1.5 — Leave System Audit Findings
+
+### CHECK 1 — Data Sync
+- CORRECT: syncLeaveAndWfh() fetches from configurable leaveListId/wfhListId in settings
+- CORRECT: performLeaveSync() stores in db.leaves with correct schema
+- CORRECT: shouldSyncLeaves() uses toDateString() (local date, no UTC bug) — syncs once per calendar day
+- CORRECT: All dates stored as ISO YYYY-MM-DD strings via toLocalDateStr(); status/type values normalized consistently
+
+### CHECK 2 — Leave Display
+- CORRECT: LeavesTab reads from db.leaves via useLiveQuery — reactive, auto-updates
+- CORRECT: LeaveCalendar uses new Date(dateStr + 'T00:00:00') — no UTC shift bugs
+- CORRECT: TeamOverviewPanel reads leaveQuotas from settings with correct fallbacks
+- CORRECT: WFH displayed separately from leave
+- BUG-017: LeaveCalendar.jsx:99 & TeamOverviewPanel.jsx:86 — filter pill uses ${theme.accent}20 (white 20% opacity) — invisible on True Black theme
+
+### CHECK 3 — Leave Impact on Metrics
+- CORRECT: countLeaveDaysInRange() filters to approved/confirmed/active only (line 428) — pending excluded
+- CORRECT: Called per-member in orchestrator.js:227-241 — deducts from workingDays for each member
+- CORRECT: Target = memberWorkingDays × 6.5h — correct for N-day ranges with leave deductions
+- CORRECT: No off-by-one errors — both boundary dates counted, minimum 1 day enforced
+
+### CHECK 4 — WFH Handling
+- CORRECT: WFH type correctly distinguished; WFH members keep original status (not 'leave')
+- CORRECT: WFH does NOT reduce working days target (only leave reduces it)
+- CORRECT: WFH counted separately in its own monthly quota
+
+### CHECK 5 — leaveHelpers.js
+- BUG-016 (CONFIRMED): getMemberLeaveToday():30 — only rejects 'rejected' status; pending leaves still show as 'leave'
+- CORRECT: All other date parsing in leaveHelpers uses local date components — no timezone bugs
+- CORRECT: getMemberLeaveBalance(), calculateLeaveDays(), enrichMembersWithLeaveStatus() all correct
+
 ## Session Log
 | Session | Date | Tasks Completed | Notes |
 |---------|------|-----------------|-------|
@@ -211,3 +243,4 @@
 | 3 | 2026-03-12 | 1.2 | Settings pipeline audit: 2 bugs found (BUG-004 HIGH, BUG-005 MEDIUM) |
 | 4 | 2026-03-12 | 1.3 | Screen data consistency audit: 6 active bugs (3 HIGH, 2 MEDIUM, 1 LOW). Dead code bugs in MemberRow.jsx skipped. |
 | 5 | 2026-03-12 | 1.4 | Member status audit: 4 bugs (1 HIGH offlineThreshold unused, 3 MEDIUM edge cases) |
+| 6 | 2026-03-12 | 1.5 | Leave system audit: 1 new bug (BUG-017 MEDIUM filter pill); BUG-016 confirmed. Data sync, metrics, WFH all correct. |
