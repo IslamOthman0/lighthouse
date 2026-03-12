@@ -15,7 +15,7 @@
 ## Phase 1: Diagnosis
 - [x] 1.1 Audit date flow — 3 bugs found (see Bug Registry)
 - [x] 1.2 Audit settings flow — 3 bugs found (see Bug Registry)
-- [ ] 1.3 Audit screen data consistency
+- [x] 1.3 Audit screen data consistency — 6 active bugs found (see Bug Registry)
 - [ ] 1.4 Audit member status logic
 - [ ] 1.5 Audit leave system
 - [ ] 1.6 Compile bug report
@@ -54,6 +54,12 @@
 | BUG-004 | App.jsx:213-216 | `displayScoreMetrics` computed with hardcoded weights (40/20/30/10) — does NOT read from `store.scoreWeights` — so SettingsModal weight changes never reflect in team score display | HIGH | TBD | Open |
 | BUG-005 | App.jsx:208 | `taskBaseline` for workload ratio missing `workingDays` multiplier — `filteredMembers.length * teamBaseline` (no `* workingDays`) — workload ratio inflated for multi-day ranges vs the store's `updateStats` which correctly uses `* workingDays` | MEDIUM | TBD | Open |
 | BUG-006 | useClickUpSync.js:694-700 | Polling interval ignores settings changes — `interval` dependency in useEffect (line 694) does re-fire when `settings.sync.intervalMs` changes, BUT the `setInterval` is set on line 675 with `effectiveInterval` computed at setup time. If user changes interval from 30s→60s, the effect re-runs, clears the old interval, and re-creates with new interval. CORRECT — not a bug. |  |  | CLOSED |
+| BUG-007 | ListView.jsx:212 | `RankingTable` inside List View is called without `dateRangeInfo` prop — falls back to `workingDays=1` always — compliance % wrong for multi-day ranges. Grid View correctly passes `dateRangeInfo`. | HIGH | TBD | Open |
+| BUG-008 | MemberDetailModal.jsx:694-729 | Timeline tab fetches only a single day (`selectedDate`) while the card shows N-day aggregate — card and modal never match for any range other than "today" | HIGH | TBD | Open |
+| BUG-009 | MemberDetailModal.jsx:738 | Performance tab always uses hardcoded "this week" (`getThisWeekRange()`), ignores `globalDateRange` entirely | HIGH | TBD | Open |
+| BUG-010 | MemberDetailModal.jsx:1045 | Header label hardcoded "Today's Progress" regardless of selected date range | MEDIUM | TBD | Open |
+| BUG-011 | ListView.jsx:196 | "Team Tracked" label in List View is static; Grid View dynamically appends "(N days)" when workingDays > 1 | MEDIUM | TBD | Open |
+| BUG-012 | ProjectBreakdownCard.jsx:405 | "Today:" label hardcoded — wrong for non-today date ranges | LOW | TBD | Open |
 
 ## Task 1.1 — Date Flow Audit Findings
 
@@ -129,9 +135,40 @@
 
 - CORRECT: `App.jsx:165` passes `settings.sync.intervalMs` as `interval` to `useClickUpSync`. This is in the hook's dependency array (line 694). When `intervalMs` changes, the effect re-runs: clears old interval, sets new interval. **Interval change takes effect immediately without page reload.**
 
+## Task 1.3 — Screen Data Consistency Audit Findings
+
+### CHECK 1 — Data Sources
+- CORRECT: `displayTeamStats` and `displayScoreMetrics` in App.jsx computed from `filteredMembers` (correct — not all members)
+- CORRECT: List View receives same `displayTeamStats`/`displayScoreMetrics` props as Grid View (App.jsx lines 458-460)
+- CORRECT: `store.teamStats`/`store.scoreMetrics` (from `updateStats`) are computed but never passed to components — `displayTeamStats/displayScoreMetrics` recomputed from `filteredMembers` in App.jsx useMemo are what components actually use
+- BUG-011: ListView.jsx:196 — "Team Tracked" label static in List View; Grid View dynamically shows "(N days)" when workingDays > 1
+
+### CHECK 2 — MemberCard vs MemberRow
+- CORRECT: `RankingTable.jsx` (active) uses `member.score` (pre-calculated), `formatHoursToHM`, `getMetricColor` — consistent with Grid View cards
+- CORRECT: List View desktop table (ListView.jsx) uses `member.score`, `formatHoursToHM`, `getMetricColor` — consistent
+- NOTE: `MemberRow.jsx` is dead code (never imported anywhere) — ignored
+
+### CHECK 3 — MemberDetailModal vs Card
+- CORRECT: Modal header shows same `member.tracked`, `member.score` as card (snapshot at click time)
+- BUG-010: MemberDetailModal.jsx:1045 — Header label hardcoded "Today's Progress" regardless of date range
+- BUG-008: MemberDetailModal.jsx:694-729 — Timeline tab shows only 1 day (`selectedDate`) while card shows N-day aggregate; data mismatch for any range > 1 day
+- BUG-009: MemberDetailModal.jsx:738 — Performance tab uses hardcoded `getThisWeekRange()`, ignores `globalDateRange`
+
+### CHECK 4 — DashboardDetailModal
+- CORRECT: Receives `filteredMembers`, `displayScoreMetrics`, `dateRangeInfo` from App.jsx — consistent with overview cards
+- CORRECT: All three views (time, tasks, score) use `dateRangeInfo.workingDays` for target calculations
+- NOTE: Both modal and App.jsx use hardcoded `6.5` target instead of `settings.schedule.dailyTargetHours` — numbers match between card and modal so not a consistency bug (same shared issue)
+
+### CHECK 5 — Date Range Display
+- CORRECT: Header.jsx reads `store.dateRange` and correctly parses ISO strings as local midnight
+- BUG-007: ListView.jsx:212 — `RankingTable` in List View called without `dateRangeInfo` prop → falls back to `workingDays=1` → compliance % always wrong for multi-day ranges. Grid View's RankingTable at App.jsx:447 correctly passes `dateRangeInfo`.
+- BUG-012: ProjectBreakdownCard.jsx:405 — "Today:" label hardcoded for tracked-time stat — wrong for non-today ranges
+- CORRECT: `TeamStatusOverview` receives `filteredMembers` in both Grid View (App.jsx:425) and List View (ListView.jsx:216)
+
 ## Session Log
 | Session | Date | Tasks Completed | Notes |
 |---------|------|-----------------|-------|
 | 1 | 2026-03-12 | 0.1, 0.2, 0.3 | Phase 0 complete. Unused imports: useCallback, isSyncInProgress in useClickUpSync.js |
 | 2 | 2026-03-12 | 1.1 | Date flow audit: 3 bugs found (2 LOW timezone, 1 MEDIUM type inconsistency) |
 | 3 | 2026-03-12 | 1.2 | Settings pipeline audit: 2 bugs found (BUG-004 HIGH, BUG-005 MEDIUM) |
+| 4 | 2026-03-12 | 1.3 | Screen data consistency audit: 6 active bugs (3 HIGH, 2 MEDIUM, 1 LOW). Dead code bugs in MemberRow.jsx skipped. |
