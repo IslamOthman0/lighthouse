@@ -9,8 +9,8 @@
 
 ## Phase 0: Setup
 - [x] 0.1 Create PROGRESS.md
-- [ ] 0.2 Update CLAUDE.md with fix rules
-- [ ] 0.3 Clean up temp files
+- [x] 0.2 Update CLAUDE.md with fix rules
+- [x] 0.3 Clean up temp files (deleted MainTabs.jsx.tmp; reported 2 unused imports in useClickUpSync.js)
 
 ## Phase 1: Diagnosis
 - [ ] 1.1 Audit date flow
@@ -52,4 +52,4 @@
 ## Session Log
 | Session | Date | Tasks Completed | Notes |
 |---------|------|-----------------|-------|
-| 1 | 2026-03-12 | 0.1 | Created progress tracker |
+| 1 | 2026-03-12 | 0.1, 0.2, 0.3 | Phase 0 complete. Unused imports: useCallback, isSyncInProgress in useClickUpSync.js |
