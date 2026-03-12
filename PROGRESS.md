@@ -16,7 +16,7 @@
 - [x] 1.1 Audit date flow — 3 bugs found (see Bug Registry)
 - [x] 1.2 Audit settings flow — 3 bugs found (see Bug Registry)
 - [x] 1.3 Audit screen data consistency — 6 active bugs found (see Bug Registry)
-- [ ] 1.4 Audit member status logic
+- [x] 1.4 Audit member status logic — 4 bugs found (see Bug Registry)
 - [ ] 1.5 Audit leave system
 - [ ] 1.6 Compile bug report
 
@@ -60,6 +60,10 @@
 | BUG-010 | MemberDetailModal.jsx:1045 | Header label hardcoded "Today's Progress" regardless of selected date range | MEDIUM | TBD | Open |
 | BUG-011 | ListView.jsx:196 | "Team Tracked" label in List View is static; Grid View dynamically appends "(N days)" when workingDays > 1 | MEDIUM | TBD | Open |
 | BUG-012 | ProjectBreakdownCard.jsx:405 | "Today:" label hardcoded — wrong for non-today date ranges | LOW | TBD | Open |
+| BUG-013 | calculations.js:26 | `offlineThreshold` declared but never used — after `breakThreshold` check, function returns 'offline' unconditionally, ignoring the user-configured offline minutes | HIGH | TBD | Open |
+| BUG-014 | calculations.js:29 | `runningEntry.duration === 0` not caught by `< 0` — zero-duration running timer misclassifies member as noActivity/offline | MEDIUM | TBD | Open |
+| BUG-015 | calculations.js:40-42 | All entries have `duration <= 0` (running timers in entries list) → `completedEntries` empty → returns 'noActivity' instead of checking for active timers | MEDIUM | TBD | Open |
+| BUG-016 | leaveHelpers.js:30 | Pending leaves not filtered — `status === 'rejected'` is the only exclusion, so pending/unconfirmed leaves show member as 'leave' | MEDIUM | TBD | Open |
 
 ## Task 1.1 — Date Flow Audit Findings
 
@@ -165,6 +169,40 @@
 - BUG-012: ProjectBreakdownCard.jsx:405 — "Today:" label hardcoded for tracked-time stat — wrong for non-today ranges
 - CORRECT: `TeamStatusOverview` receives `filteredMembers` in both Grid View (App.jsx:425) and List View (ListView.jsx:216)
 
+## Task 1.4 — Member Status Logic Audit Findings
+
+### CHECK 1 — deriveStatus() in calculations.js
+- CORRECT: `runningEntry.duration < 0` correctly identifies active ClickUp timer
+- CORRECT: Empty `timeEntries` → 'noActivity' is correct
+- CORRECT: Break threshold check using `minutesSinceActivity < breakThreshold` is correct
+- BUG-013: `calculations.js:26` — `offlineThreshold` declared but never used. After `breakThreshold` check, function falls through to unconditional `return 'offline'`. The user-configured `offlineMinutes` setting has no effect. A member 16 minutes inactive (past `breakThreshold=15`) immediately becomes 'offline' even with `offlineMinutes=60`. Expected: check `minutesSinceActivity >= offlineThreshold` before returning 'offline'.
+- BUG-014: `calculations.js:29` — `duration === 0` not caught by `< 0`. Zero-duration running timer (possible edge case from API) misclassifies member as noActivity/offline instead of 'working'. Expected: use `duration <= 0`.
+- BUG-015: `calculations.js:40-42` — If all timeEntries have `duration <= 0` (all are running/negative), `completedEntries` is empty and returns 'noActivity'. But a running timer in entries = active work. Expected: return 'working' when entries are all negative-duration (or when runningEntry is present even with zero duration).
+- NOTE: `-0 < 0` is `false` in JS but this edge case is too theoretical to log as a bug — ClickUp API would not return -0.
+
+### CHECK 2 — Leave Override
+- CORRECT: WFH preserves member.status (only non-WFH leave forces status = 'leave')
+- CORRECT: `getMemberLeaveToday()` uses local date components (no UTC shift bug)
+- CORRECT: Non-WFH leave correctly overrides 'working' status (by design — leave takes priority)
+- BUG-016: `leaveHelpers.js:30` — Only `status === 'rejected'` leaves are excluded. Pending/submitted leaves (not yet approved) also show member as 'leave'. Expected: only `['approved', 'confirmed', 'active']` statuses should trigger the leave override.
+- NOTE: Leave always uses today's real date — this is intentional. Status cards show live state only. For historical ranges, status is decorative (not meaningful anyway).
+
+### CHECK 3 — Status → Card Routing
+- CORRECT: `onLeave || status === 'leave'` check before switch — leave card always shown for leave members
+- CORRECT: WFH members fall through to their actual status card
+- CORRECT: Five cases + default covers all values
+- NOTE: Unknown status silently falls back to OfflineCard — acceptable since it never happens with current data model
+
+### CHECK 4 — TeamStatusOverview Counts
+- CORRECT: Receives `filteredMembers` — counts match displayed cards
+- CORRECT: `status === 'leave'` check matches `enrichMembersWithLeaveStatus` output
+- CORRECT: WFH members counted under their actual status, not 'leave'
+
+### CHECK 5 — transform.js / Status for Multi-day Ranges
+- CORRECT: For historical ranges, running timers are not fetched (`rangeIncludesToday = false`) — so `runningEntry = null` for all members. This is correct: no one can have a running timer from last week.
+- CORRECT: For historical ranges, `timeEntries` contains the range entries. `deriveStatus` will return 'offline' for members who worked in the range (has completed entries from last week, `minutesSinceActivity` is large). This is expected behavior — status cards show live state; for historical views, 'offline' is the correct "was active but isn't now" state.
+- NOTE: The `todayTimeEntries` variable name in orchestrator is misleading (it's range entries, not just today's) — this is a naming issue only, not a functional bug.
+
 ## Session Log
 | Session | Date | Tasks Completed | Notes |
 |---------|------|-----------------|-------|
@@ -172,3 +210,4 @@
 | 2 | 2026-03-12 | 1.1 | Date flow audit: 3 bugs found (2 LOW timezone, 1 MEDIUM type inconsistency) |
 | 3 | 2026-03-12 | 1.2 | Settings pipeline audit: 2 bugs found (BUG-004 HIGH, BUG-005 MEDIUM) |
 | 4 | 2026-03-12 | 1.3 | Screen data consistency audit: 6 active bugs (3 HIGH, 2 MEDIUM, 1 LOW). Dead code bugs in MemberRow.jsx skipped. |
+| 5 | 2026-03-12 | 1.4 | Member status audit: 4 bugs (1 HIGH offlineThreshold unused, 3 MEDIUM edge cases) |
