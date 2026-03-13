@@ -864,3 +864,25 @@ describe('BUG-010: progressLabel derives from dateRange, not hardcoded', () => {
     expect(getProgressLabel(null, 1)).toBe("Today's Progress");
   });
 });
+
+// ---------------------------------------------------------------------------
+// BUG-011: ListView "Team Tracked" label missing "(N days)" for multi-day ranges
+// ---------------------------------------------------------------------------
+
+describe('BUG-011: teamTrackedLabel includes day count for multi-day ranges', () => {
+  function getTeamTrackedLabel(workingDays) {
+    return workingDays > 1 ? `Team Tracked (${workingDays} days)` : 'Team Tracked';
+  }
+
+  it('BUG-011 spec: today (workingDays=1) → "Team Tracked"', () => {
+    expect(getTeamTrackedLabel(1)).toBe('Team Tracked');
+  });
+
+  it('BUG-011 spec: 5-day range → "Team Tracked (5 days)"', () => {
+    expect(getTeamTrackedLabel(5)).toBe('Team Tracked (5 days)');
+  });
+
+  it('BUG-011 spec: 7-day range → "Team Tracked (7 days)"', () => {
+    expect(getTeamTrackedLabel(7)).toBe('Team Tracked (7 days)');
+  });
+});

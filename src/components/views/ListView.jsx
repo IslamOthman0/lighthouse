@@ -193,7 +193,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
             theme={theme}
             value={teamStats?.tracked.value || '0h'}
             subValue={teamStats?.tracked.sub || '/ 0h'}
-            label="Team Tracked"
+            label={(dateRangeInfo?.workingDays || 1) > 1 ? `Team Tracked (${dateRangeInfo.workingDays} days)` : 'Team Tracked'}
             progress={teamStats?.tracked.progress || 0}
             color={theme.working}
             onClick={() => onDashboardCardClick?.('time')}
