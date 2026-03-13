@@ -24,9 +24,12 @@ import { countLeaveDaysInRange } from '../../services/sync/calculations';
 import { db } from '../../db';
 
 describe('getMemberLeaveToday', () => {
-  const today = new Date().toISOString().split('T')[0];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const dYesterday = new Date(Date.now() - 86400000);
+  const yesterday = `${dYesterday.getFullYear()}-${String(dYesterday.getMonth()+1).padStart(2,'0')}-${String(dYesterday.getDate()).padStart(2,'0')}`;
+  const dTomorrow = new Date(Date.now() + 86400000);
+  const tomorrow = `${dTomorrow.getFullYear()}-${String(dTomorrow.getMonth()+1).padStart(2,'0')}-${String(dTomorrow.getDate()).padStart(2,'0')}`;
 
   const leaves = [
     { memberId: '100', memberClickUpId: '200', type: 'annual', status: 'approved', startDate: today, endDate: today },
