@@ -78,12 +78,13 @@ describe('deriveStatus()', () => {
     expect(deriveStatus(null, [])).toBe('noActivity');
   });
 
-  it('returns "noActivity" when all entries have duration 0 (no completed entries)', () => {
-    // Entries with duration "0" are skipped by completedEntries filter (duration > 0)
+  it('[BUG-015] returns "offline" (not "noActivity") when entries exist but all have non-positive duration', () => {
+    // Member has entries today but all are zero/negative duration (API edge case).
+    // They have been active (entries exist), so noActivity is wrong — offline is correct.
     const entries = [
       { id: '1', duration: '0', start: String(Date.now() - 3_600_000), end: String(Date.now() - 1_000), task: { id: 'x' } },
     ];
-    expect(deriveStatus(null, entries)).toBe('noActivity');
+    expect(deriveStatus(null, entries)).toBe('offline');
   });
 
   it('returns "break" when last activity is within breakThreshold (default 15 min)', () => {

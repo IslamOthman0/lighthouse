@@ -38,8 +38,9 @@ export function deriveStatus(runningEntry, timeEntries, settings = null) {
   // Find the most recent completed time entry
   const completedEntries = timeEntries.filter(e => e.duration > 0 && e.end);
   if (completedEntries.length === 0) {
-    // Has time entries but none are completed (edge case)
-    return 'noActivity';
+    // Has entries but none completed (e.g. all zero/negative duration from API edge case).
+    // Member has been active today but we cannot determine recency — treat as offline.
+    return 'offline';
   }
 
   // Sort by end time descending to get most recent
