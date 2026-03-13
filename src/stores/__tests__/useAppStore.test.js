@@ -564,3 +564,55 @@ describe('BUG-004: displayScoreMetrics must use store.scoreWeights, not hardcode
     expect(appTotal).toBe(scoreMetrics.total); // Both 60 — spec for the fix
   });
 });
+
+// ===========================================================================
+// BUG-007: RankingTable compliance % must use dateRangeInfo.workingDays
+// ===========================================================================
+// ListView.jsx was calling <RankingTable> without dateRangeInfo prop.
+// RankingTable.formatComplianceDisplay() uses workingDays from dateRangeInfo
+// (falling back to 1). Without the prop, a member who worked 5 days shows
+// compliance as falsely inflated (capped 100%) instead of the correct %.
+//
+// Fix: ListView accepts dateRangeInfo prop and passes it to RankingTable.
+// These tests specify the correct compliance calculation behaviour.
+
+describe('BUG-007: RankingTable formatComplianceDisplay uses correct workingDays', () => {
+  // Mirrors RankingTable.formatComplianceDisplay() exactly as it appears in source
+  function formatComplianceDisplay(member, workingDays) {
+    const compliance = member.complianceHours || 0;
+    const dailyTarget = member.target || 6.5;
+    const totalTarget = dailyTarget * workingDays;
+    const pct = Math.min(Math.round((compliance / totalTarget) * 100), 100);
+    return pct;
+  }
+
+  it('single day: compliance 6.5h / (6.5 × 1) = 100%', () => {
+    const member = { complianceHours: 6.5, target: 6.5 };
+    expect(formatComplianceDisplay(member, 1)).toBe(100);
+  });
+
+  it('5-day full compliance: 32.5h / (6.5 × 5) = 100%', () => {
+    const member = { complianceHours: 32.5, target: 6.5 };
+    expect(formatComplianceDisplay(member, 5)).toBe(100);
+  });
+
+  it('BUG-007 spec: partial compliance over 5 days — correct % requires workingDays=5', () => {
+    // Member was compliant for only 2 of 5 days: 2 × 6.5 = 13h
+    const member = { complianceHours: 13, target: 6.5 };
+    // Correct: 13 / (6.5×5) = 40%
+    expect(formatComplianceDisplay(member, 5)).toBe(40);
+    // Without dateRangeInfo prop (workingDays defaults to 1):
+    // 13 / (6.5×1) = 200% → capped 100% — wrong inflated value
+    expect(formatComplianceDisplay(member, 1)).toBe(100);
+    // The fix ensures ListView passes dateRangeInfo so workingDays=5 is used
+  });
+
+  it('BUG-007 spec: 3-day range 50% effort — correct % requires workingDays=3', () => {
+    // Member compliant for 1.5 of 3 days: 1.5 × 6.5 = 9.75h
+    const member = { complianceHours: 9.75, target: 6.5 };
+    // Correct: 9.75 / (6.5×3) = 50%
+    expect(formatComplianceDisplay(member, 3)).toBe(50);
+    // Without prop (workingDays=1): 9.75 / 6.5 = 150% → capped 100% — wrong
+    expect(formatComplianceDisplay(member, 1)).toBe(100);
+  });
+});

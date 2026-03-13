@@ -467,6 +467,7 @@ function App() {
                 scoreMetrics={displayScoreMetrics}
                 onMemberClick={handleMemberClick}
                 onDashboardCardClick={handleDashboardCardClick}
+                dateRangeInfo={dateRangeInfo}
                 controls={
                   <FilterSortControls
                     theme={theme}

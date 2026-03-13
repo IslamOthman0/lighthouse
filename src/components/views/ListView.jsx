@@ -15,7 +15,7 @@ import { getMetricColor } from '../../utils/metricColor';
 // Utility to detect RTL text (Arabic)
 const isRTL = (text) => /[\u0600-\u06FF]/.test(text);
 
-const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDashboardCardClick, controls }) => {
+const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDashboardCardClick, controls, dateRangeInfo }) => {
   const { isMobile } = useWindowSize();
   const lightMode = theme.type !== 'dark';
   const [sortBy, setSortBy] = useState('tracked'); // tracked, tasks, breaks, timeSpan, status, firstActivity, lastActivity
@@ -1372,7 +1372,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
 
       {/* Ranking Table - Full Width */}
       <div style={{ marginTop: '16px' }}>
-        <RankingTable members={members} theme={theme} onMemberClick={onMemberClick} />
+        <RankingTable members={members} theme={theme} onMemberClick={onMemberClick} dateRangeInfo={dateRangeInfo} />
       </div>
     </>
   );
