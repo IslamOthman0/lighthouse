@@ -22,6 +22,7 @@ import { logger } from '../utils/logger';
 import { getAvgTasksBaseline } from '../services/baselineService';
 import { SETTINGS_STORAGE_KEY, DEFAULT_SETTINGS } from '../constants/defaults';
 import { sanitizeSettings } from '../utils/settingsValidation';
+import { toLocalDateStr } from '../utils/timeFormat';
 import { useOnlineStatus } from './useOnlineStatus';
 import { useSettings } from './useSettings';
 import { processPendingQueue } from '../services/syncQueue';
@@ -275,7 +276,7 @@ export function useClickUpSync(config = {}) {
       try {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const yDate = yesterday.toISOString().split('T')[0]; // "YYYY-MM-DD"
+        const yDate = toLocalDateStr(yesterday); // "YYYY-MM-DD" local (not UTC)
         const snap = await db.dailySnapshots.get(yDate);
         if (snap) setYesterdaySnapshot(snap);
       } catch (e) {
@@ -605,7 +606,7 @@ export function useClickUpSync(config = {}) {
         // Save today's daily snapshot for score comparison
         const saveSnapshot = async (scoreMetricsValue) => {
           try {
-            const today = new Date().toISOString().split('T')[0];
+            const today = toLocalDateStr(); // local date (not UTC)
             const existing = await db.dailySnapshots.get(today);
             // Only update if score changed by 1+ point
             if (!existing || Math.abs((existing.teamScore || 0) - scoreMetricsValue.total) >= 1) {
@@ -624,7 +625,7 @@ export function useClickUpSync(config = {}) {
             // Prune snapshots older than 90 days
             const cutoff = new Date();
             cutoff.setDate(cutoff.getDate() - 90);
-            const cutoffDate = cutoff.toISOString().split('T')[0];
+            const cutoffDate = toLocalDateStr(cutoff); // local date (not UTC)
             await db.dailySnapshots.where('date').below(cutoffDate).delete();
           } catch (e) {
             // non-critical

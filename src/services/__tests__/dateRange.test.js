@@ -1,4 +1,5 @@
 import { calculateWorkingDays } from '../sync/calculations';
+import { toLocalDateStr } from '../../utils/timeFormat';
 
 describe('Date Range and Working Days', () => {
   describe('calculateWorkingDays', () => {
@@ -160,5 +161,65 @@ describe('Date Range and Working Days', () => {
 
       expect(filterEntry(runningTimer, now)).toBe(true);
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-001 / BUG-002 — toLocalDateStr vs toISOString UTC shift
+// Snapshot date keys must use LOCAL date (Egypt = UTC+2/+3), not UTC.
+// At midnight local (00:00 Egypt) = 22:00 previous day UTC → toISOString()
+// returns yesterday's date, saving/loading snapshot under wrong key.
+// ---------------------------------------------------------------------------
+describe('toLocalDateStr — BUG-001/BUG-002 UTC date shift safety', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('BUG-001: returns local date for yesterday snapshot — not UTC date', () => {
+    // Simulate 00:30 local Egypt time (UTC+2) = 22:30 UTC previous day
+    // Local date = 2026-03-12, UTC date = 2026-03-11 (wrong)
+    vi.setSystemTime(new Date('2026-03-11T22:30:00Z')); // 00:30 Egypt
+
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // BUG-001: old code used toISOString() — gives UTC date (wrong)
+    const utcYesterday = yesterday.toISOString().split('T')[0]; // '2026-03-10' (UTC - 2 days ago locally!)
+
+    // Fix: use toLocalDateStr
+    const localYesterday = toLocalDateStr(yesterday); // '2026-03-11' (correct local yesterday)
+
+    // In Egypt at 00:30 local on Mar 12, yesterday should be Mar 11
+    // UTC says yesterday is Mar 10 (wrong), local says Mar 11 (correct)
+    expect(localYesterday).toBe('2026-03-11');
+    expect(utcYesterday).not.toBe(localYesterday); // proves bug exists
+  });
+
+  it('BUG-002: returns local date for today snapshot — not UTC date', () => {
+    // Simulate 00:30 local Egypt time (UTC+2) on 2026-03-12
+    vi.setSystemTime(new Date('2026-03-11T22:30:00Z')); // 00:30 Egypt on Mar 12
+
+    // BUG-002: old code used new Date().toISOString().split('T')[0] — gives UTC date
+    const utcToday = new Date().toISOString().split('T')[0]; // '2026-03-11' (UTC yesterday!)
+
+    // Fix: use toLocalDateStr()
+    const localToday = toLocalDateStr(); // '2026-03-12' (correct local today)
+
+    expect(localToday).toBe('2026-03-12');
+    expect(utcToday).not.toBe(localToday); // proves bug exists
+  });
+
+  it('BUG-002: cutoff date for pruning also uses local date', () => {
+    vi.setSystemTime(new Date('2026-03-11T22:30:00Z')); // 00:30 Egypt on Mar 12
+
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 90);
+
+    const utcCutoff = cutoff.toISOString().split('T')[0]; // UTC — off by 1 day
+    const localCutoff = toLocalDateStr(cutoff);           // Local — correct
+
+    expect(localCutoff).toBe('2025-12-12'); // 90 days before Mar 12
+    expect(utcCutoff).not.toBe(localCutoff); // proves bug exists
   });
 });
