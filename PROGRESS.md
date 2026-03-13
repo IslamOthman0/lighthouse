@@ -55,6 +55,10 @@
 - [x] 4.4 SettingsModal pipeline — all clear (1 minor note: theme not persisted back via useSettings)
 - [x] 4.5 Leaves system — all clear
 
+## Phase 3.5: Late Bug Fixes (found during Phase 4 verification)
+- [x] BUG-018: totalTarget hardcoded 6.5 — ignores dailyTargetHours setting (App.jsx, useAppStore ×2, DashboardDetailModal)
+- [x] BUG-018b: MemberDetailModal performance chart bar/legend hardcoded 6.5 (cosmetic)
+
 ## Phase 5: E2E Tests
 - [ ] 5.1 Core E2E tests with mocked API
 
@@ -288,3 +292,5 @@
 | 30 | 2026-03-13 | 4.3 | MemberDetailModal verification: all clear. BUG-008/BUG-009/BUG-010 fixes confirmed. Member data from props (snapshot at click time). Date range synced from store on open. Leave tab reads from db.leaves. |
 | 31 | 2026-03-13 | 4.4 | SettingsModal pipeline: all clear. Score weights → useClickUpSync useEffect → setScoreWeights → App.jsx useMemo recomputes immediately. Theme uses dual-write (useSettings + useThemeStore Zustand). Interval change restarts polling via useEffect dep. |
 | 32 | 2026-03-13 | 4.5 | Leaves system: all clear. BUG-016/BUG-017 fixes confirmed. Leave sync throttled once/day via shouldSyncLeaves(). countLeaveDaysInRange filters approved/confirmed/active. Leave deduction correct (memberWorkingDays = max(workingDays - leaveDays, 1)). LeavesTab uses useLiveQuery for reactive updates. |
+| 33 | 2026-03-13 | BUG-018 | Fix: totalTarget now uses member.target sum in App.jsx, useAppStore (updateStats+batchSyncUpdate), DashboardDetailModal. 5 new tests. 228 passing. |
+| 34 | 2026-03-13 | BUG-018b | Fix: MemberDetailModal performance chart bar color and legend use member.target not hardcoded 6.5. 228 passing. |
