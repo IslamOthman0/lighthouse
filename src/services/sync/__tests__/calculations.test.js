@@ -64,6 +64,12 @@ describe('deriveStatus()', () => {
     expect(deriveStatus(running, [])).toBe('working');
   });
 
+  it('[BUG-014] returns "working" when runningEntry has duration === 0 (zero-duration timer)', () => {
+    // ClickUp edge case: timer just started, duration string "0"
+    const zeroTimer = { duration: '0', start: String(Date.now()) };
+    expect(deriveStatus(zeroTimer, [])).toBe('working');
+  });
+
   it('returns "noActivity" when timeEntries is null', () => {
     expect(deriveStatus(null, null)).toBe('noActivity');
   });

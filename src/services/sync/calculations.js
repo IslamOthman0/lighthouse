@@ -25,8 +25,8 @@ export function deriveStatus(runningEntry, timeEntries, settings = null) {
   const breakThreshold = settings?.thresholds?.breakMinutes || 15;
   const offlineThreshold = settings?.thresholds?.offlineMinutes || 60;
 
-  // Working: Has active timer (negative duration means running)
-  if (runningEntry && runningEntry.duration < 0) {
+  // Working: Has active timer (negative duration means running; 0 = just started)
+  if (runningEntry && runningEntry.duration <= 0) {
     return 'working';
   }
 
