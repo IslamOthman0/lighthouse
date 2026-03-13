@@ -206,7 +206,7 @@ function App() {
     const totalComplianceHours = filteredMembers.reduce((sum, m) => sum + (m.complianceHours ?? (m.tracked || 0) * 0.85), 0);
 
     const timeRatio = totalTarget > 0 ? Math.min((totalTracked / totalTarget) * 100, 100) : 0;
-    const taskBaseline = filteredMembers.length * (teamBaseline || 3);
+    const taskBaseline = filteredMembers.length * (teamBaseline || 3) * workingDays;
     const workloadRatio = taskBaseline > 0 ? Math.min((totalTasks / taskBaseline) * 100, 100) : 0;
     const completionRatio = totalTasks > 0 ? (totalTasksDone / totalTasks) * 100 : 0;
     const complianceRatio = totalTarget > 0 ? Math.min((totalComplianceHours / totalTarget) * 100, 100) : 0;

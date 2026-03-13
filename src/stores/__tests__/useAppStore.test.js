@@ -505,7 +505,7 @@ describe('BUG-004: displayScoreMetrics must use store.scoreWeights, not hardcode
     const totalComplianceHours = members.reduce((sum, m) => sum + (m.complianceHours ?? (m.tracked || 0) * 0.85), 0);
 
     const timeRatio = totalTarget > 0 ? Math.min((totalTracked / totalTarget) * 100, 100) : 0;
-    const taskBaseline = members.length * (teamBaseline || 3);
+    const taskBaseline = members.length * (teamBaseline || 3) * workingDays;
     const workloadRatio = taskBaseline > 0 ? Math.min((totalTasks / taskBaseline) * 100, 100) : 0;
     const completionRatio = totalTasks > 0 ? (totalTasksDone / totalTasks) * 100 : 0;
     const complianceRatio = totalTarget > 0 ? Math.min((totalComplianceHours / totalTarget) * 100, 100) : 0;
@@ -739,5 +739,50 @@ describe('BUG-009: fetchWeeklyPerformanceData uses globalDateRange timestamps', 
     const endDate   = new Date(2026, 1, 28);  // Feb 28 (non-leap)
     const { startTs, endTs } = buildPerfTimestamps(startDate, endDate);
     expect(endTs - startTs).toBe(28 * 24 * 60 * 60 - 1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-005: App.jsx taskBaseline missing workingDays multiplier
+// ---------------------------------------------------------------------------
+// The displayScoreMetrics useMemo at App.jsx:209 computes:
+//   taskBaseline = filteredMembers.length * (teamBaseline || 3)
+// but the store's updateStats() correctly uses:
+//   taskBaseline = filteredMembers.length * teamBaseline * workingDays
+// For multi-day ranges this inflates workloadRatio (denominator too small).
+// These tests spec the CORRECT behaviour that App.jsx should produce after the fix.
+
+describe('BUG-005: App.jsx taskBaseline must include workingDays multiplier', () => {
+  function computeWorkloadRatio(members, workingDays, teamBaseline) {
+    const totalTasks = members.reduce((sum, m) => sum + (m.tasks || 0), 0);
+    const taskBaseline = members.length * (teamBaseline || 3) * workingDays;
+    return taskBaseline > 0 ? Math.min((totalTasks / taskBaseline) * 100, 100) : 0;
+  }
+
+  it('BUG-005 spec: 5-day range — workload ratio scales with workingDays', () => {
+    // 8 members, each did 3 tasks/day for 5 days = 15 tasks each → 120 total
+    // baseline per day = 8 * 3 = 24; for 5 days = 120 → ratio = 100%
+    const members = Array.from({ length: 8 }, (_, i) => ({ id: String(i), tasks: 15 }));
+    const ratio = computeWorkloadRatio(members, 5, 3);
+    expect(ratio).toBe(100);
+  });
+
+  it('BUG-005 spec: without workingDays, same data would report 500% (capped to 100%)', () => {
+    // Without the fix: taskBaseline = 8 * 3 = 24; totalTasks = 120 → ratio = 500% → capped 100%
+    // With the fix: taskBaseline = 8 * 3 * 5 = 120; totalTasks = 120 → ratio = 100%
+    // Both cap to 100% here, so use a case where the difference is visible
+    // 8 members, each did 2 tasks total across 5 days
+    // Correct: baseline = 8*3*5=120; totalTasks=16; ratio=13.3%
+    // Buggy:   baseline = 8*3=24;    totalTasks=16; ratio=66.7%
+    const members = Array.from({ length: 8 }, (_, i) => ({ id: String(i), tasks: 2 }));
+    const correct = computeWorkloadRatio(members, 5, 3);
+    expect(correct).toBeCloseTo(13.33, 1);
+  });
+
+  it('BUG-005 spec: single-day range — workingDays=1 is neutral (no change)', () => {
+    // workingDays=1 → same as the old formula
+    const members = [{ id: '1', tasks: 3 }];
+    const ratio = computeWorkloadRatio(members, 1, 3);
+    expect(ratio).toBe(100);
   });
 });
