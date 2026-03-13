@@ -26,8 +26,8 @@ export function getMemberLeaveToday(memberId, allLeaves) {
       String(l.memberClickUpId) === String(memberId);
     if (!memberMatch) return false;
 
-    // Skip rejected
-    if (l.status === 'rejected') return false;
+    // Only approved/confirmed/active leaves count
+    if (!['approved', 'confirmed', 'active'].includes(l.status)) return false;
 
     // Check date range
     const start = l.startDate; // Already YYYY-MM-DD
