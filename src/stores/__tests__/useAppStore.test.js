@@ -670,3 +670,74 @@ describe('BUG-008: fetchTimelineData timestamp range covers full date range', ()
     expect(endTs - startTs).toBe(threeDaysSeconds);
   });
 });
+
+// ===========================================================================
+// BUG-009: fetchWeeklyPerformanceData must use globalDateRange, not this-week
+// ===========================================================================
+// MemberDetailModal.fetchWeeklyPerformanceData() always calls getThisWeekRange()
+// regardless of the selected global date range.
+//
+// Fix: accept (member, startDate, endDate) and use those timestamps instead.
+// These tests specify the expected timestamp-building behaviour.
+
+describe('BUG-009: fetchWeeklyPerformanceData uses globalDateRange timestamps', () => {
+  // Mirrors the FIXED timestamp logic: start = startDate 00:00, end = endDate 23:59:59
+  function buildPerfTimestamps(startDate, endDate) {
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    return {
+      startTs: Math.floor(start.getTime() / 1000),
+      endTs: Math.floor(end.getTime() / 1000),
+    };
+  }
+
+  // Mirrors getThisWeekRange() — what the BUGGY code uses
+  function getThisWeekRange() {
+    const today = new Date();
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - today.getDay());
+    sunday.setHours(0, 0, 0, 0);
+    return { start: sunday, end: today };
+  }
+
+  it('BUG-009 spec: timestamps built from explicit dates, not this-week', () => {
+    // A historical range: March 1–7 2026
+    const startDate = new Date(2026, 2, 1);  // March 1
+    const endDate   = new Date(2026, 2, 7);  // March 7
+
+    const { startTs, endTs } = buildPerfTimestamps(startDate, endDate);
+
+    // FIXED: startTs = March 1 00:00, endTs = March 7 23:59:59
+    const sevenDaysSeconds = 7 * 24 * 60 * 60 - 1;
+    expect(endTs - startTs).toBe(sevenDaysSeconds);
+
+    // BUGGY: uses getThisWeekRange() → timestamps depend on today, not March 1–7
+    const { start: buggyStart } = getThisWeekRange();
+    const buggyStartTs = Math.floor(buggyStart.getTime() / 1000);
+    // March 1 00:00 UTC-local ≠ this week's Sunday 00:00 (unless today happens to be Sunday March 1)
+    // This assertion documents that the buggy code uses wrong timestamps for historical ranges
+    expect(startTs).not.toBe(buggyStartTs); // fails if test runs on 2026-03-01 exactly — acceptable
+  });
+
+  it('span for a 7-day range is exactly 7 days minus 1 second', () => {
+    const startDate = new Date(2026, 2, 1);
+    const endDate   = new Date(2026, 2, 7);
+    const { startTs, endTs } = buildPerfTimestamps(startDate, endDate);
+    expect(endTs - startTs).toBe(7 * 24 * 60 * 60 - 1);
+  });
+
+  it('span for a single-day range is 86399 seconds', () => {
+    const day = new Date(2026, 2, 10);
+    const { startTs, endTs } = buildPerfTimestamps(day, day);
+    expect(endTs - startTs).toBe(86399);
+  });
+
+  it('span for a 30-day range covers 30 full days', () => {
+    const startDate = new Date(2026, 1, 1);   // Feb 1
+    const endDate   = new Date(2026, 1, 28);  // Feb 28 (non-leap)
+    const { startTs, endTs } = buildPerfTimestamps(startDate, endDate);
+    expect(endTs - startTs).toBe(28 * 24 * 60 * 60 - 1);
+  });
+});

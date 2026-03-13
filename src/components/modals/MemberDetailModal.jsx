@@ -80,12 +80,15 @@ const getThisWeekRange = () => {
  * @param {Object} member - Member object with clickUpId
  * @returns {Promise<Object>} Weekly hours data and project breakdown
  */
-const fetchWeeklyPerformanceData = async (member) => {
+const fetchWeeklyPerformanceData = async (member, startDate, endDate) => {
   if (!member?.clickUpId) {
     return { weeklyHours: [], byProject: [], totalTracked: 0, totalTasks: 0 };
   }
 
-  const { start, end } = getThisWeekRange();
+  const start = startDate ? new Date(startDate) : (() => { const { start: s } = getThisWeekRange(); return s; })();
+  const end = endDate ? new Date(endDate) : (() => { const { end: e } = getThisWeekRange(); return e; })();
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
   const startTimestamp = Math.floor(start.getTime() / 1000);
   const endTimestamp = Math.floor(end.getTime() / 1000);
 
@@ -748,7 +751,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
     let isCancelled = false;
     setIsPerfLoading(true);
 
-    fetchWeeklyPerformanceData(member)
+    fetchWeeklyPerformanceData(member, selectedDate, selectedEndDate)
       .then(data => {
         if (!isCancelled) {
           setPerformanceData(data);
@@ -766,7 +769,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
     return () => {
       isCancelled = true;
     };
-  }, [isOpen, member, activeTab]);
+  }, [isOpen, member, activeTab, selectedDate, selectedEndDate]);
 
   // Fetch leaves data when member changes
   useEffect(() => {
