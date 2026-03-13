@@ -138,7 +138,7 @@ export function transformMember(member, runningEntry, taskDetails, timeEntries, 
     clickUpId: member.clickUpId,
     profilePicture: member.profilePicture || null,
     clickUpColor: member.clickUpColor || null,
-    target: member.target || 6.5,
+    target: settings?.schedule?.dailyTargetHours || member.target || 6.5,
     // Reset all synced fields to prevent stale data
     status,
     timer,
