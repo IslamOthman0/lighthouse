@@ -53,7 +53,7 @@
 - [x] 4.2 List View data flow — all clear (1 minor note: ListView re-sorts independently)
 - [x] 4.3 MemberDetailModal — all clear
 - [x] 4.4 SettingsModal pipeline — all clear (1 minor note: theme not persisted back via useSettings)
-- [ ] 4.5 Leaves system
+- [x] 4.5 Leaves system — all clear
 
 ## Phase 5: E2E Tests
 - [ ] 5.1 Core E2E tests with mocked API
@@ -287,3 +287,4 @@
 | 29 | 2026-03-13 | 4.2 | List View verification: all clear. BUG-007/BUG-011 fixes confirmed. ListView re-sorts independently (not a bug — its sort is intentionally different from Grid's activity sort). |
 | 30 | 2026-03-13 | 4.3 | MemberDetailModal verification: all clear. BUG-008/BUG-009/BUG-010 fixes confirmed. Member data from props (snapshot at click time). Date range synced from store on open. Leave tab reads from db.leaves. |
 | 31 | 2026-03-13 | 4.4 | SettingsModal pipeline: all clear. Score weights → useClickUpSync useEffect → setScoreWeights → App.jsx useMemo recomputes immediately. Theme uses dual-write (useSettings + useThemeStore Zustand). Interval change restarts polling via useEffect dep. |
+| 32 | 2026-03-13 | 4.5 | Leaves system: all clear. BUG-016/BUG-017 fixes confirmed. Leave sync throttled once/day via shouldSyncLeaves(). countLeaveDaysInRange filters approved/confirmed/active. Leave deduction correct (memberWorkingDays = max(workingDays - leaveDays, 1)). LeavesTab uses useLiveQuery for reactive updates. |
