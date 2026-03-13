@@ -1533,7 +1533,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                                 width: '100%',
                                 height: `${height}%`,
                                 minHeight: data.isFuture ? '0' : '4px',
-                                background: data.isFuture ? theme.border : data.hours >= 6.5 ? theme.success : data.hours > 0 ? theme.warning : theme.border,
+                                background: data.isFuture ? theme.border : data.hours >= targetHours ? theme.success : data.hours > 0 ? theme.warning : theme.border,
                                 borderRadius: '3px 3px 0 0',
                                 opacity: data.isFuture ? 0.3 : 1,
                               }}
@@ -1548,7 +1548,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                     {/* Target line indicator */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '9px', color: theme.textMuted }}>
                       <span style={{ width: '12px', borderTop: `1px dashed ${theme.textMuted}` }} />
-                      <span>6.5h target</span>
+                      <span>{targetHours}h target</span>
                     </div>
                   </div>
                 </div>
