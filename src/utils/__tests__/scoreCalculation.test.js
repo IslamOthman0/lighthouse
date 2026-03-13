@@ -222,6 +222,145 @@ describe('calculateMemberScore', () => {
       expect(resultWithDefault.total).toBe(100);
     });
   });
+
+  // --- completionDenominator edge cases ---
+
+  it('completionDenominator=0 → tasksDone score is 0, not NaN or Infinity', () => {
+    const result = calculateMemberScore({
+      tracked: 6.5,
+      tasks: 3,
+      done: 2,
+      completionDenominator: 0,
+      complianceHours: 6.5,
+      weights: defaultWeights,
+    });
+    expect(result.breakdown.tasksDone.score).toBe(0);
+    expect(Number.isFinite(result.breakdown.tasksDone.score)).toBe(true);
+    expect(Number.isNaN(result.breakdown.tasksDone.score)).toBe(false);
+    // Total without tasksDone: 40 + 20 + 10 = 70
+    expect(result.total).toBe(70);
+  });
+
+  it('tasks=0 and completionDenominator not provided → tasksDone score is 0 (fallback denominator=tasks=0)', () => {
+    const result = calculateMemberScore({
+      tracked: 6.5,
+      tasks: 0,
+      done: 0,
+      complianceHours: 6.5,
+      weights: defaultWeights,
+    });
+    expect(result.breakdown.tasksDone.score).toBe(0);
+    expect(Number.isNaN(result.breakdown.tasksDone.score)).toBe(false);
+  });
+
+  // --- zero tracked hours: tracked component is 0 ---
+
+  it('zero tracked hours → tracked.score = 0 and tracked.ratio = 0 (component level)', () => {
+    const result = calculateMemberScore({
+      tracked: 0,
+      tasks: 3,
+      done: 3,
+      complianceHours: 0,
+      weights: defaultWeights,
+    });
+    expect(result.breakdown.tracked.score).toBe(0);
+    expect(result.breakdown.tracked.ratio).toBe(0);
+  });
+
+  // --- default weights (40/20/30/10) produce correct per-component breakdown ---
+
+  it('default weights produce correct per-component scores for a known input', () => {
+    // tracked=3.25h (50% of 6.5h), tasks=3 (100% of baseline 3), done=3/3 (100%), compliance=0
+    const result = calculateMemberScore({
+      tracked: 3.25,
+      tasks: 3,
+      done: 3,
+      complianceHours: 0,
+      weights: defaultWeights,
+    });
+    expect(result.breakdown.tracked.score).toBe(20);     // 50% × 40 = 20
+    expect(result.breakdown.tasksWorked.score).toBe(20); // 100% × 20 = 20
+    expect(result.breakdown.tasksDone.score).toBe(30);   // 100% × 30 = 30
+    expect(result.breakdown.compliance.score).toBe(0);   // 0% × 10 = 0
+    expect(result.total).toBe(70);
+  });
+
+  // --- workingDays > 1 scales target correctly (explicit 3-day test) ---
+
+  it('workingDays=3 scales both time target and task baseline correctly', () => {
+    // 3-day range: target = 3 × 6.5 = 19.5h; baseline = 3 × 3 = 9 tasks
+    const result = calculateMemberScore({
+      tracked: 19.5,
+      tasks: 9,
+      done: 9,
+      complianceHours: 19.5,
+      avgTasksBaseline: 3,
+      weights: defaultWeights,
+      workingDays: 3,
+    });
+    expect(result.total).toBe(100);
+    expect(result.breakdown.tracked.ratio).toBe(100);
+    expect(result.breakdown.tasksWorked.ratio).toBe(100);
+  });
+
+  it('workingDays=3 partial effort: tracked=9.75h (50% of 19.5h target)', () => {
+    const result = calculateMemberScore({
+      tracked: 9.75,
+      tasks: 4,
+      done: 4,
+      completionDenominator: 4,
+      complianceHours: 9.75,
+      avgTasksBaseline: 3,
+      weights: defaultWeights,
+      workingDays: 3,
+    });
+    // tracked: 9.75/19.5 = 50% → 20 pts
+    // compliance: 9.75/19.5 = 50% → 5 pts
+    // done: 4/4 = 100% → 30 pts
+    expect(result.breakdown.tracked.ratio).toBe(50);
+    expect(result.breakdown.compliance.ratio).toBe(50);
+    expect(result.breakdown.tasksDone.score).toBe(30);
+    expect(result.total).toBeLessThan(100);
+  });
+
+  // --- weights that don't sum to 1.0: documents current behavior (no normalization) ---
+
+  it('weights summing to less than 1.0 → max achievable total is less than 100 (no normalization)', () => {
+    // 0.20 + 0.10 + 0.15 + 0.05 = 0.50 → max score = 50
+    const underWeights = {
+      trackedTime: 0.20,
+      tasksWorked: 0.10,
+      tasksDone:   0.15,
+      compliance:  0.05,
+    };
+    const result = calculateMemberScore({
+      tracked: 6.5,
+      tasks: 3,
+      done: 3,
+      complianceHours: 6.5,
+      weights: underWeights,
+    });
+    expect(result.total).toBe(50);
+    expect(result.total).toBeLessThan(100);
+  });
+
+  it('weights summing to more than 1.0 → total is capped at 100 (cap still applies)', () => {
+    // 0.50 + 0.30 + 0.40 + 0.20 = 1.40 → raw sum = 140, capped at 100
+    const overWeights = {
+      trackedTime: 0.50,
+      tasksWorked: 0.30,
+      tasksDone:   0.40,
+      compliance:  0.20,
+    };
+    const result = calculateMemberScore({
+      tracked: 6.5,
+      tasks: 3,
+      done: 3,
+      complianceHours: 6.5,
+      weights: overWeights,
+    });
+    expect(result.total).toBe(100);
+  });
 });
 
 describe('SCORE_WEIGHTS', () => {

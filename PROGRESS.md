@@ -22,7 +22,7 @@
 
 ## Phase 2: Safety Net Tests
 - [x] 2.1 Tests for calculations.js — 38 tests (37 passing, 1 intentional FAIL for BUG-013)
-- [ ] 2.2 Tests for scoreCalculation.js
+- [x] 2.2 Tests for scoreCalculation.js — 25 tests (all pass; 11 new tests added)
 - [ ] 2.3 Tests for settingsValidation + timeFormat
 - [ ] 2.4 Tests for useAppStore
 - [ ] 2.5 Tests for leaveHelpers
@@ -265,3 +265,4 @@
 | 6 | 2026-03-12 | 1.5 | Leave system audit: 1 new bug (BUG-017 MEDIUM filter pill); BUG-016 confirmed. Data sync, metrics, WFH all correct. |
 | 7 | 2026-03-12 | 1.6 | Bug report compiled: 16 bugs total (4 HIGH, 7 MEDIUM, 3 LOW, 1 CLOSED). Phase 3 task list created (3.1-3.16). |
 | 8 | 2026-03-12 | 2.1 | calculations.js tests: 38 tests (37 pass, 1 intentional fail exposing BUG-013 offlineThreshold unused). |
+| 9 | 2026-03-13 | 2.2 | scoreCalculation.js tests: 25 tests total (11 new, all pass). Covers completionDenominator=0, zero tracked component, per-component breakdown, workingDays=3 scaling, and un-normalized weights behavior. |
