@@ -171,6 +171,8 @@ const AvatarStack = ({ assignees, max = 3, theme }) => {
 // Project Breakdown Card - redesigned with new layout
 const ProjectBreakdownCard = ({ theme }) => {
   const projectBreakdown = useAppStore(state => state.projectBreakdown);
+  const dateRange = useAppStore(state => state.dateRange);
+  const isToday = !dateRange?.startDate || dateRange?.preset === 'today';
 
   const [modalState, setModalState] = useState({
     isOpen: false,
@@ -402,7 +404,7 @@ const ProjectBreakdownCard = ({ theme }) => {
                   fontFamily: getFontFamily('english'),
                 }}
               >
-                <span style={{ color: theme.textMuted }}>Today: </span>
+                <span style={{ color: theme.textMuted }}>{isToday ? 'Today:' : 'Tracked:'} </span>
                 <span style={{ fontWeight: '600', color: theme.text, ...tabularNumberStyle }}>
                   {formatHoursToHM(project.trackedToday)}
                 </span>
