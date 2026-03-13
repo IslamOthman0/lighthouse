@@ -29,6 +29,16 @@ describe('formatHoursToHM', () => {
   it('handles large values', () => {
     expect(formatHoursToHM(10.5)).toBe('10h 30m');
   });
+
+  it('handles values above 24h (e.g. 24.5)', () => {
+    expect(formatHoursToHM(24.5)).toBe('24h 30m');
+  });
+
+  it('handles undefined/null/NaN gracefully — returns 0m', () => {
+    expect(formatHoursToHM(undefined)).toBe('0m');
+    expect(formatHoursToHM(null)).toBe('0m');
+    expect(formatHoursToHM(NaN)).toBe('0m');
+  });
 });
 
 describe('formatMinutesToHM', () => {
@@ -49,5 +59,18 @@ describe('formatMinutesToHM', () => {
 
   it('handles zero', () => {
     expect(formatMinutesToHM(0)).toBe('0m');
+  });
+
+  it('handles negative minutes — does not crash (documents current behavior)', () => {
+    // Guard catches undefined/null/NaN but NOT negatives.
+    // Math.floor(-5/60)=-1, Math.round(-5%60)=-5 → returns "-1h -5m"
+    // This documents the current (unguarded) output; callers should never pass negatives.
+    expect(formatMinutesToHM(-5)).toBe('-1h -5m');
+  });
+
+  it('handles undefined/null/NaN gracefully — returns 0m', () => {
+    expect(formatMinutesToHM(undefined)).toBe('0m');
+    expect(formatMinutesToHM(null)).toBe('0m');
+    expect(formatMinutesToHM(NaN)).toBe('0m');
   });
 });

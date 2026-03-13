@@ -23,7 +23,7 @@
 ## Phase 2: Safety Net Tests
 - [x] 2.1 Tests for calculations.js — 38 tests (37 passing, 1 intentional FAIL for BUG-013)
 - [x] 2.2 Tests for scoreCalculation.js — 25 tests (all pass; 11 new tests added)
-- [ ] 2.3 Tests for settingsValidation + timeFormat
+- [x] 2.3 Tests for settingsValidation + timeFormat — 8 new tests (4 settingsValidation with DEFAULT_SETTINGS, 4 timeFormat edge cases); 139 passing + 1 intentional fail (BUG-013)
 - [ ] 2.4 Tests for useAppStore
 - [ ] 2.5 Tests for leaveHelpers
 
@@ -266,3 +266,4 @@
 | 7 | 2026-03-12 | 1.6 | Bug report compiled: 16 bugs total (4 HIGH, 7 MEDIUM, 3 LOW, 1 CLOSED). Phase 3 task list created (3.1-3.16). |
 | 8 | 2026-03-12 | 2.1 | calculations.js tests: 38 tests (37 pass, 1 intentional fail exposing BUG-013 offlineThreshold unused). |
 | 9 | 2026-03-13 | 2.2 | scoreCalculation.js tests: 25 tests total (11 new, all pass). Covers completionDenominator=0, zero tracked component, per-component breakdown, workingDays=3 scaling, and un-normalized weights behavior. |
+| 10 | 2026-03-13 | 2.3 | settingsValidation + timeFormat tests: 8 new tests added (139 total passing, 1 intentional fail BUG-013). settingsValidation: 4 new tests using real DEFAULT_SETTINGS (empty→defaults, partial merge, null section, invalid primitive docs). timeFormat: 4 new tests (24.5h, undefined/null/NaN guard, negative minutes behavior). |
