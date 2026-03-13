@@ -34,6 +34,7 @@
 - [ ] 3.3 Fix BUG-008: MemberDetailModal Timeline tab fetches only 1 day instead of full date range
 - [ ] 3.4 Fix BUG-009: MemberDetailModal Performance tab hardcoded to "this week" — ignores globalDateRange
 - [ ] 3.5 Fix BUG-013: calculations.js offlineThreshold declared but never used
+  - NOTE: Update calculations.test.js:94 during this fix — test currently asserts 'offline' for 20min inactive with default settings, but correct post-fix behavior is 'break' (20 < 60min offlineThreshold). Add separate test for true 'offline' case (>60 min inactive).
 ### MEDIUM
 - [ ] 3.6 Fix BUG-005: App.jsx taskBaseline missing workingDays multiplier
 - [ ] 3.7 Fix BUG-003: orchestrator dateRangeInfo returns Date objects instead of ISO strings
