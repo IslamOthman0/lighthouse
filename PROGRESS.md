@@ -25,7 +25,7 @@
 - [x] 2.2 Tests for scoreCalculation.js — 25 tests (all pass; 11 new tests added)
 - [x] 2.3 Tests for settingsValidation + timeFormat — 8 new tests (4 settingsValidation with DEFAULT_SETTINGS, 4 timeFormat edge cases); 139 passing + 1 intentional fail (BUG-013)
 - [x] 2.4 Tests for useAppStore — 32 tests (all pass): setDateRange (7), updateStats (9), batchSyncUpdate (16)
-- [ ] 2.5 Tests for leaveHelpers
+- [x] 2.5 Tests for leaveHelpers — 22 new tests (36 total in file, 35 passing, 1 intentional fail BUG-016). enrichMembersWithLeaveStatus: 7 tests (member on leave, not on leave, WFH unchanged, leave overrides working/break/offline, empty leaves). countLeaveDaysInRange: 8 tests (empty/null, approved-only, confirmed/active, deduplication, workDays, publicHolidays, clipping, null settings). getMemberLeaveToday BUG-016 exposure: 1 intentional fail (pending leaves not filtered).
 
 ## Phase 3: Bug Fixes
 ### CRITICAL/HIGH (fix first)
@@ -268,3 +268,4 @@
 | 9 | 2026-03-13 | 2.2 | scoreCalculation.js tests: 25 tests total (11 new, all pass). Covers completionDenominator=0, zero tracked component, per-component breakdown, workingDays=3 scaling, and un-normalized weights behavior. |
 | 10 | 2026-03-13 | 2.3 | settingsValidation + timeFormat tests: 8 new tests added (139 total passing, 1 intentional fail BUG-013). settingsValidation: 4 new tests using real DEFAULT_SETTINGS (empty→defaults, partial merge, null section, invalid primitive docs). timeFormat: 4 new tests (24.5h, undefined/null/NaN guard, negative minutes behavior). |
 | 11 | 2026-03-13 | 2.4 | useAppStore tests: 32 tests (all pass). setDateRange: Date normalization, UTC+2 safety, ISO datetime stripping, null preset. updateStats: empty members, teamStats calc, workingDays scaling, score cap, member recalc, custom weights, compliance fallback. batchSyncUpdate: full batch set, score recalc, weights, dateRangeInfo, projectBreakdown, requestCount, isSyncing, syncProgress reset, score cap, multi-day. Total: 171 passing + 1 intentional fail (BUG-013). |
+| 12 | 2026-03-13 | 2.5 | leaveHelpers tests: 22 new tests added (36 total in file). enrichMembersWithLeaveStatus: 7 tests covering leave sets status, WFH unchanged, leave overrides working/break/offline, empty db. countLeaveDaysInRange: 8 tests covering empty input, approved-only filter, deduplication, workDays, publicHolidays, range clipping, null settings. BUG-016 exposure: 1 intentional fail (pending leaves not excluded). Total: 187 passing + 2 intentional fails (BUG-013, BUG-016). |
