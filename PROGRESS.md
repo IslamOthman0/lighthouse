@@ -58,6 +58,7 @@
 ## Phase 3.5: Late Bug Fixes (found during Phase 4 verification)
 - [x] BUG-018: totalTarget hardcoded 6.5 — ignores dailyTargetHours setting (App.jsx, useAppStore ×2, DashboardDetailModal)
 - [x] BUG-018b: MemberDetailModal performance chart bar/legend hardcoded 6.5 (cosmetic)
+- [x] BUG-018c: transform.js member.target ignores settings — stale IndexedDB value always wins
 
 ## Phase 5: E2E Tests
 - [ ] 5.1 Core E2E tests with mocked API
@@ -294,3 +295,4 @@
 | 32 | 2026-03-13 | 4.5 | Leaves system: all clear. BUG-016/BUG-017 fixes confirmed. Leave sync throttled once/day via shouldSyncLeaves(). countLeaveDaysInRange filters approved/confirmed/active. Leave deduction correct (memberWorkingDays = max(workingDays - leaveDays, 1)). LeavesTab uses useLiveQuery for reactive updates. |
 | 33 | 2026-03-13 | BUG-018 | Fix: totalTarget now uses member.target sum in App.jsx, useAppStore (updateStats+batchSyncUpdate), DashboardDetailModal. 5 new tests. 228 passing. |
 | 34 | 2026-03-13 | BUG-018b | Fix: MemberDetailModal performance chart bar color and legend use member.target not hardcoded 6.5. 228 passing. |
+| 35 | 2026-03-13 | BUG-018c | Fix: transform.js member.target now reads settings.schedule.dailyTargetHours first (was reading stale IndexedDB value, so setting change never propagated). 228 passing. |
