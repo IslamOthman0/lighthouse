@@ -44,9 +44,9 @@
 - [x] 3.15 Fix BUG-016: leaveHelpers pending leaves not filtered (only 'rejected' excluded)
 - [x] 3.16 Fix BUG-017: LeaveCalendar/TeamOverviewPanel filter pill invisible in True Black theme
 ### LOW
-- [ ] 3.10 Fix BUG-001: useClickUpSync yesterday snapshot uses UTC date
-- [ ] 3.11 Fix BUG-002: useClickUpSync today snapshot uses UTC date
-- [ ] 3.12 Fix BUG-012: ProjectBreakdownCard "Today:" label hardcoded
+- [x] 3.10 Fix BUG-001: useClickUpSync yesterday snapshot uses UTC date
+- [x] 3.11 Fix BUG-002: useClickUpSync today snapshot uses UTC date
+- [x] 3.12 Fix BUG-012: ProjectBreakdownCard "Today:" label hardcoded
 
 ## Phase 4: Screen Verification
 - [ ] 4.1 Grid View data flow
@@ -66,8 +66,8 @@
 
 | Bug ID | File:Line | Description | Severity | Fix Task | Status |
 |--------|-----------|-------------|----------|----------|--------|
-| BUG-001 | useClickUpSync.js:278 | `yesterday.toISOString().split('T')[0]` uses UTC date — wrong day for Egypt at midnight | LOW | 3.10 | Open |
-| BUG-002 | useClickUpSync.js:608,627 | `new Date().toISOString().split('T')[0]` for snapshot date uses UTC — off-by-one at midnight | LOW | 3.11 | Open |
+| BUG-001 | useClickUpSync.js:278 | `yesterday.toISOString().split('T')[0]` uses UTC date — wrong day for Egypt at midnight | LOW | 3.10 | Fixed |
+| BUG-002 | useClickUpSync.js:608,627 | `new Date().toISOString().split('T')[0]` for snapshot date uses UTC — off-by-one at midnight | LOW | 3.11 | Fixed |
 | BUG-003 | orchestrator.js:695-700 | `dateRangeInfo.startDate` and `endDate` stored as Date objects (not ISO strings) into Zustand store — type inconsistency with `dateRange.startDate` which is always string | MEDIUM | 3.7 | Open |
 | BUG-004 | App.jsx:213-216 | `displayScoreMetrics` computed with hardcoded weights (40/20/30/10) — does NOT read from `store.scoreWeights` — so SettingsModal weight changes never reflect in team score display | HIGH | 3.1 | Open |
 | BUG-005 | App.jsx:208 | `taskBaseline` for workload ratio missing `workingDays` multiplier — inflated workload ratio for multi-day ranges | MEDIUM | 3.6 | Open |
@@ -77,7 +77,7 @@
 | BUG-009 | MemberDetailModal.jsx:738 | Performance tab hardcoded to "this week" — ignores globalDateRange entirely | HIGH | 3.4 | Open |
 | BUG-010 | MemberDetailModal.jsx:1045 | Header label hardcoded "Today's Progress" regardless of date range | MEDIUM | 3.8 | Open |
 | BUG-011 | ListView.jsx:196 | "Team Tracked" label static in List View — Grid View shows "(N days)" for multi-day ranges | MEDIUM | 3.9 | Open |
-| BUG-012 | ProjectBreakdownCard.jsx:405 | "Today:" label hardcoded — wrong for non-today date ranges | LOW | 3.12 | Open |
+| BUG-012 | ProjectBreakdownCard.jsx:405 | "Today:" label hardcoded — wrong for non-today date ranges | LOW | 3.12 | Fixed |
 | BUG-013 | calculations.js:26 | `offlineThreshold` declared but never used — user-configured offlineMinutes has no effect; members go offline after breakThreshold only | HIGH | 3.5 | Open |
 | BUG-014 | calculations.js:29 | `duration === 0` not caught by `< 0` — zero-duration running timer misclassifies member as noActivity | MEDIUM | 3.13 | Open |
 | BUG-015 | calculations.js:40-42 | All entries have `duration <= 0` → completedEntries empty → returns 'noActivity' despite active timer | MEDIUM | 3.14 | Open |
@@ -281,3 +281,5 @@
 | 23 | 2026-03-13 | 3.14 | BUG-015 fix: all-zero-duration entries (no completedEntries) now returns 'offline' not 'noActivity'. Updated existing test + fixed. Total: 219 passing + 1 intentional fail (BUG-016). |
 | 24 | 2026-03-13 | 3.15 | BUG-016 fix: getMemberLeaveToday now uses approved/confirmed/active whitelist (was blacklist of rejected only). Intentional-fail count drops to 0. Total: 220 passing + 0 intentional fails. |
 | 25 | 2026-03-13 | 3.16 | BUG-017 fix: LeaveCalendar filter pill selected bg changed from ${theme.accent}20 to ${theme.text}25 — visible in True Black theme. 220 passing. |
+| 26 | 2026-03-13 | 3.10+3.11 | BUG-001/BUG-002 fix: useClickUpSync snapshot dates (yesterday, today, cutoff) now use toLocalDateStr() instead of toISOString(). 3 new tests added. 223 passing. |
+| 27 | 2026-03-13 | 3.12 | BUG-012 fix: ProjectBreakdownCard label shows "Today:" for today preset, "Tracked:" for date ranges. 223 passing. |
