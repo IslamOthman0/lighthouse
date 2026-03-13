@@ -29,20 +29,19 @@
 
 ## Phase 3: Bug Fixes
 ### CRITICAL/HIGH (fix first)
-- [ ] 3.1 Fix BUG-004: App.jsx displayScoreMetrics uses hardcoded weights instead of store.scoreWeights
-- [ ] 3.2 Fix BUG-007: ListView RankingTable missing dateRangeInfo prop — compliance always uses workingDays=1
-- [ ] 3.3 Fix BUG-008: MemberDetailModal Timeline tab fetches only 1 day instead of full date range
-- [ ] 3.4 Fix BUG-009: MemberDetailModal Performance tab hardcoded to "this week" — ignores globalDateRange
-- [ ] 3.5 Fix BUG-013: calculations.js offlineThreshold declared but never used
-  - NOTE: Update calculations.test.js:94 during this fix — test currently asserts 'offline' for 20min inactive with default settings, but correct post-fix behavior is 'break' (20 < 60min offlineThreshold). Add separate test for true 'offline' case (>60 min inactive).
+- [x] 3.1 Fix BUG-004: App.jsx displayScoreMetrics uses hardcoded weights instead of store.scoreWeights
+- [x] 3.2 Fix BUG-007: ListView RankingTable missing dateRangeInfo prop — compliance always uses workingDays=1
+- [x] 3.3 Fix BUG-008: MemberDetailModal Timeline tab fetches only 1 day instead of full date range
+- [x] 3.4 Fix BUG-009: MemberDetailModal Performance tab hardcoded to "this week" — ignores globalDateRange
+- [x] 3.5 Fix BUG-013: calculations.js offlineThreshold now used in deriveStatus
 ### MEDIUM
-- [ ] 3.6 Fix BUG-005: App.jsx taskBaseline missing workingDays multiplier
-- [ ] 3.7 Fix BUG-003: orchestrator dateRangeInfo returns Date objects instead of ISO strings
-- [ ] 3.8 Fix BUG-010: MemberDetailModal header label hardcoded "Today's Progress"
-- [ ] 3.9 Fix BUG-011: ListView "Team Tracked" label missing "(N days)" for multi-day ranges
-- [ ] 3.13 Fix BUG-014: calculations.js duration===0 not caught — zero-duration timer misclassified
-- [ ] 3.14 Fix BUG-015: calculations.js all-negative entries returns noActivity despite active timer
-- [ ] 3.15 Fix BUG-016: leaveHelpers pending leaves not filtered (only 'rejected' excluded)
+- [x] 3.6 Fix BUG-005: App.jsx taskBaseline now includes workingDays multiplier
+- [x] 3.7 Fix BUG-003: orchestrator dateRangeInfo startDate/endDate now ISO strings
+- [x] 3.8 Fix BUG-010: MemberDetailModal progress label now reflects active date range
+- [x] 3.9 Fix BUG-011: ListView "Team Tracked" label now shows day count for multi-day ranges
+- [x] 3.13 Fix BUG-014: calculations.js zero-duration timer now classified as working
+- [x] 3.14 Fix BUG-015: calculations.js all-zero-duration entries now return offline not noActivity
+- [x] 3.15 Fix BUG-016: leaveHelpers pending leaves not filtered (only 'rejected' excluded)
 - [ ] 3.16 Fix BUG-017: LeaveCalendar/TeamOverviewPanel filter pill invisible in True Black theme
 ### LOW
 - [ ] 3.10 Fix BUG-001: useClickUpSync yesterday snapshot uses UTC date
@@ -82,7 +81,7 @@
 | BUG-013 | calculations.js:26 | `offlineThreshold` declared but never used — user-configured offlineMinutes has no effect; members go offline after breakThreshold only | HIGH | 3.5 | Open |
 | BUG-014 | calculations.js:29 | `duration === 0` not caught by `< 0` — zero-duration running timer misclassifies member as noActivity | MEDIUM | 3.13 | Open |
 | BUG-015 | calculations.js:40-42 | All entries have `duration <= 0` → completedEntries empty → returns 'noActivity' despite active timer | MEDIUM | 3.14 | Open |
-| BUG-016 | leaveHelpers.js:30 | Pending leaves not filtered — only 'rejected' excluded; pending shows as 'leave' | MEDIUM | 3.15 | Open |
+| BUG-016 | leaveHelpers.js:30 | Pending leaves not filtered — only 'rejected' excluded; pending shows as 'leave' | MEDIUM | 3.15 | Fixed |
 | BUG-017 | LeaveCalendar.jsx:99, TeamOverviewPanel.jsx:86 | Filter pill accent color invisible in True Black theme (white 20% opacity on white) | MEDIUM | 3.16 | Open |
 
 ## Task 1.1 — Date Flow Audit Findings
@@ -269,3 +268,15 @@
 | 10 | 2026-03-13 | 2.3 | settingsValidation + timeFormat tests: 8 new tests added (139 total passing, 1 intentional fail BUG-013). settingsValidation: 4 new tests using real DEFAULT_SETTINGS (empty→defaults, partial merge, null section, invalid primitive docs). timeFormat: 4 new tests (24.5h, undefined/null/NaN guard, negative minutes behavior). |
 | 11 | 2026-03-13 | 2.4 | useAppStore tests: 32 tests (all pass). setDateRange: Date normalization, UTC+2 safety, ISO datetime stripping, null preset. updateStats: empty members, teamStats calc, workingDays scaling, score cap, member recalc, custom weights, compliance fallback. batchSyncUpdate: full batch set, score recalc, weights, dateRangeInfo, projectBreakdown, requestCount, isSyncing, syncProgress reset, score cap, multi-day. Total: 171 passing + 1 intentional fail (BUG-013). |
 | 12 | 2026-03-13 | 2.5 | leaveHelpers tests: 22 new tests added (36 total in file). enrichMembersWithLeaveStatus: 7 tests covering leave sets status, WFH unchanged, leave overrides working/break/offline, empty db. countLeaveDaysInRange: 8 tests covering empty input, approved-only filter, deduplication, workDays, publicHolidays, range clipping, null settings. BUG-016 exposure: 1 intentional fail (pending leaves not excluded). Total: 187 passing + 2 intentional fails (BUG-013, BUG-016). |
+| 13 | 2026-03-13 | 3.1 | BUG-004 fix: App.jsx displayScoreMetrics now reads scoreWeights from store. Added scoreWeights selector + replaced hardcoded 40/20/30/10 with dynamic W object. Added scoreWeights to useMemo deps. 3 spec tests added. Total: 190 passing + 2 intentional fails (BUG-013, BUG-016). |
+| 14 | 2026-03-13 | 3.2 | BUG-007 fix: Added dateRangeInfo prop to ListView signature and passed it to RankingTable. Also pass dateRangeInfo from App.jsx to ListView. 4 spec tests added. Total: 194 passing + 2 intentional fails (BUG-013, BUG-016). |
+| 15 | 2026-03-13 | 3.3 | BUG-008 fix: fetchTimelineData now takes (member, startDate, endDate). Added selectedEndDate state, synced from globalDateRange on open, passed to all 3 call sites + useEffect deps. 4 spec tests added. Total: 198 passing + 2 intentional fails (BUG-013, BUG-016). |
+| 16 | 2026-03-13 | 3.4 | BUG-009 fix: fetchWeeklyPerformanceData now takes (member, startDate, endDate), falls back to getThisWeekRange() when null. Call site passes selectedDate/selectedEndDate + added to useEffect deps. 4 spec tests added. Total: 202 passing + 2 intentional fails (BUG-013, BUG-016). |
+| 17 | 2026-03-13 | 3.5 | BUG-013 fix: offlineThreshold now used in deriveStatus(). Added break/offline boundary condition and extended custom-threshold tests. Intentional-fail count drops from 2 to 1. Total: 205 passing + 1 intentional fail (BUG-016). |
+| 18 | 2026-03-13 | 3.6 | BUG-005 fix: App.jsx taskBaseline now multiplied by workingDays. Added 3 BUG-005 spec tests + updated BUG-004 helper to match. Total: 208 passing + 1 intentional fail (BUG-016). |
+| 19 | 2026-03-13 | 3.7 | BUG-003 fix: orchestrator.js dateRangeInfo startDate/endDate now serialized as local ISO strings (not Date objects). Added 3 BUG-003 spec tests. Total: 211 passing + 1 intentional fail (BUG-016). |
+| 20 | 2026-03-13 | 3.8 | BUG-010 fix: MemberDetailModal header now shows "Today's Progress" / "N-Day Progress" / "Progress" based on active dateRange. Added dateRangeInfo store selector. Added 4 BUG-010 spec tests. Total: 215 passing + 1 intentional fail (BUG-016). |
+| 21 | 2026-03-13 | 3.9 | BUG-011 fix: ListView "Team Tracked" label now shows "(N days)" for multi-day ranges, matching Grid View. Added 3 BUG-011 spec tests. Total: 218 passing + 1 intentional fail (BUG-016). |
+| 22 | 2026-03-13 | 3.13 | BUG-014 fix: duration <= 0 now catches zero-duration running timers as 'working'. Added 1 failing test then fixed. Total: 219 passing + 1 intentional fail (BUG-016). |
+| 23 | 2026-03-13 | 3.14 | BUG-015 fix: all-zero-duration entries (no completedEntries) now returns 'offline' not 'noActivity'. Updated existing test + fixed. Total: 219 passing + 1 intentional fail (BUG-016). |
+| 24 | 2026-03-13 | 3.15 | BUG-016 fix: getMemberLeaveToday now uses approved/confirmed/active whitelist (was blacklist of rejected only). Intentional-fail count drops to 0. Total: 220 passing + 0 intentional fails. |
