@@ -96,7 +96,7 @@ const LeaveCalendar = ({ leaves, members, theme, isMobile, typeFilter, onTypeFil
                 fontWeight: 500,
                 border: 'none',
                 cursor: 'pointer',
-                background: (typeFilter || 'all') === opt.value ? `${theme.accent}20` : `${theme.text}08`,
+                background: (typeFilter || 'all') === opt.value ? `${theme.text}25` : `${theme.text}08`,
                 color: (typeFilter || 'all') === opt.value ? theme.text : theme.textSecondary,
               }}
             >
