@@ -61,10 +61,10 @@
 - [x] BUG-018c: transform.js member.target ignores settings — stale IndexedDB value always wins
 
 ## Phase 5: E2E Tests
-- [ ] 5.1 Core E2E tests with mocked API
+- [x] 5.1 Core E2E tests — 6/6 passing (tests/e2e/core-flow.spec.js)
 
 ## Phase 6: Final Sweep
-- [ ] 6.1 Full test suite + build + cleanup
+- [x] 6.1 Full test suite + build + cleanup
 
 ## Bug Registry
 (Populated after Phase 1 audits complete)
@@ -296,3 +296,5 @@
 | 33 | 2026-03-13 | BUG-018 | Fix: totalTarget now uses member.target sum in App.jsx, useAppStore (updateStats+batchSyncUpdate), DashboardDetailModal. 5 new tests. 228 passing. |
 | 34 | 2026-03-13 | BUG-018b | Fix: MemberDetailModal performance chart bar color and legend use member.target not hardcoded 6.5. 228 passing. |
 | 35 | 2026-03-13 | BUG-018c | Fix: transform.js member.target now reads settings.schedule.dailyTargetHours first (was reading stale IndexedDB value, so setting change never propagated). 228 passing. |
+| 36 | 2026-03-13 | 5.1 | E2E core-flow.spec.js: 6/6 passing. Bootstrap strategy: intercept indexedDB.open to seed authUser+members before app reads IDB; mock ClickUp API via page.route. Key finding: noActivity members render as CompactMemberRow (no data-testid), so tests use ranking table rows + body text instead of member-card count. |
+| 37 | 2026-03-13 | 6.1 | Final sweep: 228 unit tests passing. Build succeeds (2 pre-existing warnings: duplicate minHeight key in LoginScreen.jsx, dynamic+static import of clickup.js). No stray console.error/warn in happy paths. No .tmp/.bak/.orig files. All 19 bugs fixed, 228 unit tests + 6 E2E tests added. |
