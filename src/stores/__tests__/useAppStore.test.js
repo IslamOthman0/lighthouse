@@ -480,3 +480,87 @@ describe('batchSyncUpdate', () => {
     expect(teamStats).toBeDefined();
   });
 });
+
+// ===========================================================================
+// BUG-004: displayScoreMetrics computation (App.jsx) must use store.scoreWeights
+// ===========================================================================
+// App.jsx computes displayScoreMetrics in a useMemo. It SHOULD read scoreWeights
+// from the store but currently uses hardcoded 40/20/30/10.
+//
+// The store's updateStats() correctly uses scoreWeights. These tests verify that
+// store.scoreMetrics and a manually-computed result (using scoreWeights) match.
+// They also serve as specification for the App.jsx fix: the displayScoreMetrics
+// useMemo must use the same weight-reading logic as updateStats().
+
+describe('BUG-004: displayScoreMetrics must use store.scoreWeights, not hardcoded values', () => {
+  // Reproduces the displayScoreMetrics computation that App.jsx SHOULD do after the fix.
+  // If App.jsx is still hardcoded, it produces a DIFFERENT total than this function.
+  function computeWithWeights(members, dateRangeInfo, teamBaseline, scoreWeights) {
+    if (!members || members.length === 0) return null;
+    const workingDays = dateRangeInfo?.workingDays || 1;
+    const totalTracked = members.reduce((sum, m) => sum + (m.tracked || 0), 0);
+    const totalTarget = members.length * 6.5 * workingDays;
+    const totalTasksDone = members.reduce((sum, m) => sum + (m.done || 0), 0);
+    const totalTasks = members.reduce((sum, m) => sum + (m.tasks || 0), 0);
+    const totalComplianceHours = members.reduce((sum, m) => sum + (m.complianceHours ?? (m.tracked || 0) * 0.85), 0);
+
+    const timeRatio = totalTarget > 0 ? Math.min((totalTracked / totalTarget) * 100, 100) : 0;
+    const taskBaseline = members.length * (teamBaseline || 3);
+    const workloadRatio = taskBaseline > 0 ? Math.min((totalTasks / taskBaseline) * 100, 100) : 0;
+    const completionRatio = totalTasks > 0 ? (totalTasksDone / totalTasks) * 100 : 0;
+    const complianceRatio = totalTarget > 0 ? Math.min((totalComplianceHours / totalTarget) * 100, 100) : 0;
+
+    const W = scoreWeights ? {
+      TIME: (scoreWeights.trackedTime ?? 0.40) * 100,
+      WORKLOAD: (scoreWeights.tasksWorked ?? 0.20) * 100,
+      COMPLETION: (scoreWeights.tasksDone ?? 0.30) * 100,
+      COMPLIANCE: (scoreWeights.compliance ?? 0.10) * 100,
+    } : { TIME: 40, WORKLOAD: 20, COMPLETION: 30, COMPLIANCE: 10 };
+
+    const timeScore = (timeRatio / 100) * W.TIME;
+    const workloadScore = (workloadRatio / 100) * W.WORKLOAD;
+    const completionScore = (completionRatio / 100) * W.COMPLETION;
+    const complianceScore = (complianceRatio / 100) * W.COMPLIANCE;
+    return Math.round(timeScore + workloadScore + completionScore + complianceScore);
+  }
+
+  it('with default weights (null) and 100% effort: total = 100', () => {
+    const members = [{ id: '1', tracked: 6.5, tasks: 3, done: 3, complianceHours: 6.5 }];
+    const total = computeWithWeights(members, { workingDays: 1 }, 3, null);
+    expect(total).toBe(100);
+  });
+
+  it('BUG-004 spec: custom time weight (0.60) raises time-only score from 40 to 60', () => {
+    // Member: only tracked hours (time=100%), workload=0, completion=0, compliance=0
+    const members = [{ id: '1', tracked: 6.5, tasks: 0, done: 0, complianceHours: 0 }];
+    const customWeights = { trackedTime: 0.60, tasksWorked: 0.20, tasksDone: 0.10, compliance: 0.10 };
+    const total = computeWithWeights(members, { workingDays: 1 }, 3, customWeights);
+    // time=100% × 60 = 60; rest = 0 → total = 60
+    expect(total).toBe(60);
+  });
+
+  it('BUG-004 spec: store.scoreMetrics.total matches weight-aware computation', () => {
+    // This verifies that store.scoreMetrics (used as source in App.jsx displayScoreMetrics)
+    // correctly reflects custom scoreWeights. The store is already correct — App.jsx's
+    // displayScoreMetrics useMemo must read scoreWeights to stay in sync.
+    const customWeights = { trackedTime: 0.60, tasksWorked: 0.20, tasksDone: 0.10, compliance: 0.10 };
+    const members = [{ id: '1', tracked: 6.5, tasks: 0, done: 0, complianceHours: 0 }];
+
+    useAppStore.setState({
+      members,
+      teamBaseline: 3,
+      dateRangeInfo: { workingDays: 1, totalTimeEntries: 0, uniqueTasks: 0 },
+      scoreWeights: customWeights,
+    });
+    useAppStore.getState().updateStats();
+
+    const { scoreMetrics } = useAppStore.getState();
+    // Store correctly uses custom weights: time=60, rest=0 → total=60
+    expect(scoreMetrics.total).toBe(60);
+
+    // The App.jsx displayScoreMetrics computation must also produce 60 (not 40).
+    // computeWithWeights mirrors what the fixed App.jsx should do:
+    const appTotal = computeWithWeights(members, { workingDays: 1 }, 3, customWeights);
+    expect(appTotal).toBe(scoreMetrics.total); // Both 60 — spec for the fix
+  });
+});

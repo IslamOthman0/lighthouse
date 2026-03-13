@@ -65,6 +65,7 @@ function App() {
   const updateStats = useAppStore(state => state.updateStats);
   const updateProjectBreakdown = useAppStore(state => state.updateProjectBreakdown);
   const yesterdaySnapshot = useAppStore(state => state.yesterdaySnapshot);
+  const scoreWeights = useAppStore(state => state.scoreWeights);
 
   // Filter/Sort state from Zustand
   const memberFilter = useAppStore(state => state.memberFilter);
@@ -210,10 +211,16 @@ function App() {
     const completionRatio = totalTasks > 0 ? (totalTasksDone / totalTasks) * 100 : 0;
     const complianceRatio = totalTarget > 0 ? Math.min((totalComplianceHours / totalTarget) * 100, 100) : 0;
 
-    const timeScore = (timeRatio / 100) * 40;
-    const workloadScore = (workloadRatio / 100) * 20;
-    const completionScore = (completionRatio / 100) * 30;
-    const complianceScore = (complianceRatio / 100) * 10;
+    const W = scoreWeights ? {
+      TIME: (scoreWeights.trackedTime ?? 0.40) * 100,
+      WORKLOAD: (scoreWeights.tasksWorked ?? 0.20) * 100,
+      COMPLETION: (scoreWeights.tasksDone ?? 0.30) * 100,
+      COMPLIANCE: (scoreWeights.compliance ?? 0.10) * 100,
+    } : { TIME: 40, WORKLOAD: 20, COMPLETION: 30, COMPLIANCE: 10 };
+    const timeScore = (timeRatio / 100) * W.TIME;
+    const workloadScore = (workloadRatio / 100) * W.WORKLOAD;
+    const completionScore = (completionRatio / 100) * W.COMPLETION;
+    const complianceScore = (complianceRatio / 100) * W.COMPLIANCE;
     const total = Math.round(timeScore + workloadScore + completionScore + complianceScore);
 
     return {
@@ -238,7 +245,7 @@ function App() {
       },
       teamScore: total
     };
-  }, [filteredMembers, dateRangeInfo, teamBaseline]);
+  }, [filteredMembers, dateRangeInfo, teamBaseline, scoreWeights]);
 
   // Show skeleton loading state while database initializes
   const isInitialLoad = !members || members.length === 0;
