@@ -200,7 +200,7 @@ function App() {
 
     const workingDays = dateRangeInfo?.workingDays || 1;
     const totalTracked = filteredMembers.reduce((sum, m) => sum + (m.tracked || 0), 0);
-    const totalTarget = filteredMembers.length * 6.5 * workingDays;
+    const totalTarget = filteredMembers.reduce((sum, m) => sum + (m.target || 6.5), 0) * workingDays;
     const totalTasksDone = filteredMembers.reduce((sum, m) => sum + (m.done || 0), 0);
     const totalTasks = filteredMembers.reduce((sum, m) => sum + (m.tasks || 0), 0);
     const totalComplianceHours = filteredMembers.reduce((sum, m) => sum + (m.complianceHours ?? (m.tracked || 0) * 0.85), 0);

@@ -51,7 +51,7 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
       const t = (typeof m.tracked === 'number' && isFinite(m.tracked)) ? m.tracked : 0;
       return sum + t;
     }, 0);
-    const totalTarget = members.length * 6.5 * workingDays;
+    const totalTarget = members.reduce((sum, m) => sum + (m.target || 6.5), 0) * workingDays;
     const progress = totalTarget > 0 ? Math.min((totalTracked / totalTarget) * 100, 100) : 0;
 
     // Avg time per task (across all members in range)

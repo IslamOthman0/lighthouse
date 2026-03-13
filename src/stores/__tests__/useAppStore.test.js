@@ -886,3 +886,73 @@ describe('BUG-011: teamTrackedLabel includes day count for multi-day ranges', ()
     expect(getTeamTrackedLabel(7)).toBe('Team Tracked (7 days)');
   });
 });
+
+// ---------------------------------------------------------------------------
+// BUG-018: totalTarget hardcoded to members.length × 6.5 — ignores member.target
+// ---------------------------------------------------------------------------
+// updateStats(), batchSyncUpdate(), App.jsx useMemo, and DashboardDetailModal
+// all compute totalTarget as `members.length * 6.5 * workingDays`.
+// This ignores the user-configured dailyTargetHours setting AND per-member
+// target fields. If target is changed to e.g. 5h, the displayed total stays at 6.5h.
+//
+// Fix: use sum of member.target values instead of members.length × hardcoded 6.5.
+// Spec: totalTarget = members.reduce((s,m) => s + (m.target || 6.5), 0) * workingDays
+
+describe('BUG-018: totalTarget must use member.target sum, not hardcoded 6.5', () => {
+  function computeTotalTarget(members, workingDays) {
+    // CORRECT post-fix formula
+    return members.reduce((s, m) => s + (m.target || 6.5), 0) * workingDays;
+  }
+
+  it('BUG-018 spec: default target (6.5) — behaviour unchanged', () => {
+    const members = [
+      { id: '1', target: 6.5, tracked: 6.5 },
+      { id: '2', target: 6.5, tracked: 6.5 },
+    ];
+    expect(computeTotalTarget(members, 1)).toBeCloseTo(13);
+  });
+
+  it('BUG-018 spec: custom target 5h — totalTarget uses 5, not 6.5', () => {
+    const members = [
+      { id: '1', target: 5, tracked: 5 },
+      { id: '2', target: 5, tracked: 5 },
+    ];
+    // Correct: 2 × 5 × 1 = 10 — NOT 2 × 6.5 = 13
+    expect(computeTotalTarget(members, 1)).toBeCloseTo(10);
+  });
+
+  it('BUG-018 spec: custom target + multi-day', () => {
+    const members = [{ id: '1', target: 5, tracked: 25 }];
+    // Correct: 1 × 5 × 5 = 25 — NOT 1 × 6.5 × 5 = 32.5
+    expect(computeTotalTarget(members, 5)).toBeCloseTo(25);
+  });
+
+  it('BUG-018 spec: updateStats() uses member.target sum for totalTarget', () => {
+    useAppStore.setState({
+      members: [
+        { id: '1', target: 5, tracked: 5, tasks: 3, done: 3, complianceHours: 5 },
+        { id: '2', target: 5, tracked: 5, tasks: 3, done: 3, complianceHours: 5 },
+      ],
+      teamBaseline: 3,
+      dateRangeInfo: { workingDays: 1 },
+      scoreWeights: null,
+    });
+    useAppStore.getState().updateStats();
+    const { teamStats } = useAppStore.getState();
+    // totalTarget should be 2×5=10, NOT 2×6.5=13
+    expect(teamStats.tracked.target).toBeCloseTo(10);
+  });
+
+  it('BUG-018 spec: batchSyncUpdate() uses member.target sum for totalTarget', () => {
+    useAppStore.setState({ teamBaseline: 3, scoreWeights: null });
+    useAppStore.getState().batchSyncUpdate({
+      members: [
+        { id: '1', target: 5, tracked: 5, tasks: 3, done: 3, complianceHours: 5 },
+      ],
+      dateRangeInfo: { workingDays: 1 },
+    });
+    const { teamStats } = useAppStore.getState();
+    // totalTarget should be 1×5=5, NOT 1×6.5=6.5
+    expect(teamStats.tracked.target).toBeCloseTo(5);
+  });
+});
