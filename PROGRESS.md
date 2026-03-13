@@ -51,7 +51,7 @@
 ## Phase 4: Screen Verification
 - [x] 4.1 Grid View data flow — all clear
 - [x] 4.2 List View data flow — all clear (1 minor note: ListView re-sorts independently)
-- [ ] 4.3 MemberDetailModal
+- [x] 4.3 MemberDetailModal — all clear
 - [ ] 4.4 SettingsModal pipeline
 - [ ] 4.5 Leaves system
 
@@ -285,3 +285,4 @@
 | 27 | 2026-03-13 | 3.12 | BUG-012 fix: ProjectBreakdownCard label shows "Today:" for today preset, "Tracked:" for date ranges. 223 passing. |
 | 28 | 2026-03-13 | 4.1 | Grid View verification: all clear. All Phase 3 fixes confirmed in-place. No new bugs found. |
 | 29 | 2026-03-13 | 4.2 | List View verification: all clear. BUG-007/BUG-011 fixes confirmed. ListView re-sorts independently (not a bug — its sort is intentionally different from Grid's activity sort). |
+| 30 | 2026-03-13 | 4.3 | MemberDetailModal verification: all clear. BUG-008/BUG-009/BUG-010 fixes confirmed. Member data from props (snapshot at click time). Date range synced from store on open. Leave tab reads from db.leaves. |
