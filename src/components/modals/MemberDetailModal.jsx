@@ -657,6 +657,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
   const { settings } = useSettings();
   const storeMembers = useAppStore(state => state.members);
   const globalDateRange = useAppStore(state => state.dateRange);
+  const dateRangeInfo = useAppStore(state => state.dateRangeInfo);
   const [activeTab, setActiveTab] = useState('timeline');
   const [selectedDate, setSelectedDate] = useState(() => {
     // Initialize from global date range if available, otherwise today
@@ -1059,7 +1060,11 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 }}
               >
                 <span style={{ fontSize: '11px', color: theme.textMuted }}>
-                  Today's Progress
+                  {(!globalDateRange || globalDateRange.preset === 'today' || !globalDateRange.startDate)
+                    ? "Today's Progress"
+                    : (dateRangeInfo?.workingDays || 1) > 1
+                      ? `${dateRangeInfo.workingDays}-Day Progress`
+                      : 'Progress'}
                 </span>
                 <span
                   style={{

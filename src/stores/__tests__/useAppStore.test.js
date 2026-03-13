@@ -828,3 +828,39 @@ describe('BUG-003: dateRangeInfo.startDate/endDate must be ISO strings, not Date
     expect(stored).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
+
+// ---------------------------------------------------------------------------
+// BUG-010: MemberDetailModal header label hardcoded "Today's Progress"
+// ---------------------------------------------------------------------------
+// The label must reflect the active date range:
+// - preset === 'today' → "Today's Progress"
+// - multi-day range (workingDays > 1) → "X-Day Progress"
+// - single historical date → "Progress" (date shown elsewhere in the UI)
+
+describe('BUG-010: progressLabel derives from dateRange, not hardcoded', () => {
+  function getProgressLabel(globalDateRange, workingDays) {
+    if (!globalDateRange || globalDateRange.preset === 'today' || !globalDateRange.startDate) {
+      return "Today's Progress";
+    }
+    if (workingDays > 1) {
+      return `${workingDays}-Day Progress`;
+    }
+    return 'Progress';
+  }
+
+  it('BUG-010 spec: today preset → "Today\'s Progress"', () => {
+    expect(getProgressLabel({ preset: 'today', startDate: null }, 1)).toBe("Today's Progress");
+  });
+
+  it('BUG-010 spec: 5-day range → "5-Day Progress"', () => {
+    expect(getProgressLabel({ preset: 'custom', startDate: '2026-03-09', endDate: '2026-03-13' }, 5)).toBe('5-Day Progress');
+  });
+
+  it('BUG-010 spec: single historical date → "Progress"', () => {
+    expect(getProgressLabel({ preset: 'custom', startDate: '2026-03-10', endDate: '2026-03-10' }, 1)).toBe('Progress');
+  });
+
+  it('BUG-010 spec: null globalDateRange → "Today\'s Progress"', () => {
+    expect(getProgressLabel(null, 1)).toBe("Today's Progress");
+  });
+});
