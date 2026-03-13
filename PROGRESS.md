@@ -49,7 +49,7 @@
 - [x] 3.12 Fix BUG-012: ProjectBreakdownCard "Today:" label hardcoded
 
 ## Phase 4: Screen Verification
-- [ ] 4.1 Grid View data flow
+- [x] 4.1 Grid View data flow — all clear
 - [ ] 4.2 List View data flow
 - [ ] 4.3 MemberDetailModal
 - [ ] 4.4 SettingsModal pipeline
@@ -283,3 +283,4 @@
 | 25 | 2026-03-13 | 3.16 | BUG-017 fix: LeaveCalendar filter pill selected bg changed from ${theme.accent}20 to ${theme.text}25 — visible in True Black theme. 220 passing. |
 | 26 | 2026-03-13 | 3.10+3.11 | BUG-001/BUG-002 fix: useClickUpSync snapshot dates (yesterday, today, cutoff) now use toLocalDateStr() instead of toISOString(). 3 new tests added. 223 passing. |
 | 27 | 2026-03-13 | 3.12 | BUG-012 fix: ProjectBreakdownCard label shows "Today:" for today preset, "Tracked:" for date ranges. 223 passing. |
+| 28 | 2026-03-13 | 4.1 | Grid View verification: all clear. All Phase 3 fixes confirmed in-place. No new bugs found. |
