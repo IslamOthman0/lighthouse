@@ -693,8 +693,8 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
       members: results,
       projectBreakdown,
       dateRangeInfo: {
-        startDate: startOfDay,
-        endDate: endOfDay,
+        startDate: `${startOfDay.getFullYear()}-${String(startOfDay.getMonth() + 1).padStart(2, '0')}-${String(startOfDay.getDate()).padStart(2, '0')}`,
+        endDate: `${endOfDay.getFullYear()}-${String(endOfDay.getMonth() + 1).padStart(2, '0')}-${String(endOfDay.getDate()).padStart(2, '0')}`,
         workingDays,
         totalTimeEntries: todayTimeEntries.length,
         uniqueTasks: allTasks.length

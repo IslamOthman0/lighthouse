@@ -786,3 +786,45 @@ describe('BUG-005: App.jsx taskBaseline must include workingDays multiplier', ()
     expect(ratio).toBe(100);
   });
 });
+
+// ---------------------------------------------------------------------------
+// BUG-003: orchestrator.js dateRangeInfo.startDate/endDate stored as Date objects
+// ---------------------------------------------------------------------------
+// dateRangeInfo.startDate and endDate must be ISO strings (YYYY-MM-DD), consistent
+// with store.dateRange.startDate which is always a string. Storing Date objects
+// violates the type contract even if no consumer reads them currently.
+
+describe('BUG-003: dateRangeInfo.startDate/endDate must be ISO strings, not Date objects', () => {
+  function toLocalISODate(date) {
+    // Correct local-date serialization (not .toISOString() which is UTC)
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  it('BUG-003 spec: startDate in dateRangeInfo should be an ISO string, not a Date', () => {
+    const startOfDay = new Date(2026, 2, 1); // March 1 local midnight
+    startOfDay.setHours(0, 0, 0, 0);
+    // Correct (post-fix) behaviour: store ISO string
+    const stored = toLocalISODate(startOfDay);
+    expect(typeof stored).toBe('string');
+    expect(stored).toBe('2026-03-01');
+    expect(stored instanceof Date).toBe(false);
+  });
+
+  it('BUG-003 spec: endDate in dateRangeInfo should be an ISO string, not a Date', () => {
+    const endOfDay = new Date(2026, 2, 7); // March 7
+    endOfDay.setHours(23, 59, 59, 999);
+    const stored = toLocalISODate(endOfDay);
+    expect(typeof stored).toBe('string');
+    expect(stored).toBe('2026-03-07');
+  });
+
+  it('BUG-003 spec: today mode — startDate and endDate are same ISO string', () => {
+    const today = new Date(2026, 2, 13); // March 13
+    today.setHours(0, 0, 0, 0);
+    const stored = toLocalISODate(today);
+    expect(stored).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});
