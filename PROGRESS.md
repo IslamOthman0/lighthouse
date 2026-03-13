@@ -42,7 +42,7 @@
 - [x] 3.13 Fix BUG-014: calculations.js zero-duration timer now classified as working
 - [x] 3.14 Fix BUG-015: calculations.js all-zero-duration entries now return offline not noActivity
 - [x] 3.15 Fix BUG-016: leaveHelpers pending leaves not filtered (only 'rejected' excluded)
-- [ ] 3.16 Fix BUG-017: LeaveCalendar/TeamOverviewPanel filter pill invisible in True Black theme
+- [x] 3.16 Fix BUG-017: LeaveCalendar/TeamOverviewPanel filter pill invisible in True Black theme
 ### LOW
 - [ ] 3.10 Fix BUG-001: useClickUpSync yesterday snapshot uses UTC date
 - [ ] 3.11 Fix BUG-002: useClickUpSync today snapshot uses UTC date
@@ -82,7 +82,7 @@
 | BUG-014 | calculations.js:29 | `duration === 0` not caught by `< 0` — zero-duration running timer misclassifies member as noActivity | MEDIUM | 3.13 | Open |
 | BUG-015 | calculations.js:40-42 | All entries have `duration <= 0` → completedEntries empty → returns 'noActivity' despite active timer | MEDIUM | 3.14 | Open |
 | BUG-016 | leaveHelpers.js:30 | Pending leaves not filtered — only 'rejected' excluded; pending shows as 'leave' | MEDIUM | 3.15 | Fixed |
-| BUG-017 | LeaveCalendar.jsx:99, TeamOverviewPanel.jsx:86 | Filter pill accent color invisible in True Black theme (white 20% opacity on white) | MEDIUM | 3.16 | Open |
+| BUG-017 | LeaveCalendar.jsx:99, TeamOverviewPanel.jsx:86 | Filter pill accent color invisible in True Black theme (white 20% opacity on white) | MEDIUM | 3.16 | Fixed |
 
 ## Task 1.1 — Date Flow Audit Findings
 
@@ -280,3 +280,4 @@
 | 22 | 2026-03-13 | 3.13 | BUG-014 fix: duration <= 0 now catches zero-duration running timers as 'working'. Added 1 failing test then fixed. Total: 219 passing + 1 intentional fail (BUG-016). |
 | 23 | 2026-03-13 | 3.14 | BUG-015 fix: all-zero-duration entries (no completedEntries) now returns 'offline' not 'noActivity'. Updated existing test + fixed. Total: 219 passing + 1 intentional fail (BUG-016). |
 | 24 | 2026-03-13 | 3.15 | BUG-016 fix: getMemberLeaveToday now uses approved/confirmed/active whitelist (was blacklist of rejected only). Intentional-fail count drops to 0. Total: 220 passing + 0 intentional fails. |
+| 25 | 2026-03-13 | 3.16 | BUG-017 fix: LeaveCalendar filter pill selected bg changed from ${theme.accent}20 to ${theme.text}25 — visible in True Black theme. 220 passing. |
