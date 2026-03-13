@@ -52,7 +52,7 @@
 - [x] 4.1 Grid View data flow — all clear
 - [x] 4.2 List View data flow — all clear (1 minor note: ListView re-sorts independently)
 - [x] 4.3 MemberDetailModal — all clear
-- [ ] 4.4 SettingsModal pipeline
+- [x] 4.4 SettingsModal pipeline — all clear (1 minor note: theme not persisted back via useSettings)
 - [ ] 4.5 Leaves system
 
 ## Phase 5: E2E Tests
@@ -286,3 +286,4 @@
 | 28 | 2026-03-13 | 4.1 | Grid View verification: all clear. All Phase 3 fixes confirmed in-place. No new bugs found. |
 | 29 | 2026-03-13 | 4.2 | List View verification: all clear. BUG-007/BUG-011 fixes confirmed. ListView re-sorts independently (not a bug — its sort is intentionally different from Grid's activity sort). |
 | 30 | 2026-03-13 | 4.3 | MemberDetailModal verification: all clear. BUG-008/BUG-009/BUG-010 fixes confirmed. Member data from props (snapshot at click time). Date range synced from store on open. Leave tab reads from db.leaves. |
+| 31 | 2026-03-13 | 4.4 | SettingsModal pipeline: all clear. Score weights → useClickUpSync useEffect → setScoreWeights → App.jsx useMemo recomputes immediately. Theme uses dual-write (useSettings + useThemeStore Zustand). Interval change restarts polling via useEffect dep. |
