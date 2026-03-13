@@ -1,9 +1,5 @@
 /**
  * Tests for src/services/sync/calculations.js
- *
- * BUG-013 NOTE: One test in deriveStatus is intentionally written to FAIL
- * because offlineThreshold is declared but never used in calculations.js:26.
- * That test is labelled clearly below.
  */
 
 // Mock dependencies that calculations.js imports at module level.
@@ -91,37 +87,44 @@ describe('deriveStatus()', () => {
     expect(deriveStatus(null, [entry])).toBe('break');
   });
 
-  it('returns "offline" when last activity exceeds breakThreshold (default 15 min)', () => {
-    // Entry ended 20 minutes ago — past the 15-minute break threshold
+  it('returns "break" when last activity is between breakThreshold and offlineThreshold (default 15–60 min)', () => {
+    // Entry ended 20 minutes ago — past break threshold (15) but below offline threshold (60)
     const endMs = Date.now() - 20 * 60_000;
     const entry = makeEntry({ durationMs: 3_600_000, endMs });
-    const result = deriveStatus(null, [entry]);
-    // With the bug present the function returns 'offline' for ANY entry past
-    // breakThreshold, so this test passes with both correct and buggy code.
-    expect(result).toBe('offline');
+    expect(deriveStatus(null, [entry])).toBe('break');
+  });
+
+  it('returns "offline" when last activity exceeds offlineThreshold (default 60 min)', () => {
+    // Entry ended 70 minutes ago — past the 60-minute offline threshold
+    const endMs = Date.now() - 70 * 60_000;
+    const entry = makeEntry({ durationMs: 3_600_000, endMs });
+    expect(deriveStatus(null, [entry])).toBe('offline');
   });
 
   it('respects custom breakThreshold from settings', () => {
-    // Entry ended 5 minutes ago; custom breakMinutes = 3 → should be 'offline'
+    // Entry ended 5 minutes ago; custom breakMinutes=3, offlineMinutes=60
+    // 5 > 3 (past break threshold) but 5 < 60 (not yet offline) → 'break'
     const endMs = Date.now() - 5 * 60_000;
     const entry = makeEntry({ durationMs: 3_600_000, endMs });
     const settings = { thresholds: { breakMinutes: 3, offlineMinutes: 60 } };
-    // 5 min > 3 min break threshold → past break → offline
+    expect(deriveStatus(null, [entry], settings)).toBe('break');
+  });
+
+  it('respects custom offlineThreshold from settings', () => {
+    // Entry ended 5 minutes ago; custom breakMinutes=3, offlineMinutes=4
+    // 5 > 3 (past break) AND 5 > 4 (past offline) → 'offline'
+    const endMs = Date.now() - 5 * 60_000;
+    const entry = makeEntry({ durationMs: 3_600_000, endMs });
+    const settings = { thresholds: { breakMinutes: 3, offlineMinutes: 4 } };
     expect(deriveStatus(null, [entry], settings)).toBe('offline');
   });
 
-  // BUG-013: this test should FAIL — offlineThreshold is declared but never used.
-  // The function unconditionally returns 'offline' once minutesSinceActivity >= breakThreshold,
-  // regardless of whether it's also past the offlineThreshold.
-  // Correct behaviour: a member inactive for 20 min should stay 'break' when
-  // breakMinutes=15 AND offlineMinutes=60, because 20 < 60.
-  it('[BUG-013] stays "break" when inactive between breakThreshold and offlineThreshold', () => {
-    // Entry ended 20 minutes ago
+  it('stays "break" when inactive between breakThreshold and offlineThreshold (custom settings)', () => {
+    // Entry ended 20 minutes ago; breakMinutes=15, offlineMinutes=60
+    // 20 > 15 (past break threshold) but 20 < 60 (not yet offline)
     const endMs = Date.now() - 20 * 60_000;
     const entry = makeEntry({ durationMs: 3_600_000, endMs });
     const settings = { thresholds: { breakMinutes: 15, offlineMinutes: 60 } };
-    // 20 min > 15 (past break) but 20 min < 60 (not yet offline)
-    // EXPECTED (correct): 'break'   ← this test will FAIL with current buggy code
     expect(deriveStatus(null, [entry], settings)).toBe('break');
   });
 });

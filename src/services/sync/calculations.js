@@ -55,6 +55,11 @@ export function deriveStatus(runningEntry, timeEntries, settings = null) {
     return 'break';
   }
 
+  // Break (extended): Still within offline threshold — not yet fully offline
+  if (minutesSinceActivity < offlineThreshold) {
+    return 'break';
+  }
+
   // Offline: Had activity today but inactive for offline threshold+ minutes
   return 'offline';
 }
