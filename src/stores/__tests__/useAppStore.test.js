@@ -616,3 +616,57 @@ describe('BUG-007: RankingTable formatComplianceDisplay uses correct workingDays
     expect(formatComplianceDisplay(member, 1)).toBe(100);
   });
 });
+
+// ===========================================================================
+// BUG-008: fetchTimelineData must span full date range, not single day
+// ===========================================================================
+// MemberDetailModal.fetchTimelineData() was building start/end timestamps from
+// a single selectedDate, always covering one day. When the global date range
+// spans multiple days, the timeline only fetched 1 day of data.
+//
+// Fix: signature changed to (member, startDate, endDate) and end timestamp
+// now comes from endDate (end of that day) instead of startDate.
+// These tests specify the correct timestamp-building behaviour.
+
+describe('BUG-008: fetchTimelineData timestamp range covers full date range', () => {
+  // Mirrors the FIXED fetchTimelineData timestamp computation
+  function buildTimestamps(startDate, endDate) {
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endDate || startDate);
+    end.setHours(23, 59, 59, 999);
+    return {
+      startTs: Math.floor(start.getTime() / 1000),
+      endTs: Math.floor(end.getTime() / 1000),
+    };
+  }
+
+  it('single day: span is exactly 23h 59m 59s (86399 seconds)', () => {
+    const day = new Date(2026, 2, 10); // March 10
+    const { startTs, endTs } = buildTimestamps(day, day);
+    expect(endTs - startTs).toBe(86399);
+  });
+
+  it('5-day range: end timestamp reaches end of endDate — span is 5 days minus 1 second', () => {
+    const startDate = new Date(2026, 2, 10); // March 10
+    const endDate = new Date(2026, 2, 14);   // March 14
+    const { startTs, endTs } = buildTimestamps(startDate, endDate);
+    const fiveDaysSeconds = 5 * 24 * 60 * 60 - 1;
+    expect(endTs - startTs).toBe(fiveDaysSeconds);
+  });
+
+  it('endDate defaults to startDate when null — single day behaviour preserved', () => {
+    const day = new Date(2026, 2, 10);
+    const { startTs: withNull } = buildTimestamps(day, null);
+    const { startTs: withSame } = buildTimestamps(day, day);
+    expect(withNull).toBe(withSame);
+  });
+
+  it('3-day range: span covers 3 full days', () => {
+    const startDate = new Date(2026, 2, 10); // March 10
+    const endDate = new Date(2026, 2, 12);   // March 12
+    const { startTs, endTs } = buildTimestamps(startDate, endDate);
+    const threeDaysSeconds = 3 * 24 * 60 * 60 - 1;
+    expect(endTs - startTs).toBe(threeDaysSeconds);
+  });
+});

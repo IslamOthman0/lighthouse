@@ -247,15 +247,15 @@ const buildCalendarEvents = (leaves, month, year) => {
  * @param {Date} selectedDate - Date to fetch entries for
  * @returns {Promise<Object>} { tasks: Array, breaks: Array }
  */
-const fetchTimelineData = async (member, selectedDate) => {
+const fetchTimelineData = async (member, startDate, endDate) => {
   if (!member?.clickUpId) {
     return { tasks: [], breaks: [] };
   }
 
-  // Calculate date range (start of day to end of day in Unix seconds)
-  const startOfDay = new Date(selectedDate);
+  // Calculate date range (start of startDate to end of endDate in Unix seconds)
+  const startOfDay = new Date(startDate);
   startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(selectedDate);
+  const endOfDay = new Date(endDate || startDate);
   endOfDay.setHours(23, 59, 59, 999);
 
   const startTimestamp = Math.floor(startOfDay.getTime() / 1000);
@@ -663,6 +663,13 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
     }
     return new Date();
   });
+  const [selectedEndDate, setSelectedEndDate] = useState(() => {
+    if (globalDateRange?.endDate) {
+      const [y, m, d] = globalDateRange.endDate.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+    return null; // null = same as selectedDate (single day)
+  });
   const [dateMode, setDateMode] = useState('today'); // today, yesterday, thisWeek, custom
   const [weekDayIndex, setWeekDayIndex] = useState(null); // For week navigation
   const [isLoading, setIsLoading] = useState(false);
@@ -690,12 +697,18 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
     };
   }, [isOpen, onClose]);
 
-  // Sync selectedDate with global date range when modal opens
+  // Sync selectedDate/selectedEndDate with global date range when modal opens
   useEffect(() => {
     if (isOpen && globalDateRange?.startDate) {
       const [y, m, d] = globalDateRange.startDate.split('-').map(Number);
       setSelectedDate(new Date(y, m - 1, d));
       setDateMode('custom');
+      if (globalDateRange.endDate) {
+        const [ey, em, ed] = globalDateRange.endDate.split('-').map(Number);
+        setSelectedEndDate(new Date(ey, em - 1, ed));
+      } else {
+        setSelectedEndDate(null);
+      }
     }
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -706,7 +719,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
     let isCancelled = false;
     const timer = setTimeout(() => {
       setIsLoading(true);
-      fetchTimelineData(member, selectedDate)
+      fetchTimelineData(member, selectedDate, selectedEndDate)
         .then(data => {
           if (!isCancelled) {
             setTimelineData(data);
@@ -726,7 +739,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
       isCancelled = true;
       clearTimeout(timer);
     };
-  }, [isOpen, member, selectedDate]);
+  }, [isOpen, member, selectedDate, selectedEndDate]);
 
   // Fetch performance data when Performance tab is active
   useEffect(() => {
@@ -894,7 +907,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
     if (!member) return;
 
     setIsLoading(true);
-    fetchTimelineData(member, selectedDate)
+    fetchTimelineData(member, selectedDate, selectedEndDate)
       .then(data => {
         setTimelineData(data);
         setIsLoading(false);
@@ -903,7 +916,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
         console.error('Error refreshing timeline:', error);
         setIsLoading(false);
       });
-  }, [member, selectedDate]);
+  }, [member, selectedDate, selectedEndDate]);
 
   if (!isOpen || !member) return null;
 
