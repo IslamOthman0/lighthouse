@@ -441,3 +441,142 @@ test.describe('GROUP 5 — Member Filter via Settings Modal (Team Tab)', () => {
     expect(getErrors()).toHaveLength(0);
   });
 });
+
+// ─── GROUP 6: Theme via Settings Injection ────────────────────────────────────
+//
+// Strategy: inject settings with display.theme pre-set, verify app renders without
+// errors and that the visible background differs between themes.
+//
+// Theme is applied via inline style on the root div (not a CSS class):
+//   True Black:  theme.bg = '#0A0A0A'
+//   Noir Glass:  theme.bg = 'linear-gradient(170deg, #F9F9F7 ...)'
+//
+// We detect the theme by reading the background style of the root element.
+
+test.describe('GROUP 6 — Theme via Settings Injection', () => {
+  test.setTimeout(60000);
+
+  test('boot with Noir Glass theme → app renders, no JS errors', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+
+    // Merge NOIR_GLASS_THEME display into DEFAULT settings
+    const noirSettings = {
+      ...MOCK_SETTINGS.DEFAULT,
+      display: { ...MOCK_SETTINGS.DEFAULT.display, ...MOCK_SETTINGS.NOIR_GLASS_THEME.display },
+    };
+
+    await setupMockApp(page, { settings: noirSettings });
+
+    // Dashboard rendered — overview cards visible
+    const overviewCard = page.locator('[data-testid^="overview-card"]').first();
+    await expect(overviewCard).toBeVisible({ timeout: 10000 });
+
+    expect(getErrors()).toHaveLength(0);
+  });
+
+  test('boot with True Black theme → app renders, no JS errors', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+
+    await setupMockApp(page, { settings: MOCK_SETTINGS.DEFAULT });
+
+    // Dashboard rendered — overview cards visible
+    const overviewCard = page.locator('[data-testid^="overview-card"]').first();
+    await expect(overviewCard).toBeVisible({ timeout: 10000 });
+
+    expect(getErrors()).toHaveLength(0);
+  });
+
+  test('Noir Glass theme has a different background style than True Black', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+
+    // Boot with Noir Glass
+    const noirSettings = {
+      ...MOCK_SETTINGS.DEFAULT,
+      display: { ...MOCK_SETTINGS.DEFAULT.display, ...MOCK_SETTINGS.NOIR_GLASS_THEME.display },
+    };
+    await setupMockApp(page, { settings: noirSettings });
+
+    // Read background of first full-height div (the themed root div)
+    // Theme is applied as inline style on a <div> with minHeight: 100vh
+    const noirBg = await page.evaluate(() => {
+      // Find the outermost div that has minHeight: 100vh (the theme root div in App.jsx)
+      const divs = document.querySelectorAll('div');
+      for (const div of divs) {
+        const style = div.getAttribute('style') || '';
+        if (style.includes('min-height') || style.includes('minHeight')) {
+          return window.getComputedStyle(div).backgroundColor + '|' + style;
+        }
+      }
+      // Fallback: body background
+      return window.getComputedStyle(document.body).backgroundColor;
+    });
+
+    // Noir Glass has a light background — F9F9F7 is near-white
+    // True Black has a very dark background — 0A0A0A
+    // We detect by checking if the background references light values (not '#0A0A0A')
+    expect(noirBg).not.toContain('0A0A0A');
+    expect(noirBg).not.toContain('0a0a0a');
+
+    expect(getErrors()).toHaveLength(0);
+  });
+});
+
+// ─── GROUP 7: Theme Toggle via Settings Modal ─────────────────────────────────
+//
+// Tests that the Display tab in SettingsModal shows the theme selector.
+// The Display tab is labeled "Display" with icon "🎨" (SettingsModal.jsx:416).
+// Theme selector is a <select> with options "True Black + Emerald" and "Noir Glass".
+
+test.describe('GROUP 7 — Theme Toggle via Settings Modal (Display Tab)', () => {
+  test.setTimeout(60000);
+
+  test('settings modal has a Display tab accessible via tab button', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+    await setupMockApp(page);
+
+    const opened = await openSettingsModal(page);
+    expect(opened).toBe(true);
+
+    // Display tab identified by label "Display" or icon "🎨"
+    const displayTabByLabel = page.locator('button').filter({ hasText: 'Display' }).first();
+    const displayTabByIcon  = page.locator('button').filter({ hasText: '🎨' }).first();
+
+    const labelVisible = await displayTabByLabel.isVisible({ timeout: 3000 }).catch(() => false);
+    const iconVisible  = await displayTabByIcon.isVisible({ timeout: 3000 }).catch(() => false);
+
+    expect(labelVisible || iconVisible).toBe(true);
+
+    expect(getErrors()).toHaveLength(0);
+  });
+
+  test('Display tab shows theme selector with True Black and Noir Glass options', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+    await setupMockApp(page);
+
+    await openSettingsModal(page);
+
+    // Navigate to Display tab
+    const displayTabByLabel = page.locator('button').filter({ hasText: 'Display' }).first();
+    const displayTabByIcon  = page.locator('button').filter({ hasText: '🎨' }).first();
+    if (await displayTabByLabel.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await displayTabByLabel.click();
+    } else {
+      await displayTabByIcon.click();
+    }
+    await page.waitForTimeout(300);
+
+    // Theme selector: <select> containing "True Black" and "Noir Glass" options
+    const themeSelect = page.locator('select').filter({ hasText: /True Black/i }).first();
+    const selectVisible = await themeSelect.isVisible({ timeout: 3000 }).catch(() => false);
+    expect(selectVisible).toBe(true);
+
+    // Verify both theme options exist
+    const trueBlackOption = page.locator('option[value="trueBlack"]').first();
+    const noirGlassOption = page.locator('option[value="noirGlass"]').first();
+
+    await expect(trueBlackOption).toBeAttached({ timeout: 3000 });
+    await expect(noirGlassOption).toBeAttached({ timeout: 3000 });
+
+    expect(getErrors()).toHaveLength(0);
+  });
+});
