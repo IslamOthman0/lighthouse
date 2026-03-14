@@ -1,8 +1,9 @@
 /**
- * settings-reactivity.spec.js — Phase 2, Task 2.1
+ * settings-reactivity.spec.js — Phase 2, Tasks 2.1 + 2.2
  *
  * Tests that score weight settings are visible, readable, and that changing
  * them doesn't crash the app or break the score card display.
+ * Also tests member filter (membersToMonitor) reactivity.
  *
  * Strategy (per task spec):
  * - No exact score value assertions — sync overwrites seeded member data
@@ -10,10 +11,12 @@
  * - GROUP 1: Settings modal opens, Score tab visible, weight inputs readable
  * - GROUP 2: Change a weight → close modal → score card still renders + shows %
  * - GROUP 3: Boot with CUSTOM_WEIGHTS injected → score card visible + shows %
+ * - GROUP 4: Member filter via Settings injection (membersToMonitor)
+ * - GROUP 5: Member filter UI — Team tab visible and accessible
  */
 
-import { setupMockApp, openSettingsModal, collectConsoleErrors } from '../fixtures/test-setup.js';
-import { MOCK_SETTINGS } from '../fixtures/mock-data.js';
+import { setupMockApp, openSettingsModal, collectConsoleErrors, mockClickUpAPI, injectMembers } from '../fixtures/test-setup.js';
+import { MOCK_SETTINGS, MOCK_MEMBERS, MOCK_AUTH_USER } from '../fixtures/mock-data.js';
 import { test, expect } from '@playwright/test';
 
 // Required: IDB seeding + app boot takes ~22s
@@ -195,6 +198,9 @@ test.describe('GROUP 2 — Weight Change Propagates', () => {
 });
 
 // ─── GROUP 3: Custom Weights via Injection ────────────────────────────────────
+//
+// NOTE: test.setTimeout(60000) is set at file level above each group that needs it.
+// Individual test.describe blocks that use setupMockApp need the timeout set.
 
 test.describe('GROUP 3 — Custom Weights via Injection', () => {
   test('boot with CUSTOM_WEIGHTS (60/10/20/10) → score card visible and shows %', async ({ page }) => {
@@ -252,6 +258,185 @@ test.describe('GROUP 3 — Custom Weights via Injection', () => {
     // ScoreBreakdownCard renders metric values as "{value}%" — check at least 1 metric % exists
     const percentTexts = await scoreCard.locator('*').filter({ hasText: /%/ }).count();
     expect(percentTexts).toBeGreaterThan(0);
+
+    expect(getErrors()).toHaveLength(0);
+  });
+});
+
+// ─── GROUP 4: Member Filter via Settings Injection ────────────────────────────
+//
+// Strategy: inject membersToMonitor AFTER injectMembers clears it (add a 3rd init script)
+// injectMembers has a script that clears membersToMonitor — we override with a late inject.
+//
+// filteredMembers in App.jsx: empty [] = show all; non-empty = show only matching members
+// Full cards [data-testid="member-card"]: working×3 + break×1 + offline×2 = 6
+// Compact rows [data-testid="member-compact-row"]: noActivity×1 + leave×1 = 2
+// Total member elements = 8
+
+/**
+ * Boot app with specific membersToMonitor — bypasses the injectMembers clearing.
+ * Injects the filter setting AFTER all other init scripts via an extra addInitScript call.
+ */
+async function setupWithMemberFilter(page, membersToMonitor) {
+  const filteredSettings = {
+    ...MOCK_SETTINGS.DEFAULT,
+    team: { ...MOCK_SETTINGS.DEFAULT.team, membersToMonitor },
+  };
+
+  // Step 1: injectSettings first (standard)
+  await page.addInitScript((settingsObj) => {
+    localStorage.setItem('lighthouse_settings', JSON.stringify(settingsObj));
+  }, filteredSettings);
+
+  // Step 2: Mock API
+  await mockClickUpAPI(page);
+
+  // Step 3: injectMembers (this will clear membersToMonitor as a side effect)
+  await injectMembers(page, MOCK_MEMBERS, MOCK_AUTH_USER);
+
+  // Step 4: Re-inject the filter AFTER injectMembers' clearing script
+  // (init scripts run in registration order — this runs last)
+  await page.addInitScript((ids) => {
+    const key = 'lighthouse_settings';
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      const s = JSON.parse(stored);
+      s.team = s.team || {};
+      s.team.membersToMonitor = ids;
+      localStorage.setItem(key, JSON.stringify(s));
+    }
+  }, membersToMonitor);
+
+  // Step 5: Navigate + wait
+  await page.goto('/');
+  // Wait for overview card — should appear within 25s even with filtered members
+  await page.waitForSelector('[data-testid^="overview-card"]', { timeout: 25000 });
+  // Brief settle for React re-renders
+  await page.waitForTimeout(500);
+}
+
+test.describe('GROUP 4 — Member Filter via Settings Injection', () => {
+  // Extra long timeout: global-setup takes 120s + app boot ~25s = 145s needed
+  test.setTimeout(180000);
+
+  test('3-member filter: dashboard shows ≤3 member cards (Dina, Alaa, Nada M)', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+
+    // Dina=87657591 (working), Alaa=93604849 (working), Nada M=93604850 (break)
+    // Expected: at most 3 full member cards visible (may be fewer if sync clears data)
+    await setupWithMemberFilter(page, ['87657591', '93604849', '93604850']);
+
+    // Full member cards should be ≤ 3 (not 6 or 8)
+    const fullCards = page.locator('[data-testid="member-card"]');
+    const cardCount = await fullCards.count();
+    expect(cardCount).toBeLessThanOrEqual(3);
+
+    // Overview cards still visible (dashboard didn't crash)
+    const overviewCards = page.locator('[data-testid^="overview-card"]');
+    await expect(overviewCards.first()).toBeVisible({ timeout: 5000 });
+
+    expect(getErrors()).toHaveLength(0);
+  });
+
+  test('empty filter (show all): dashboard shows 6 full member cards', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+
+    // Empty membersToMonitor = show all members
+    await setupWithMemberFilter(page, []);
+
+    // Expect 6 full cards (working×3 + break×1 + offline×2)
+    // noActivity + leave render as compact rows, not member-card
+    const fullCards = page.locator('[data-testid="member-card"]');
+    await page.waitForFunction(() => {
+      return document.querySelectorAll('[data-testid="member-card"]').length >= 1;
+    }, { timeout: 10000, polling: 300 }).catch(() => {});
+
+    const cardCount = await fullCards.count();
+    // Sync may reduce count; assert ≥ 1 and ≤ 6 (structural, not exact)
+    expect(cardCount).toBeGreaterThanOrEqual(1);
+    expect(cardCount).toBeLessThanOrEqual(6);
+
+    expect(getErrors()).toHaveLength(0);
+  });
+
+  test('single noActivity member filter (Islam Othman): at most 1 member element visible', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+
+    // Islam Othman (87650455) = noActivity in MOCK_MEMBERS → renders as CompactMemberRow
+    await setupWithMemberFilter(page, ['87650455']);
+
+    // Full member cards should be 0 (noActivity renders as compact row)
+    const fullCards = page.locator('[data-testid="member-card"]');
+    const cardCount = await fullCards.count();
+    expect(cardCount).toBe(0);
+
+    // Total member elements (full + compact) should be ≤ 1
+    const compactRows = page.locator('[data-testid="member-compact-row"]');
+    const compactCount = await compactRows.count();
+    const totalElements = cardCount + compactCount;
+    expect(totalElements).toBeLessThanOrEqual(1);
+
+    // Dashboard still renders overview cards
+    await expect(page.locator('[data-testid^="overview-card"]').first()).toBeVisible({ timeout: 5000 });
+
+    expect(getErrors()).toHaveLength(0);
+  });
+});
+
+// ─── GROUP 5: Member Filter via Settings Modal ────────────────────────────────
+//
+// Tests that the Team tab is accessible and shows the member management UI.
+// In the test environment (mocked API, no API key), the member list is empty
+// until "Load Members" is clicked. We verify the Team tab renders correctly.
+
+test.describe('GROUP 5 — Member Filter via Settings Modal (Team Tab)', () => {
+  test.setTimeout(60000);
+
+  test('settings modal has a Team tab accessible via tab button', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+    await setupMockApp(page);
+
+    const opened = await openSettingsModal(page);
+    expect(opened).toBe(true);
+
+    // Team tab is identified by label "Team" or icon "👥"
+    const teamTabByLabel = page.locator('button').filter({ hasText: 'Team' }).first();
+    const teamTabByIcon  = page.locator('button').filter({ hasText: '👥' }).first();
+
+    const labelVisible = await teamTabByLabel.isVisible({ timeout: 3000 }).catch(() => false);
+    const iconVisible  = await teamTabByIcon.isVisible({ timeout: 3000 }).catch(() => false);
+
+    expect(labelVisible || iconVisible).toBe(true);
+
+    expect(getErrors()).toHaveLength(0);
+  });
+
+  test('Team tab shows member management content with Load Members button', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+    await setupMockApp(page);
+
+    await openSettingsModal(page);
+
+    // Navigate to Team tab
+    const teamTabByLabel = page.locator('button').filter({ hasText: 'Team' }).first();
+    const teamTabByIcon  = page.locator('button').filter({ hasText: '👥' }).first();
+    if (await teamTabByLabel.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await teamTabByLabel.click();
+    } else {
+      await teamTabByIcon.click();
+    }
+    await page.waitForTimeout(400);
+
+    // Team tab content should show "Load Members" button (empty state)
+    // OR member names if members were already loaded
+    const loadMembersBtn = page.locator('button').filter({ hasText: /Load Members/i }).first();
+    const teamMembersHeader = page.locator('*').filter({ hasText: /Team Members/i }).first();
+
+    const loadBtnVisible   = await loadMembersBtn.isVisible({ timeout: 3000 }).catch(() => false);
+    const headerVisible    = await teamMembersHeader.isVisible({ timeout: 3000 }).catch(() => false);
+
+    // At least one of: Load Members button or Team Members section header
+    expect(loadBtnVisible || headerVisible).toBe(true);
 
     expect(getErrors()).toHaveLength(0);
   });

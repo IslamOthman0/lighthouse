@@ -280,7 +280,7 @@
 
 ### Phase 2 — Settings Reactivity
 - [x] 2.1 Score Weights reactivity
-- [ ] 2.2 Member Filter reactivity
+- [x] 2.2 Member Filter reactivity
 - [ ] 2.3 Theme & Display settings
 - [ ] 2.4 Threshold settings behavior
 
@@ -356,3 +356,4 @@
 | 42 | 2026-03-14 | UI 1.4 | Dashboard Detail Modal correctness: 15/15 passing. Key findings: (1) testId is dashboard-detail-modal-{type} (time/tasks/score) — set in DashboardDetailModal via ModalShell testId prop. (2) OverviewCard testId generated from label: "Team Tracked" → overview-card-team-tracked (use ^= prefix match since label changes for multi-day). (3) All three modal types open/close cleanly with no JS errors. (4) 15/15 passed on first run. |
 | 43 | 2026-03-14 | UI 1.5 | Leaves Tab correctness: 12/12 passing. Key findings: (1) No data-testid on any leaves component — navigate via button text "Leaves & WFH", "Overview", "Calendar". (2) Overview always shows "on leave"/"WFH"/"available" status chips regardless of seeded data. (3) MOCK_LEAVES seeded via setupMockApp({ leaves: MOCK_LEAVES }) — leaves not overwritten by empty API sync. (4) Calendar nav buttons detected via /[<>‹›←→]/ regex. (5) 12/12 passed on first run. |
 | 44 | 2026-03-14 | UI 2.1 | Score Weights reactivity: 9/9 passing. Key findings: (1) Settings button is 2-step: click avatar button (title="Account & Settings") → click "Settings" in dropdown — openSettingsModal() in test-setup.js updated to handle this. (2) Score tab label "Score" (desktop) — no data-testid on weight inputs, located by input[type="number"]. (3) No exact score value assertions — sync overwrites seeded data. (4) CUSTOM_WEIGHTS merged into DEFAULT settings with spread (not partial object). (5) 9/9 passed on second run (first 6 failed due to broken openSettingsModal, 3 GROUP 3 passed). |
+| 45 | 2026-03-14 | UI 2.2 | Member filter reactivity: 14/14 passing. Key findings: (1) injectMembers() has a clearing script that wipes membersToMonitor — bypass by adding a 4th addInitScript AFTER injectMembers to re-inject the filter. (2) GROUP 4 timeout set to 180s: global-setup always fails (no real API) consuming 120s + app boot ~25s = 145s needed. (3) noActivity member (Islam Othman) renders as CompactMemberRow — 0 full cards expected when filtered to noActivity-only. (4) Team tab in settings shows "Load Members" button in test env (no API key = members list empty). (5) 14/14 passed. |
