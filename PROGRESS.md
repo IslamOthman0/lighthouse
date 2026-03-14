@@ -276,7 +276,7 @@
 - [x] 1.2 List View: same data as Grid View
 - [x] 1.3 Member Detail Modal: correct individual data
 - [x] 1.4 Dashboard Detail Modal
-- [ ] 1.5 Leaves Tab
+- [x] 1.5 Leaves Tab
 
 ### Phase 2 — Settings Reactivity
 - [ ] 2.1 Score Weights reactivity
@@ -354,3 +354,4 @@
 | 40 | 2026-03-14 | UI 1.2 | List View data correctness: 15/15 passing. Key findings: (1) ListView has TWO tables: "Team Members List" (expand rows, no modal) + "Team Ranking" (RankingTable, rows open modal). Total tbody rows = 16; scope to first table for 8-row count. (2) Sync overwrites seeded data with empty API results — avoid exact value assertions for tracked/score; assert structure (contains digit/%). (3) Modal opens only from RankingTable rows (tables.nth(1)), not main table rows. (4) Consistency test: switch to list first (sync settled), read values, switch back to grid, compare — values must match. |
 | 41 | 2026-03-14 | UI 1.3 | Member Detail Modal correctness: 14/14 passing. Key findings: (1) Tab data-testids: tab-timeline, tab-performance, tab-leaves. (2) Backdrop click at (10,10) can miss cards on second open — second open/close cycle removed from error test (backdrop close already tested in GROUP 1). (3) Modal header always shows "%", "h" pattern and "Progress" label for non-leave members. (4) collectConsoleErrors() must be called before setupMockApp (before page.goto). |
 | 42 | 2026-03-14 | UI 1.4 | Dashboard Detail Modal correctness: 15/15 passing. Key findings: (1) testId is dashboard-detail-modal-{type} (time/tasks/score) — set in DashboardDetailModal via ModalShell testId prop. (2) OverviewCard testId generated from label: "Team Tracked" → overview-card-team-tracked (use ^= prefix match since label changes for multi-day). (3) All three modal types open/close cleanly with no JS errors. (4) 15/15 passed on first run. |
+| 43 | 2026-03-14 | UI 1.5 | Leaves Tab correctness: 12/12 passing. Key findings: (1) No data-testid on any leaves component — navigate via button text "Leaves & WFH", "Overview", "Calendar". (2) Overview always shows "on leave"/"WFH"/"available" status chips regardless of seeded data. (3) MOCK_LEAVES seeded via setupMockApp({ leaves: MOCK_LEAVES }) — leaves not overwritten by empty API sync. (4) Calendar nav buttons detected via /[<>‹›←→]/ regex. (5) 12/12 passed on first run. |
