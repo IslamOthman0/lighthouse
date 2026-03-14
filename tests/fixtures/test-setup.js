@@ -382,13 +382,44 @@ export async function changeDateRange(page, preset) {
  * @returns {Promise<boolean>} true if modal opened
  */
 export async function openSettingsModal(page) {
+  // Step 1: Open the avatar dropdown (the settings is nested inside it)
+  // Desktop: button[title="Account & Settings"]
+  // Mobile: similar avatar button in MobileBottomNav
+  const avatarBtn = page.locator('button[title="Account & Settings"]').first();
+  if (await avatarBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await avatarBtn.click();
+    await page.waitForTimeout(300);
+    // Step 2: Click "Settings" inside the dropdown
+    const settingsItem = page.locator('button').filter({ hasText: 'Settings' }).first();
+    if (await settingsItem.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await settingsItem.click();
+      await page.waitForTimeout(400);
+      return true;
+    }
+  }
+
+  // Mobile fallback: look for avatar button in bottom nav that opens a menu with Settings
+  const mobileMenuBtns = page.locator('button').filter({ hasText: /^(IS|Me|islam)/i });
+  const mobileCount = await mobileMenuBtns.count();
+  for (let i = 0; i < mobileCount; i++) {
+    const btn = mobileMenuBtns.nth(i);
+    if (await btn.isVisible({ timeout: 500 }).catch(() => false)) {
+      await btn.click();
+      await page.waitForTimeout(300);
+      const settingsItem = page.locator('button').filter({ hasText: 'Settings' }).first();
+      if (await settingsItem.isVisible({ timeout: 1500 }).catch(() => false)) {
+        await settingsItem.click();
+        await page.waitForTimeout(400);
+        return true;
+      }
+    }
+  }
+
+  // Last resort: look for direct data-testid or gear button
   const selectors = [
     '[data-testid="settings-button"]',
-    'button[title*="Settings" i]',
     'button[aria-label*="Settings" i]',
-    'button[title*="settings" i]',
   ];
-
   for (const selector of selectors) {
     const btn = page.locator(selector).first();
     if (await btn.isVisible({ timeout: 800 }).catch(() => false)) {
@@ -396,14 +427,6 @@ export async function openSettingsModal(page) {
       await page.waitForTimeout(400);
       return true;
     }
-  }
-
-  // Try gear emoji
-  const gearBtn = page.locator('button').filter({ hasText: '⚙' }).first();
-  if (await gearBtn.isVisible({ timeout: 800 }).catch(() => false)) {
-    await gearBtn.click();
-    await page.waitForTimeout(400);
-    return true;
   }
 
   return false;
