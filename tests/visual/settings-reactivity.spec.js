@@ -580,3 +580,141 @@ test.describe('GROUP 7 — Theme Toggle via Settings Modal (Display Tab)', () =>
     expect(getErrors()).toHaveLength(0);
   });
 });
+
+// ─── GROUP 8: Threshold Settings via Injection ────────────────────────────────
+//
+// Strategy: inject custom thresholds via localStorage, verify app renders with
+// no JS errors and the overview card is visible.
+// Thresholds only affect real-time sync (mocked), so we only assert structural
+// correctness (no crash, dashboard visible).
+
+test.describe('GROUP 8 — Threshold Settings via Injection', () => {
+  test.setTimeout(60000);
+
+  test('boot with custom thresholds (breakMinutes:30, offlineMinutes:120, breakGapMinutes:10) → app renders, no JS errors', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+
+    const customThresholdSettings = {
+      ...MOCK_SETTINGS.DEFAULT,
+      thresholds: {
+        breakMinutes: 30,
+        offlineMinutes: 120,
+        breakGapMinutes: 10,
+      },
+    };
+
+    await setupMockApp(page, { settings: customThresholdSettings });
+
+    // Dashboard rendered — overview card visible
+    const overviewCard = page.locator('[data-testid^="overview-card"]').first();
+    await expect(overviewCard).toBeVisible({ timeout: 10000 });
+
+    expect(getErrors()).toHaveLength(0);
+  });
+
+  test('boot with default thresholds (breakMinutes:15, offlineMinutes:60, breakGapMinutes:5) → app renders, no JS errors', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+
+    // DEFAULT settings already contain the default thresholds
+    await setupMockApp(page, { settings: MOCK_SETTINGS.DEFAULT });
+
+    // Dashboard rendered — overview card visible
+    const overviewCard = page.locator('[data-testid^="overview-card"]').first();
+    await expect(overviewCard).toBeVisible({ timeout: 10000 });
+
+    expect(getErrors()).toHaveLength(0);
+  });
+});
+
+// ─── GROUP 9: Threshold Settings via Settings Modal ───────────────────────────
+//
+// Tests that the Thresholds tab in SettingsModal is accessible and shows
+// numeric input fields. Thresholds tab: id='thresholds', label='Thresholds',
+// icon='⏱️' (SettingsModal.jsx:413).
+// Three inputs: breakMinutes, offlineMinutes, breakGapMinutes.
+
+test.describe('GROUP 9 — Threshold Settings via Settings Modal (Thresholds Tab)', () => {
+  test.setTimeout(60000);
+
+  test('settings modal has a Thresholds tab accessible via tab button', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+    await setupMockApp(page);
+
+    const opened = await openSettingsModal(page);
+    expect(opened).toBe(true);
+
+    // Thresholds tab identified by label "Thresholds" or icon "⏱️"
+    const thresholdsTabByLabel = page.locator('button').filter({ hasText: 'Thresholds' }).first();
+    const thresholdsTabByIcon  = page.locator('button').filter({ hasText: '⏱️' }).first();
+
+    const labelVisible = await thresholdsTabByLabel.isVisible({ timeout: 3000 }).catch(() => false);
+    const iconVisible  = await thresholdsTabByIcon.isVisible({ timeout: 3000 }).catch(() => false);
+
+    expect(labelVisible || iconVisible).toBe(true);
+
+    expect(getErrors()).toHaveLength(0);
+  });
+
+  test('Thresholds tab shows at least one numeric input', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+    await setupMockApp(page);
+
+    await openSettingsModal(page);
+
+    // Navigate to Thresholds tab
+    const thresholdsTabByLabel = page.locator('button').filter({ hasText: 'Thresholds' }).first();
+    const thresholdsTabByIcon  = page.locator('button').filter({ hasText: '⏱️' }).first();
+    if (await thresholdsTabByLabel.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await thresholdsTabByLabel.click();
+    } else {
+      await thresholdsTabByIcon.click();
+    }
+    await page.waitForTimeout(300);
+
+    // At least one number input must be visible (breakMinutes, offlineMinutes, breakGapMinutes)
+    const numberInputs = page.locator('input[type="number"]');
+    const count = await numberInputs.count();
+    expect(count).toBeGreaterThanOrEqual(1);
+
+    // First visible input should be readable
+    const firstInput = numberInputs.first();
+    await expect(firstInput).toBeVisible({ timeout: 3000 });
+    const val = await firstInput.inputValue();
+    expect(parseInt(val, 10)).toBeGreaterThanOrEqual(0);
+
+    expect(getErrors()).toHaveLength(0);
+  });
+
+  test('change a threshold value → close modal → no JS errors + overview card still visible', async ({ page }) => {
+    const getErrors = collectConsoleErrors(page);
+    await setupMockApp(page);
+
+    // Open settings → Thresholds tab
+    await openSettingsModal(page);
+    const thresholdsTabByLabel = page.locator('button').filter({ hasText: 'Thresholds' }).first();
+    const thresholdsTabByIcon  = page.locator('button').filter({ hasText: '⏱️' }).first();
+    if (await thresholdsTabByLabel.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await thresholdsTabByLabel.click();
+    } else {
+      await thresholdsTabByIcon.click();
+    }
+    await page.waitForTimeout(300);
+
+    // Change first threshold input (breakMinutes) to 20
+    const firstInput = page.locator('input[type="number"]').first();
+    await expect(firstInput).toBeVisible({ timeout: 3000 });
+    await firstInput.click({ clickCount: 3 });
+    await firstInput.fill('20');
+    await page.waitForTimeout(200);
+
+    // Close modal via Escape
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(600);
+
+    // Overview card should still be visible (no crash)
+    const overviewCard = page.locator('[data-testid^="overview-card"]').first();
+    await expect(overviewCard).toBeVisible({ timeout: 5000 });
+
+    expect(getErrors()).toHaveLength(0);
+  });
+});
