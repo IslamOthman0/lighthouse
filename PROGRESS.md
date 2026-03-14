@@ -275,7 +275,7 @@
 - [x] 1.1 Grid View: all cards display correct data
 - [x] 1.2 List View: same data as Grid View
 - [x] 1.3 Member Detail Modal: correct individual data
-- [ ] 1.4 Dashboard Detail Modal
+- [x] 1.4 Dashboard Detail Modal
 - [ ] 1.5 Leaves Tab
 
 ### Phase 2 — Settings Reactivity
@@ -353,3 +353,4 @@
 | 39 | 2026-03-14 | UI 1.1 | Grid View data correctness: 15/15 passing. Key findings: (1) test.setTimeout(60000) required — mockPage fixture takes ~22s for IDB seeding + app boot. (2) noActivity + leave members render as CompactMemberRow (no data-testid), so member-card count = 6 (working×3 + break×1 + offline×2), not 8. (3) Names appear in both card and ranking table — use .first() to avoid strict mode violations. |
 | 40 | 2026-03-14 | UI 1.2 | List View data correctness: 15/15 passing. Key findings: (1) ListView has TWO tables: "Team Members List" (expand rows, no modal) + "Team Ranking" (RankingTable, rows open modal). Total tbody rows = 16; scope to first table for 8-row count. (2) Sync overwrites seeded data with empty API results — avoid exact value assertions for tracked/score; assert structure (contains digit/%). (3) Modal opens only from RankingTable rows (tables.nth(1)), not main table rows. (4) Consistency test: switch to list first (sync settled), read values, switch back to grid, compare — values must match. |
 | 41 | 2026-03-14 | UI 1.3 | Member Detail Modal correctness: 14/14 passing. Key findings: (1) Tab data-testids: tab-timeline, tab-performance, tab-leaves. (2) Backdrop click at (10,10) can miss cards on second open — second open/close cycle removed from error test (backdrop close already tested in GROUP 1). (3) Modal header always shows "%", "h" pattern and "Progress" label for non-leave members. (4) collectConsoleErrors() must be called before setupMockApp (before page.goto). |
+| 42 | 2026-03-14 | UI 1.4 | Dashboard Detail Modal correctness: 15/15 passing. Key findings: (1) testId is dashboard-detail-modal-{type} (time/tasks/score) — set in DashboardDetailModal via ModalShell testId prop. (2) OverviewCard testId generated from label: "Team Tracked" → overview-card-team-tracked (use ^= prefix match since label changes for multi-day). (3) All three modal types open/close cleanly with no JS errors. (4) 15/15 passed on first run. |
