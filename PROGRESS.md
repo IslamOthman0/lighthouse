@@ -258,6 +258,57 @@
 - CORRECT: All other date parsing in leaveHelpers uses local date components — no timezone bugs
 - CORRECT: getMemberLeaveBalance(), calculateLeaveDays(), enrichMembersWithLeaveStatus() all correct
 
+---
+
+## UI Testing Plan (LIGHTHOUSE_UI_PLAN.md Part A)
+
+### Model Usage Guide
+- **Opus 4.6** — Orchestration, planning, reviewing test results, deciding next tasks
+- **Sonnet 4.6** — Execution: writing test files, running Playwright, creating fixtures
+
+### Phase 0 — Setup
+- [x] 0.1 Assessment: Existing test infrastructure analyzed. Bootstrap pattern (IDB interception + API mocking) proven in core-flow.spec.js. DB v21, 12 stores. No src/ changes needed.
+- [x] 0.2 Create tests/fixtures/mock-data.js — comprehensive mock data for all visual states
+- [x] 0.3 Create tests/fixtures/test-setup.js — shared Playwright helpers (smoke: 5/5 passing)
+
+### Phase 1 — Screen Data Correctness
+- [ ] 1.1 Grid View: all cards display correct data
+- [ ] 1.2 List View: same data as Grid View
+- [ ] 1.3 Member Detail Modal: correct individual data
+- [ ] 1.4 Dashboard Detail Modal
+- [ ] 1.5 Leaves Tab
+
+### Phase 2 — Settings Reactivity
+- [ ] 2.1 Score Weights reactivity
+- [ ] 2.2 Member Filter reactivity
+- [ ] 2.3 Theme & Display settings
+- [ ] 2.4 Threshold settings behavior
+
+### Phase 3 — Date Range Impact
+- [ ] 3.1 Date range changes update all data
+
+### Phase 4 — Mobile Responsive
+- [ ] 4.1 Mobile (375px) layout
+- [ ] 4.2 Tablet (768px) layout
+- [ ] 4.3 Laptop (1024px) & Desktop (1440px)
+
+### Phase 5 — Edge Cases
+- [ ] 5.1 Empty states and extremes
+- [ ] 5.2 Cross-screen consistency check
+
+### Phase 6 — Final Sweep
+- [ ] 6.1 Full visual test suite run + HTML report
+
+### UI Test Infrastructure Findings (Task 0.1)
+- **Playwright**: Chromium only, base URL http://localhost:5173, 30s timeout, testDir: `./tests/`
+- **Bootstrap**: `addBootstrapScript()` in core-flow.spec.js intercepts `indexedDB.open()` → seeds authUser + members before app reads IDB
+- **API Mock**: `mockClickUpAPI()` intercepts `**/api/v2/**` + `https://api.clickup.com/**` → empty responses
+- **Auth bypass**: Seeding `authUser` store in IDB → skips LoginScreen entirely
+- **DB schema**: v21 with 12 object stores (authUser keyPath: `user_id`)
+- **Store**: Zustand store NOT on window — stats auto-computed from members in App.jsx `useMemo`
+- **data-testid gaps**: noActivity compact rows, settings button, date picker have no testid
+- **Decision**: No src/ modifications — IndexedDB seeding + route interception is sufficient
+
 ## Session Log
 | Session | Date | Tasks Completed | Notes |
 |---------|------|-----------------|-------|
@@ -298,3 +349,4 @@
 | 35 | 2026-03-13 | BUG-018c | Fix: transform.js member.target now reads settings.schedule.dailyTargetHours first (was reading stale IndexedDB value, so setting change never propagated). 228 passing. |
 | 36 | 2026-03-13 | 5.1 | E2E core-flow.spec.js: 6/6 passing. Bootstrap strategy: intercept indexedDB.open to seed authUser+members before app reads IDB; mock ClickUp API via page.route. Key finding: noActivity members render as CompactMemberRow (no data-testid), so tests use ranking table rows + body text instead of member-card count. |
 | 37 | 2026-03-13 | 6.1 | Final sweep: 228 unit tests passing. Build succeeds (2 pre-existing warnings: duplicate minHeight key in LoginScreen.jsx, dynamic+static import of clickup.js). No stray console.error/warn in happy paths. No .tmp/.bak/.orig files. All 19 bugs fixed, 228 unit tests + 6 E2E tests added. |
+| 38 | 2026-03-14 | UI 0.1-0.3 | UI Testing Plan Phase 0 complete. Model guide: Opus=orchestration, Sonnet=execution. Created tests/fixtures/mock-data.js (8 members covering all 5 states, edge case sets, settings/date/leave fixtures). Created tests/fixtures/test-setup.js (setupMockApp, injectMembers, mockClickUpAPI, changeDateRange, openSettingsModal, switchView, clickMember, getScreenData). Smoke tests: 5/5 passing. Core-flow: 6/6 still passing. |
