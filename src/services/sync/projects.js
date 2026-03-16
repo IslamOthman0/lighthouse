@@ -391,9 +391,9 @@ export function calculateFastProjectBreakdown(timeEntries, globalTaskCache = {},
           if (cachedTask?.custom_fields) {
             cachedTask.custom_fields.forEach(field => {
               const fieldName = field.name?.toLowerCase();
-              if (fieldName === 'genre' || fieldName === 'النوع') {
+              if ((fieldName === 'genre' || fieldName === 'النوع') && !genre) {
                 genre = resolveFieldValue(field);
-              } else if (fieldName === 'publisher' || fieldName === 'الناشر') {
+              } else if ((fieldName === 'publisher' || fieldName === 'الناشر') && (field.type === 'text' || field.type === 'short_text') && !publisher) {
                 publisher = resolveFieldValue(field);
               }
             });

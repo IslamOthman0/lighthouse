@@ -177,12 +177,13 @@ export function extractCustomFields(task) {
     task.custom_fields.forEach(field => {
       const name = field.name?.toLowerCase();
 
-      if (name === 'publisher') {
-        fields.publisher = field.value || null;
+      if (name === 'publisher' && (field.type === 'text' || field.type === 'short_text')) {
+        // Multiple Publisher fields exist — keep first non-null value
+        if (!fields.publisher) fields.publisher = field.value || null;
       } else if (name === 'genre') {
-        fields.genre = field.value || null;
+        if (!fields.genre) fields.genre = field.value || null;
       } else if (name === 'project') {
-        fields.project = field.value || null;
+        if (!fields.project) fields.project = field.value || null;
       }
     });
   }
