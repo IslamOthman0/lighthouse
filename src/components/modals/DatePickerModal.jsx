@@ -372,30 +372,31 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
 
         {/* Quick Filters */}
         <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '10px' }}>
+          <div style={{ fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '8px' }}>
             Quick Select
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
-            {quickPresets.map((preset) => {
-              const isActive = tempRange.preset === preset.value;
-              return (
-                <button
-                  key={preset.value}
-                  onClick={() => handlePresetClick(preset.value)}
-                  style={{
-                    padding: '8px 10px', borderRadius: '8px',
-                    border: isActive ? `2px solid ${accent}` : `1px solid ${theme.border}`,
-                    background: isActive ? accentBg : theme.innerBg,
-                    color: isActive ? accent : theme.textSecondary,
-                    fontSize: '12px', fontWeight: isActive ? '600' : '500',
-                    cursor: 'pointer', transition: 'all 0.15s ease',
-                  }}
-                >
-                  {preset.label}
-                </button>
-              );
-            })}
-          </div>
+          <select
+            value={tempRange.preset === 'custom' ? '' : tempRange.preset}
+            onChange={(e) => { if (e.target.value) handlePresetClick(e.target.value); }}
+            style={{
+              width: '100%', padding: '9px 12px', borderRadius: '8px',
+              border: `1px solid ${theme.border}`,
+              background: theme.innerBg,
+              color: theme.text,
+              fontSize: '13px', fontWeight: '500',
+              cursor: 'pointer', outline: 'none',
+              appearance: 'none', WebkitAppearance: 'none',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${isDark ? '%23ffffff' : '%23374151'}' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 12px center',
+              paddingRight: '32px',
+            }}
+          >
+            <option value="" disabled>— pick a preset —</option>
+            {quickPresets.map((preset) => (
+              <option key={preset.value} value={preset.value}>{preset.label}</option>
+            ))}
+          </select>
         </div>
 
         {/* Calendar */}
