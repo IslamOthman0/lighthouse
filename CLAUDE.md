@@ -420,4 +420,3 @@ npm run test:unit   # Run unit tests once
 
 ---
 
-**For detailed implementation plan, see:** `.claude/plans/misty-juggling-teapot.md`

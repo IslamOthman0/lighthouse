@@ -175,8 +175,12 @@ export const useAppStore = create(devtools((set, get) => ({
 
     // ===== RAW DATA =====
     const totalTracked = members.reduce((sum, m) => sum + (m.tracked || 0), 0);
-    // DYNAMIC TARGET: sum of per-member targets × working days (respects custom dailyTargetHours)
-    const totalTarget = members.reduce((sum, m) => sum + (m.target || 6.5), 0) * workingDays;
+    // DYNAMIC TARGET: sum of per-member targets × per-member working days (deducts leave days per member)
+    const totalTarget = members.reduce((sum, m) => {
+      const dailyTarget = m.target || 6.5;
+      const mWorkingDays = m.workingDays || workingDays;
+      return sum + (dailyTarget * mWorkingDays);
+    }, 0);
     const totalTasksDone = members.reduce((sum, m) => sum + (m.done || 0), 0);
     const totalTasks = members.reduce((sum, m) => sum + (m.tasks || 0), 0);
 
@@ -333,7 +337,11 @@ export const useAppStore = create(devtools((set, get) => ({
 
     // --- Recalculate team stats ---
     const totalTracked = members.reduce((sum, m) => sum + (m.tracked || 0), 0);
-    const totalTarget = members.reduce((sum, m) => sum + (m.target || 6.5), 0) * workingDays;
+    const totalTarget = members.reduce((sum, m) => {
+      const dailyTarget = m.target || 6.5;
+      const mWorkingDays = m.workingDays || workingDays;
+      return sum + (dailyTarget * mWorkingDays);
+    }, 0);
     const totalTasksDone = members.reduce((sum, m) => sum + (m.done || 0), 0);
     const totalTasks = members.reduce((sum, m) => sum + (m.tasks || 0), 0);
     const totalComplianceHours = members.reduce((sum, m) => sum + (m.complianceHours ?? (m.tracked || 0) * 0.85), 0);

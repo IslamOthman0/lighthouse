@@ -430,6 +430,9 @@ export function countLeaveDaysInRange(leaves, startDate, endDate, settings = nul
   const leaveDateKeys = new Set();
 
   for (const leave of leaves) {
+    // WFH does NOT reduce target — it's still a work day
+    if (leave.type === 'wfh') continue;
+
     // Only count approved/confirmed leaves
     if (leave.status && !['approved', 'confirmed', 'active'].includes(String(leave.status).toLowerCase())) {
       continue;

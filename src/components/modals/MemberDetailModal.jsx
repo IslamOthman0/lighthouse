@@ -926,9 +926,12 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
 
   const isMobile = window.innerWidth < 768;
 
-  // Calculate progress for header
-  const progressPercent = member.target > 0
-    ? Math.round((member.tracked / member.target) * 100)
+  // Calculate progress for header — use per-member leave-deducted workingDays if available
+  const teamWorkingDays = dateRangeInfo?.workingDays || 1;
+  const memberWorkingDays = member.workingDays || teamWorkingDays;
+  const effectiveTarget = (member.target || 6.5) * memberWorkingDays;
+  const progressPercent = effectiveTarget > 0
+    ? Math.round((member.tracked / effectiveTarget) * 100)
     : 0;
 
   const getProgressColor = (percent) => {
@@ -1074,7 +1077,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                     ...tabularNumberStyle,
                   }}
                 >
-                  {formatHoursToHM(member.tracked || 0)} / {formatHoursToHM(member.target || 6.5)} ({progressPercent}%)
+                  {formatHoursToHM(member.tracked || 0)} / {formatHoursToHM(effectiveTarget)} ({progressPercent}%)
                 </span>
               </div>
               <div

@@ -51,7 +51,11 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
       const t = (typeof m.tracked === 'number' && isFinite(m.tracked)) ? m.tracked : 0;
       return sum + t;
     }, 0);
-    const totalTarget = members.reduce((sum, m) => sum + (m.target || 6.5), 0) * workingDays;
+    const totalTarget = members.reduce((sum, m) => {
+      const dailyTarget = m.target || 6.5;
+      const mWorkingDays = m.workingDays || workingDays;
+      return sum + (dailyTarget * mWorkingDays);
+    }, 0);
     const progress = totalTarget > 0 ? Math.min((totalTracked / totalTarget) * 100, 100) : 0;
 
     // Avg time per task (across all members in range)
@@ -60,10 +64,10 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
       ? totalTracked / totalDoneForAvg
       : null;
 
-    // Per-member target = daily target × working days in range
+    // Per-member target = daily target × per-member leave-deducted working days
     const memberBreakdown = members.map(m => {
       const dailyTarget = m.target || 6.5;
-      const memberTarget = dailyTarget * workingDays;
+      const memberTarget = dailyTarget * (m.workingDays || workingDays);
       const tracked = (typeof m.tracked === 'number' && isFinite(m.tracked)) ? m.tracked : 0;
       return {
         id: m.id,

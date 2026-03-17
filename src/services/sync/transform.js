@@ -139,6 +139,7 @@ export function transformMember(member, runningEntry, taskDetails, timeEntries, 
     profilePicture: member.profilePicture || null,
     clickUpColor: member.clickUpColor || null,
     target: settings?.schedule?.dailyTargetHours || member.target || 6.5,
+    workingDays, // leave-deducted working days for this member's date range
     // Reset all synced fields to prevent stale data
     status,
     timer,

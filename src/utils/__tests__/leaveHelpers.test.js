@@ -419,4 +419,26 @@ describe('countLeaveDaysInRange', () => {
     const result = countLeaveDaysInRange(leaves, rangeStart, rangeEnd, null);
     expect(result).toBe(5);
   });
+
+  it('WFH records are NOT counted — WFH does not reduce target', () => {
+    const leaves = [
+      { startDate: '2026-02-15', endDate: '2026-02-15', status: 'approved', type: 'wfh' }, // Sunday WFH
+      { startDate: '2026-02-16', endDate: '2026-02-16', status: 'approved', type: 'annual' }, // Monday leave
+    ];
+    // Only the annual leave should count — not the WFH
+    const result = countLeaveDaysInRange(leaves, rangeStart, rangeEnd, workDaySettings);
+    expect(result).toBe(1);
+  });
+
+  it('3 leave days + 1 WFH day = only 3 deducted (not 4)', () => {
+    // Simulates Samar's scenario: 3 real leaves + 1 WFH in same week
+    const leaves = [
+      { startDate: '2026-02-15', endDate: '2026-02-15', status: 'approved', type: 'annual' }, // Sun
+      { startDate: '2026-02-16', endDate: '2026-02-16', status: 'approved', type: 'annual' }, // Mon
+      { startDate: '2026-02-17', endDate: '2026-02-17', status: 'approved', type: 'annual' }, // Tue
+      { startDate: '2026-02-18', endDate: '2026-02-18', status: 'approved', type: 'wfh' },    // Wed WFH — should NOT count
+    ];
+    const result = countLeaveDaysInRange(leaves, rangeStart, rangeEnd, workDaySettings);
+    expect(result).toBe(3); // WFH excluded → memberWorkingDays = 5-3 = 2, not max(5-4,1)=1
+  });
 });

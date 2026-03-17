@@ -21,8 +21,10 @@ const CardShell = ({
 }) => {
   const { name, status, profilePicture, clickUpColor, tracked, target, tasks, done, breaks, score } = member;
 
+  // Use per-member leave-deducted workingDays if available, else fall back to team-level prop
+  const memberWorkingDays = member.workingDays || workingDays;
   // Calculate effective target and progress for multi-day ranges
-  const effectiveTarget = (target || 6.5) * workingDays;
+  const effectiveTarget = (target || 6.5) * memberWorkingDays;
   const progressPercent = effectiveTarget > 0 ? ((tracked || 0) / effectiveTarget) * 100 : 0;
 
   // Get score color based on percentage
@@ -113,7 +115,7 @@ const CardShell = ({
           <div className="px-4 pb-4">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[10px] font-semibold" style={{ color: theme.textMuted }}>
-                {workingDays > 1 ? `${workingDays}-Day Goal` : 'Daily Goal'}
+                {memberWorkingDays > 1 ? `${memberWorkingDays}-Day Goal` : 'Daily Goal'}
               </span>
               <span className="text-[11px] font-bold" style={tabularNumberStyle}>
                 <span style={{ color: theme.text }}>{formatHoursToHM(tracked)}</span>{' '}
