@@ -25,7 +25,7 @@ const ProgressRing = ({ progress, color, size = 60, strokeWidth = 5, theme }) =>
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={theme.border}
+          stroke="var(--color-border)"
           strokeWidth={strokeWidth}
         />
 
