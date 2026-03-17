@@ -312,8 +312,8 @@
 ## UX Audit Plan (LIGHTHOUSE_UX_PLAN.md — Part B)
 
 ### Phase 0: Audit & Setup
-- [ ] 0.1 Add UX tracking section to PROGRESS.md
-- [ ] 0.2 Audit: inline style inventory (baseline)
+- [x] 0.1 Add UX tracking section to PROGRESS.md
+- [x] 0.2 Audit: inline style inventory (baseline)
 - [ ] 0.3 Audit: console log inventory
 - [ ] 0.4 Audit: touch targets + empty states
 - [ ] 0.5 Audit: RTL/font coverage gaps
@@ -418,9 +418,68 @@
 - [ ] 11.4 Update CLAUDE.md with CSS custom properties migration notes
 - [ ] 11.5 Final metrics + cleanup
 
+## Inline Style Inventory (Task 0.2 baseline — 2026-03-17)
+
+| File | Inline style= | theme.* refs | Tailwind classes | Classification |
+|------|--------------|--------------|------------------|----------------|
+| **App.jsx** | 20 | 15 | 0 | INLINE |
+| **cards/OverviewCard.jsx** | 6 | 10 | 0 | INLINE |
+| **cards/ScoreBreakdownCard.jsx** | 14 | 26 | 0 | INLINE |
+| **cards/TeamStatusCard.jsx** | 8 | 6 | 0 | INLINE |
+| **cards/TeamStatusOverview.jsx** | 11 | 10 | 0 | INLINE |
+| **cards/ProjectBreakdownCard.jsx** | 28 | 20 | 0 | INLINE |
+| **cards/MemberCard.jsx** | 0 | 0 | 0 | — (thin wrapper) |
+| **member-states/WorkingCard.jsx** | 19 | 26 | 26 | MIXED |
+| **member-states/BreakCard.jsx** | 18 | 26 | 25 | MIXED |
+| **member-states/OfflineCard.jsx** | 18 | 25 | 25 | MIXED |
+| **member-states/NoActivityCard.jsx** | 3 | 3 | 3 | MIXED |
+| **member-states/LeaveCard.jsx** | 5 | 2 | 8 | MIXED |
+| **member-states/CardShell.jsx** | 18 | 31 | 20 | MIXED |
+| **ui/ProgressRing.jsx** | 4 | 1 | 0 | INLINE |
+| **ui/LiveTimer.jsx** | 2 | 5 | 0 | INLINE |
+| **ui/Avatar.jsx** | 4 | 11 | 0 | INLINE |
+| **ui/StatusBadge.jsx** | 2 | 16 | 0 | INLINE |
+| **ui/Sparkline.jsx** | 10 | 8 | 0 | INLINE |
+| **ui/Skeleton.jsx** | 34 | 27 | 0 | INLINE |
+| **ui/ProgressBar.jsx** | 0 | 0 | 0 | — (no theme) |
+| **layout/Header.jsx** | 26 | 31 | 7 | MIXED |
+| **layout/MainTabs.jsx** | 2 | 5 | 1 | MIXED |
+| **layout/ViewTabs.jsx** | 2 | 8 | 0 | INLINE |
+| **layout/FilterSortControls.jsx** | 23 | 34 | 0 | INLINE |
+| **layout/MobileBottomNav.jsx** | 17 | 8 | 0 | INLINE |
+| **layout/Logo.jsx** | 1 | 1 | 1 | MIXED |
+| **modals/ModalShell.jsx** | 30 | 26 | 0 | INLINE |
+| **modals/MemberDetailModal.jsx** | 160 | 155 | 0 | INLINE |
+| **modals/DashboardDetailModal.jsx** | 74 | 64 | 0 | INLINE |
+| **modals/TaskListModal.jsx** | 77 | 47 | 0 | INLINE |
+| **modals/SettingsModal.jsx** | 168 | 105 | 0 | INLINE |
+| **modals/DatePickerModal.jsx** | 34 | 29 | 0 | INLINE |
+| **views/ListView.jsx** | 159 | 130 | 0 | INLINE |
+| **views/LeavesTab.jsx** | 4 | 3 | 0 | INLINE |
+| **table/RankingTable.jsx** | 55 | 59 | 0 | INLINE |
+| **table/MemberRow.jsx** | 45 | 47 | 0 | INLINE (dead code) |
+| **leaves/LeaveCalendar.jsx** | 20 | 19 | 0 | INLINE |
+| **leaves/TeamOverviewPanel.jsx** | 36 | 20 | 0 | INLINE |
+| **leaves/MemberLeaveDetail.jsx** | 31 | 25 | 0 | INLINE |
+| **leaves/QuotaBar.jsx** | 6 | 4 | 0 | INLINE |
+
+**Summary:**
+- INLINE (>80% inline styles): 27 files
+- MIXED (significant both): 8 files (WorkingCard, BreakCard, OfflineCard, NoActivityCard, LeaveCard, CardShell, Header, MainTabs, Logo)
+- TAILWIND (>80% Tailwind): 0 files
+- Dead code: MemberRow.jsx (Phase 3.1 removes it)
+
+**Top migration targets by inline style count:**
+1. SettingsModal.jsx: 168 style=, 105 theme.*
+2. MemberDetailModal.jsx: 160 style=, 155 theme.*
+3. ListView.jsx: 159 style=, 130 theme.*
+4. DashboardDetailModal.jsx: 74 style=, 64 theme.*
+5. TaskListModal.jsx: 77 style=, 47 theme.*
+
 ## UX Session Log
 | Session | Date | Tasks Completed | Notes |
 |---------|------|-----------------|-------|
+| 1 | 2026-03-17 | 0.1, 0.2 | UX section added to PROGRESS.md. Inline style baseline: 27 INLINE files, 8 MIXED. 0 pure Tailwind. Top targets: SettingsModal (168), MemberDetailModal (160), ListView (159). |
 
 ---
 
