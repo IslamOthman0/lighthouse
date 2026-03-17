@@ -314,7 +314,7 @@
 ### Phase 0: Audit & Setup
 - [x] 0.1 Add UX tracking section to PROGRESS.md
 - [x] 0.2 Audit: inline style inventory (baseline)
-- [ ] 0.3 Audit: console log inventory
+- [x] 0.3 Audit: console log inventory
 - [ ] 0.4 Audit: touch targets + empty states
 - [ ] 0.5 Audit: RTL/font coverage gaps
 
@@ -476,10 +476,41 @@
 4. DashboardDetailModal.jsx: 74 style=, 64 theme.*
 5. TaskListModal.jsx: 77 style=, 47 theme.*
 
+## Console Log Inventory (Task 0.3 baseline — 2026-03-17)
+
+Total raw console.* calls: **~229** across 17 files.
+
+| File | console.log | console.warn | console.error | console.debug | Total | Has logger? | Action |
+|------|-------------|--------------|---------------|---------------|-------|-------------|--------|
+| services/sync/orchestrator.js | 45 | 5 | 5 | 0 | **55** | No | Convert → logger |
+| hooks/useClickUpSync.js | 45 | 1 | 10 | 0 | **56** | Yes (unused) | Convert → logger |
+| services/taskCacheV2.js | 30 | 1 | 9 | 1 | **41** | No | Convert → logger |
+| services/clickup.js | 13 | 1 | 10 | 0 | **24** | No | Convert → logger |
+| services/syncQueue.js | 7 | 3 | 6 | 0 | **16** | No | Convert → logger |
+| services/sync/projects.js | 7 | 0 | 0 | 0 | **7** | No | Convert → logger |
+| services/baselineService.js | 5 | 1 | 7 | 0 | **13** | No | Convert → logger |
+| services/taskCache.js | 3 | 1 | 1 | 0 | **5** | No | Convert → logger |
+| services/sync/transform.js | 1 | 0 | 0 | 0 | **1** | No | Convert → logger.debug |
+| services/sync/calculations.js | 2 | 0 | 0 | 0 | **2** | No | Remove (already commented out) |
+| modals/MemberDetailModal.jsx | 1 | 0 | 6 | 0 | **7** | No | Convert → logger |
+| modals/SettingsModal.jsx | 2 | 0 | 0 | 0 | **2** | No | Convert → logger.debug |
+| utils/clickupHelpers.js | 0 | 0 | 4 | 0 | **4** | No | Convert → logger |
+| utils/leaveHelpers.js | 0 | 0 | 1 | 0 | **1** | No | Convert → logger |
+| hooks/useSettings.js | 0 | 0 | 2 | 0 | **2** | No | Convert → logger |
+| hooks/useTheme.js | 0 | 0 | 1 | 0 | **1** | No | Convert → logger |
+| components/ErrorBoundary.jsx | 0 | 0 | 1 | 0 | **1** | No | **KEEP** — runs outside app lifecycle |
+
+**Notes:**
+- calculations.js: 2 calls already commented out — remove the dead comment lines
+- ErrorBoundary.jsx: keep `console.error` — it's a last-resort handler outside React tree
+- useClickUpSync.js already imports logger but doesn't use it — just start using it
+- Phase 2 task mapping: 2.1=orchestrator, 2.2=useClickUpSync, 2.3=taskCacheV2, 2.4=clickup, 2.5=syncQueue, 2.6=projects+baselineService+taskCache+transform+calculations, 2.7=MemberDetailModal+SettingsModal+clickupHelpers+leaveHelpers+useSettings+useTheme
+
 ## UX Session Log
 | Session | Date | Tasks Completed | Notes |
 |---------|------|-----------------|-------|
 | 1 | 2026-03-17 | 0.1, 0.2 | UX section added to PROGRESS.md. Inline style baseline: 27 INLINE files, 8 MIXED. 0 pure Tailwind. Top targets: SettingsModal (168), MemberDetailModal (160), ListView (159). |
+| 2 | 2026-03-17 | 0.3 | Console log inventory: 229 raw calls across 17 files. Top: useClickUpSync (56), orchestrator (55), taskCacheV2 (41). All convert→logger except ErrorBoundary (keep) and calculations.js dead comments (remove). |
 
 ---
 
