@@ -4,6 +4,7 @@
  */
 
 import { taskCacheV2 } from '../taskCacheV2';
+import { logger } from '../../utils/logger';
 
 /**
  * Resolve a ClickUp custom field value to a human-readable string.
@@ -39,7 +40,7 @@ export async function calculateProjectBreakdown(timeEntries, globalTaskCache = {
   const projects = {};
   const projectTimeMap = {}; // Track time per project
 
-  console.log(`📊 Processing ${timeEntries.length} time entries for project breakdown...`);
+  logger.debug(`Processing ${timeEntries.length} time entries for project breakdown...`);
 
   // Get unique task IDs
   const uniqueTaskIds = new Set();
@@ -57,7 +58,7 @@ export async function calculateProjectBreakdown(timeEntries, globalTaskCache = {
   const missingTaskIds = taskIdsArray.filter(id => !globalTaskCache[id]);
 
   if (missingTaskIds.length > 0) {
-    console.log(`ℹ️ Project breakdown: ${missingTaskIds.length} tasks not in cache - using time entry data`);
+    logger.debug(`Project breakdown: ${missingTaskIds.length} tasks not in cache - using time entry data`);
   }
 
   // Track processed task IDs to avoid duplicates
@@ -79,7 +80,7 @@ export async function calculateProjectBreakdown(timeEntries, globalTaskCache = {
       projectTimeMap[projectName] += hours;
     }
   });
-  console.log(`📈 Project time map:`, projectTimeMap);
+  logger.debug(`Project time map:`, projectTimeMap);
 
   // Process tasks from cache first (has full details)
   for (const taskId of uniqueTaskIds) {
@@ -230,7 +231,7 @@ export async function calculateProjectBreakdown(timeEntries, globalTaskCache = {
     }
   });
 
-  console.log(`📊 Project breakdown: ${Object.keys(projects).length} projects, ${processedTaskIds.size} unique tasks`);
+  logger.debug(`Project breakdown: ${Object.keys(projects).length} projects, ${processedTaskIds.size} unique tasks`);
 
   return projects;
 }
@@ -255,8 +256,8 @@ export function calculateFastProjectBreakdown(timeEntries, globalTaskCache = {},
       if (!debugMap[listName]) debugMap[listName] = { count: 0, sampleTaskId: taskId, sampleDuration: duration, hasMissingList: !e.task_location?.list_name };
       debugMap[listName].count++;
     });
-    console.log('📋 All list_names in time entries:', debugMap);
-    console.log('📋 globalTaskCache keys:', Object.keys(globalTaskCache).length, '| taskCacheV2 size:', taskCacheV2.cache?.size ?? 'n/a');
+    logger.debug('All list_names in time entries:', debugMap);
+    logger.debug('globalTaskCache keys:', Object.keys(globalTaskCache).length, '| taskCacheV2 size:', taskCacheV2.cache?.size ?? 'n/a');
   }
 
   timeEntries.forEach(entry => {
@@ -310,7 +311,7 @@ export function calculateFastProjectBreakdown(timeEntries, globalTaskCache = {},
         hash = statusName.charCodeAt(i) + ((hash << 5) - hash);
       }
       statusColor = colors[Math.abs(hash) % colors.length];
-      console.log(`🎨 [clickupSync] Generated color for "${statusName}": ${statusColor}`);
+      logger.debug(`Generated color for "${statusName}": ${statusColor}`);
     }
 
     if (duration > 0) {

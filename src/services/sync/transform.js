@@ -19,6 +19,7 @@ import {
   extractStatusColor,
   extractPriority
 } from './calculations';
+import { logger } from '../../utils/logger';
 
 /**
  * Transform ClickUp data to Lighthouse member schema
@@ -79,7 +80,7 @@ export function transformMember(member, runningEntry, taskDetails, timeEntries, 
   }
 
   // Debug logging
-  console.log(`👤 ${member.name}: status=${status}, timer=${timer}s, lastSeen=${lastSeen}m, startTime=${startTime}, endTime=${endTime}, previousTimer=${previousTimer}, task=${task ? task.substring(0, 30) + '...' : 'none'}`);
+  logger.debug(`${member.name}: status=${status}, timer=${timer}s, lastSeen=${lastSeen}m, startTime=${startTime}, endTime=${endTime}, previousTimer=${previousTimer}, task=${task ? task.substring(0, 30) + '...' : 'none'}`);
 
   // Task status: Use actual ClickUp status if available, otherwise show Paused
   const taskStatus = taskDetails ? extractStatus(taskDetails) : (runningEntry ? 'Active' : 'Paused');

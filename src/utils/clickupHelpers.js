@@ -4,6 +4,8 @@
  * Utilities for fetching data from ClickUp API to populate settings
  */
 
+import { logger } from './logger';
+
 /**
  * Fetch all available lists/projects from ClickUp
  * @param {string} apiKey - ClickUp API key
@@ -56,7 +58,7 @@ export const fetchClickUpLists = async (apiKey, teamId) => {
 
     return allLists;
   } catch (error) {
-    console.error('Failed to fetch ClickUp lists:', error);
+    logger.error('Failed to fetch ClickUp lists:', error);
     throw error;
   }
 };
@@ -83,7 +85,7 @@ export const fetchCustomFields = async (apiKey, listId) => {
     const data = await response.json();
     return data.fields || [];
   } catch (error) {
-    console.error('Failed to fetch custom fields:', error);
+    logger.error('Failed to fetch custom fields:', error);
     throw error;
   }
 };
@@ -120,7 +122,7 @@ export const fetchTeamMembers = async (apiKey, teamId) => {
       role: member.user.role, // ClickUp role: 1=owner, 2=admin, 3=member, 4=viewer
     }));
   } catch (error) {
-    console.error('Failed to fetch team members:', error);
+    logger.error('Failed to fetch team members:', error);
     throw error;
   }
 };
@@ -147,7 +149,7 @@ export const getListName = async (apiKey, listId) => {
     const data = await response.json();
     return data.name;
   } catch (error) {
-    console.error('Failed to fetch list name:', error);
+    logger.error('Failed to fetch list name:', error);
     return 'Unknown List';
   }
 };

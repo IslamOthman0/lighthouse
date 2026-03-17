@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import themes from '../constants/themes';
 import { SETTINGS_STORAGE_KEY } from '../constants/defaults';
+import { logger } from '../utils/logger';
 
 /**
  * Apply a theme object's values as CSS custom properties on document.documentElement.
@@ -71,7 +72,7 @@ function getInitialTheme() {
       }
     }
   } catch (error) {
-    console.error('[useTheme] Error loading theme from settings:', error);
+    logger.error('Error loading theme from settings:', error);
   }
   return 'trueBlack';
 }

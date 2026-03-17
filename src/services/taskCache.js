@@ -9,6 +9,8 @@
  * - Automatically refetch after TTL expires
  */
 
+import { logger } from '../utils/logger';
+
 const CACHE_TTL = 60000; // 60 seconds
 
 class TaskCache {
@@ -53,11 +55,11 @@ class TaskCache {
 
       return data;
     } catch (error) {
-      console.error(`❌ Task cache fetch failed for ${taskId}:`, error);
+      logger.error(`Task cache fetch failed for ${taskId}:`, error);
 
       // Return stale cache if available (better than nothing)
       if (cached) {
-        console.warn(`⚠️ Using stale cache for task ${taskId}`);
+        logger.warn(`Using stale cache for task ${taskId}`);
         return cached.data;
       }
 
@@ -107,7 +109,7 @@ class TaskCache {
     }
 
     if (cleaned > 0) {
-      console.log(`🧹 Task cache cleanup: removed ${cleaned} expired entries`);
+      logger.debug(`Task cache cleanup: removed ${cleaned} expired entries`);
     }
   }
 
@@ -116,7 +118,7 @@ class TaskCache {
    */
   clear() {
     this.cache.clear();
-    console.log('🗑️ Task cache cleared');
+    logger.info('Task cache cleared');
   }
 
   /**
@@ -140,7 +142,7 @@ class TaskCache {
    */
   logStats() {
     const stats = this.getStats();
-    console.log('📊 Task Cache Stats:', {
+    logger.debug('Task Cache Stats:', {
       hits: stats.hits,
       misses: stats.misses,
       hitRate: `${stats.hitRate}%`,

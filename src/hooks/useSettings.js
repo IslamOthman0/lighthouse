@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { DEFAULT_SETTINGS, SETTINGS_STORAGE_KEY } from '../constants/defaults';
 import { sanitizeSettings } from '../utils/settingsValidation';
+import { logger } from '../utils/logger';
 
 /**
  * Load settings from localStorage
@@ -21,7 +22,7 @@ function loadSettings() {
       return sanitizeSettings(parsed, DEFAULT_SETTINGS);
     }
   } catch (error) {
-    console.error('[useSettings] Error loading settings from localStorage:', error);
+    logger.error('Error loading settings from localStorage:', error);
   }
   return DEFAULT_SETTINGS;
 }
@@ -37,7 +38,7 @@ function saveSettings(settings) {
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(sanitized));
     return true;
   } catch (error) {
-    console.error('[useSettings] Error saving settings to localStorage:', error);
+    logger.error('Error saving settings to localStorage:', error);
     return false;
   }
 }

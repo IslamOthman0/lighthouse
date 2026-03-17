@@ -11,6 +11,7 @@
 
 import { db } from '../db';
 import { clickup } from './clickup';
+import { logger } from '../utils/logger';
 
 // Cache duration: 24 hours
 const BASELINE_CACHE_DURATION = 24 * 60 * 60 * 1000;
@@ -28,7 +29,7 @@ async function getBaseline(key) {
     const record = await db.baselines.get(key);
     return record?.value ?? null;
   } catch (error) {
-    console.error(`❌ Error getting baseline ${key}:`, error);
+    logger.error(`Error getting baseline ${key}:`, error);
     return null;
   }
 }
@@ -46,7 +47,7 @@ async function setBaseline(key, value) {
       updatedAt: Date.now()
     });
   } catch (error) {
-    console.error(`❌ Error setting baseline ${key}:`, error);
+    logger.error(`Error setting baseline ${key}:`, error);
   }
 }
 
@@ -62,7 +63,7 @@ async function needsRefresh() {
     const elapsed = Date.now() - record.value;
     return elapsed > BASELINE_CACHE_DURATION;
   } catch (error) {
-    console.error('❌ Error checking baseline refresh:', error);
+    logger.error('Error checking baseline refresh:', error);
     return true;
   }
 }
@@ -78,7 +79,7 @@ async function fetch3MonthTimeEntries(assigneeIds) {
   const startDate = new Date();
   startDate.setMonth(startDate.getMonth() - 3);
 
-  console.log(`📊 Fetching 3-month baseline: ${startDate.toLocaleDateString()} to ${now.toLocaleDateString()}`);
+  logger.info(`Fetching 3-month baseline: ${startDate.toLocaleDateString()} to ${now.toLocaleDateString()}`);
 
   try {
     // Fetch in 3 × 30-day chunks due to ClickUp API limitation
@@ -106,10 +107,10 @@ async function fetch3MonthTimeEntries(assigneeIds) {
     const [chunk1, chunk2, chunk3] = await Promise.all(chunkPromises);
     const allTimeEntries = [...chunk1, ...chunk2, ...chunk3];
 
-    console.log(`📥 Received ${allTimeEntries.length} time entries for baseline calculation (3 chunks)`);
+    logger.info(`Received ${allTimeEntries.length} time entries for baseline calculation (3 chunks)`);
     return allTimeEntries;
   } catch (error) {
-    console.error('❌ Failed to fetch 3-month time entries:', error);
+    logger.error('Failed to fetch 3-month time entries:', error);
     return [];
   }
 }
@@ -163,7 +164,7 @@ function calculateAvgTasksPerMember(timeEntries, memberCount) {
   }
 
   const avgTasksPerDay = totalTaskDays / totalDays;
-  console.log(`📊 Baseline calculated: ${avgTasksPerDay.toFixed(2)} avg tasks/member/day from ${totalDays} member-days`);
+  logger.info(`Baseline calculated: ${avgTasksPerDay.toFixed(2)} avg tasks/member/day from ${totalDays} member-days`);
 
   return avgTasksPerDay;
 }
@@ -175,7 +176,7 @@ function calculateAvgTasksPerMember(timeEntries, memberCount) {
  */
 export async function refreshBaseline(assigneeIds) {
   if (!assigneeIds || assigneeIds.length === 0) {
-    console.warn('⚠️ No assignee IDs provided for baseline refresh');
+    logger.warn('No assignee IDs provided for baseline refresh');
     return DEFAULT_AVG_TASKS;
   }
 
@@ -190,10 +191,10 @@ export async function refreshBaseline(assigneeIds) {
     await setBaseline('avgTasksPerMember', avgTasks);
     await setBaseline('lastUpdated', Date.now());
 
-    console.log(`✅ Baseline refreshed: avgTasksPerMember = ${avgTasks.toFixed(2)}`);
+    logger.info(`Baseline refreshed: avgTasksPerMember = ${avgTasks.toFixed(2)}`);
     return avgTasks;
   } catch (error) {
-    console.error('❌ Failed to refresh baseline:', error);
+    logger.error('Failed to refresh baseline:', error);
     return DEFAULT_AVG_TASKS;
   }
 }
@@ -211,7 +212,7 @@ export async function getAvgTasksBaseline(assigneeIds = []) {
     if (shouldRefresh && assigneeIds.length > 0) {
       // Refresh in background - don't block sync
       refreshBaseline(assigneeIds).catch(err => {
-        console.error('❌ Background baseline refresh failed:', err);
+        logger.error('Background baseline refresh failed:', err);
       });
     }
 
@@ -219,7 +220,7 @@ export async function getAvgTasksBaseline(assigneeIds = []) {
     const cached = await getBaseline('avgTasksPerMember');
     return cached ?? DEFAULT_AVG_TASKS;
   } catch (error) {
-    console.error('❌ Error getting avg tasks baseline:', error);
+    logger.error('Error getting avg tasks baseline:', error);
     return DEFAULT_AVG_TASKS;
   }
 }
@@ -230,7 +231,7 @@ export async function getAvgTasksBaseline(assigneeIds = []) {
  * @returns {Promise<number>} Average tasks per member per day
  */
 export async function forceRefreshBaseline(assigneeIds) {
-  console.log('🔄 Force refreshing baseline...');
+  logger.info('Force refreshing baseline...');
   return refreshBaseline(assigneeIds);
 }
 
