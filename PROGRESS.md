@@ -309,6 +309,121 @@
 - **data-testid gaps**: noActivity compact rows, settings button, date picker have no testid
 - **Decision**: No src/ modifications — IndexedDB seeding + route interception is sufficient
 
+## UX Audit Plan (LIGHTHOUSE_UX_PLAN.md — Part B)
+
+### Phase 0: Audit & Setup
+- [ ] 0.1 Add UX tracking section to PROGRESS.md
+- [ ] 0.2 Audit: inline style inventory (baseline)
+- [ ] 0.3 Audit: console log inventory
+- [ ] 0.4 Audit: touch targets + empty states
+- [ ] 0.5 Audit: RTL/font coverage gaps
+
+### Phase 1: Foundation (CSS Custom Properties)
+- [ ] 1.1 Define CSS custom properties in index.css
+- [ ] 1.2 Wire useTheme to set CSS vars at runtime
+- [ ] 1.3 Extend tailwind.config.js to reference CSS vars (th-* tokens)
+- [ ] 1.4 Create useThemeStyles helper hook
+- [ ] 1.5 Verify foundation: build + visual check
+
+### Phase 2: Console Cleanup (242 raw calls → 0)
+- [ ] 2.1 orchestrator.js (~55 calls)
+- [ ] 2.2 useClickUpSync.js (~56 calls)
+- [ ] 2.3 taskCacheV2.js (~41 calls)
+- [ ] 2.4 clickup.js (~24 calls)
+- [ ] 2.5 syncQueue.js (~16 calls)
+- [ ] 2.6 Service utils + hooks small files (~23 calls across 8 files)
+- [ ] 2.7 Modal components: MemberDetailModal + SettingsModal (~9 calls)
+- [ ] 2.8 Verify console cleanup
+
+### Phase 3: Dead Code Removal
+- [ ] 3.1 Remove MemberRow.jsx (425 lines, never imported)
+- [ ] 3.2 Scan for other dead exports/components
+
+### Phase 4: UI Component Migration (ui/ directory)
+- [ ] 4.1 ProgressRing.jsx (69 lines)
+- [ ] 4.2 LiveTimer.jsx (105 lines)
+- [ ] 4.3 Avatar.jsx (115 lines)
+- [ ] 4.4 StatusBadge.jsx (161 lines)
+- [ ] 4.5 PriorityFlag.jsx (122 lines)
+- [ ] 4.6 Sparkline.jsx (183 lines)
+- [ ] 4.7 Skeleton.jsx (318 lines)
+- [ ] 4.8 Verify UI component migration
+
+### Phase 5: Card Migration
+- [ ] 5.1 OverviewCard.jsx (81 lines)
+- [ ] 5.2 ScoreBreakdownCard.jsx (148 lines)
+- [ ] 5.3 TeamStatusOverview.jsx (123 lines)
+- [ ] 5.4 TeamStatusCard.jsx (157 lines)
+- [ ] 5.5 NoActivityCard.jsx (62 lines)
+- [ ] 5.6 LeaveCard.jsx (103 lines)
+- [ ] 5.7 CardShell.jsx (224 lines) — complete Tailwind migration
+- [ ] 5.8 OfflineCard.jsx (252 lines)
+- [ ] 5.9 BreakCard.jsx (256 lines)
+- [ ] 5.10 WorkingCard.jsx (291 lines)
+- [ ] 5.11 ProjectBreakdownCard.jsx (463 lines)
+- [ ] 5.12 Verify card migration
+
+### Phase 6: Layout Migration
+- [ ] 6.1 FilterSortControls.jsx (320 lines)
+- [ ] 6.2 Header.jsx (396 lines)
+- [ ] 6.3 MobileBottomNav.jsx (300 lines)
+- [ ] 6.4 Verify layout migration
+
+### Phase 7: Large Components
+- [ ] 7.1 ModalShell.jsx (317 lines) — must do BEFORE other modals
+- [ ] 7.2 DashboardDetailModal.jsx (544 lines)
+- [ ] 7.3 TaskListModal.jsx (775 lines)
+- [ ] 7.4 DatePickerModal.jsx (608 lines)
+- [ ] 7.5 MemberDetailModal.jsx: Timeline tab
+- [ ] 7.6 MemberDetailModal.jsx: Performance tab
+- [ ] 7.7 MemberDetailModal.jsx: Leaves tab
+- [ ] 7.8 SettingsModal.jsx: shell + ClickUp tab
+- [ ] 7.9 SettingsModal.jsx: Team + Score tabs
+- [ ] 7.10 SettingsModal.jsx: remaining tabs (Thresholds/Sync/Calendar/Display/Audit)
+- [ ] 7.11 ListView.jsx: header + table structure
+- [ ] 7.12 ListView.jsx: member rows + expanded content
+- [ ] 7.13 ListView.jsx: footer + mobile adaptations
+- [ ] 7.14 RankingTable.jsx (610 lines)
+- [ ] 7.15 Leaves sub-components (5 files: LeavesTab, TeamOverviewPanel, LeaveCalendar, MemberLeaveDetail, QuotaBar)
+- [ ] 7.16 ErrorBoundary.jsx (259 lines)
+- [ ] 7.17 App.jsx (563 lines)
+- [ ] 7.18 Verify large component migration
+
+### Phase 8: Touch Target Fixes (44×44px minimum)
+- [ ] 8.1 ModalShell close button (28px → 44px)
+- [ ] 8.2 ProjectBreakdownCard StatusPill (verify clickable → fix, or display-only → skip)
+- [ ] 8.3 FilterSortControls dropdown items
+- [ ] 8.4 Header + MobileBottomNav menu items
+- [ ] 8.5 SettingsModal form controls (tabs, toggles)
+- [ ] 8.6 LeavesTab tab buttons
+
+### Phase 9: Empty States
+- [ ] 9.1 Grid View (App.jsx) — no members empty state
+- [ ] 9.2 ListView — no members empty state
+- [ ] 9.3 LeavesTab — no leave data empty state
+- [ ] 9.4 ProjectBreakdownCard — standardize empty state
+- [ ] 9.5 RankingTable — no members empty state
+
+### Phase 10: RTL Polish
+- [ ] 10.1 SettingsModal — RTL font handling for member names
+- [ ] 10.2 TaskListModal — RTL font handling for task/project names
+- [ ] 10.3 ScoreBreakdownCard — verify RTL (likely no-op, English labels only)
+- [ ] 10.4 Leaves sub-components — RTL font handling for member names
+- [ ] 10.5 RankingTable + ListView — complete RTL font coverage
+
+### Phase 11: Final Verification
+- [ ] 11.1 Full build + test suite (228+ Vitest + 177 Playwright)
+- [ ] 11.2 Visual regression check (both themes)
+- [ ] 11.3 Spacing consistency audit
+- [ ] 11.4 Update CLAUDE.md with CSS custom properties migration notes
+- [ ] 11.5 Final metrics + cleanup
+
+## UX Session Log
+| Session | Date | Tasks Completed | Notes |
+|---------|------|-----------------|-------|
+
+---
+
 ## Session Log
 | Session | Date | Tasks Completed | Notes |
 |---------|------|-----------------|-------|
