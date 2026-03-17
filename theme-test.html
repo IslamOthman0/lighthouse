@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lighthouse - Dark Theme Background Test</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #1a1a1a;
+    color: #fff;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 14px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 32px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+
+  .theme-panel {
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .theme-panel .label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 4px;
+  }
+  .theme-panel .hex {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 2px;
+  }
+  .theme-panel .desc {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 20px;
+  }
+
+  /* Current badge */
+  .current-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+  }
+  .recommended-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 100px;
+    background: rgba(16, 185, 129, 0.2);
+    color: #34D399;
+  }
+
+  /* Member Card Mock */
+  .card {
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    position: relative;
+    border-left: 3px solid transparent;
+  }
+  .card-working {
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    border-left-color: #10B981;
+  }
+  .card-break {
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    border-left-color: #F59E0B;
+  }
+  .card-offline {
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    border-left-color: #6B7280;
+    opacity: 0.7;
+  }
+  .card-leave {
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    border-left-color: #8B5CF6;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .avatar-working { background: linear-gradient(135deg, #10B981, #059669); }
+  .avatar-break { background: linear-gradient(135deg, #F59E0B, #D97706); }
+  .avatar-offline { background: #4B5563; }
+  .avatar-leave { background: linear-gradient(135deg, #8B5CF6, #7C3AED); }
+
+  .name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .status-text {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+  }
+  .timer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    margin-left: auto;
+  }
+  .timer-working { color: #10B981; }
+  .timer-break { color: #F59E0B; }
+
+  /* Metrics row */
+  .metrics {
+    display: flex;
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .metric {
+    flex: 1;
+    text-align: center;
+  }
+  .metric-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .metric-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 2px;
+  }
+  .score-good { color: #10B981; }
+  .score-mid { color: #F59E0B; }
+  .score-low { color: #EF4444; }
+  .score-perfect { color: #ffffff; }
+
+  /* Inner card (task info) */
+  .inner-card {
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+  }
+  .task-name {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .task-status {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 2px;
+  }
+
+  /* Pulsing dot */
+  .pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10B981;
+    display: inline-block;
+    animation: pulse 2s ease-in-out infinite;
+    margin-right: 4px;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(16,185,129,0); }
+  }
+
+  /* Score breakdown card */
+  .score-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .score-card-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 10px;
+  }
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .progress-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    width: 70px;
+    flex-shrink: 0;
+  }
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+  .progress-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    width: 32px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* Text readability section */
+  .text-samples {
+    margin-top: 16px;
+    padding: 14px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .text-samples .sample-title {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 8px;
+  }
+  .sample-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+  }
+  .sample-row span:first-child {
+    font-size: 12px;
+  }
+  .sample-row .contrast-ratio {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+  }
+</style>
+</head>
+<body>
+
+<h1>Lighthouse</h1>
+<p class="subtitle">Dark Theme Background Comparison — Pick the one that feels right</p>
+
+<div class="grid">
+
+  <!-- Option 0: Current (#000000) -->
+  <div class="theme-panel" style="background: #000000;">
+    <span class="current-badge">Current</span>
+    <div class="label">Option 0</div>
+    <div class="hex">#000000</div>
+    <div class="desc">Pure True Black — Maximum OLED savings, harsh contrast</div>
+
+    <div class="card card-working">
+      <div class="card-header">
+        <div class="avatar avatar-working">DI</div>
+        <div>
+          <div class="name">Dina Ibrahim</div>
+          <div class="status-text"><span class="pulse-dot"></span>Working</div>
+        </div>
+        <div class="timer timer-working">02:45:18</div>
+      </div>
+      <div class="inner-card">
+        <div class="task-name">كتاب التاريخ المصري القديم — الجزء الثاني</div>
+        <div class="task-status">in progress · 4 tasks today</div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-value score-good">82</div><div class="metric-label">Score</div></div>
+        <div class="metric"><div class="metric-value score-good">5h 12m</div><div class="metric-label">Tracked</div></div>
+        <div class="metric"><div class="metric-value score-mid">67%</div><div class="metric-label">Done</div></div>
+      </div>
+    </div>
+
+    <div class="card card-break">
+      <div class="card-header">
+        <div class="avatar avatar-break">AS</div>
+        <div>
+          <div class="name">Alaa Soliman</div>
+          <div class="status-text">On break · 12m</div>
+        </div>
+        <div class="timer timer-break">00:12:04</div>
+      </div>
+    </div>
+
+    <div class="card card-offline">
+      <div class="card-header">
+        <div class="avatar avatar-offline">NM</div>
+        <div>
+          <div class="name">Nada Meshref</div>
+          <div class="status-text">Offline · last seen 2h ago</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="score-card">
+      <div class="score-card-title">Team Overview</div>
+      <div class="progress-row">
+        <span class="progress-label">Time</span>
+        <div class="progress-track"><div class="progress-fill" style="width:78%;background:#10B981;"></div></div>
+        <span class="progress-value score-good">78%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Tasks</span>
+        <div class="progress-track"><div class="progress-fill" style="width:62%;background:#F59E0B;"></div></div>
+        <span class="progress-value score-mid">62%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Done</span>
+        <div class="progress-track"><div class="progress-fill" style="width:45%;background:#EF4444;"></div></div>
+        <span class="progress-value score-low">45%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Comply</span>
+        <div class="progress-track"><div class="progress-fill" style="width:91%;background:#10B981;"></div></div>
+        <span class="progress-value score-good">91%</span>
+      </div>
+    </div>
+
+    <div class="text-samples">
+      <div class="sample-title">Text Readability</div>
+      <div class="sample-row"><span style="color:#ffffff;">Primary text #ffffff</span><span class="contrast-ratio">21:1</span></div>
+      <div class="sample-row"><span style="color:#a0a0a0;">Secondary text #a0a0a0</span><span class="contrast-ratio">9.6:1</span></div>
+      <div class="sample-row"><span style="color:#606060;">Muted text #606060</span><span class="contrast-ratio">3.9:1</span></div>
+    </div>
+  </div>
+
+  <!-- Option 1: Soft Dark Gray (#0A0A0A) -->
+  <div class="theme-panel" style="background: #0A0A0A;">
+    <span class="recommended-badge">Recommended</span>
+    <div class="label">Option 1</div>
+    <div class="hex">#0A0A0A</div>
+    <div class="desc">Soft Dark Gray — Premium feel, no OLED smearing, subtle depth</div>
+
+    <div class="card card-working">
+      <div class="card-header">
+        <div class="avatar avatar-working">DI</div>
+        <div>
+          <div class="name">Dina Ibrahim</div>
+          <div class="status-text"><span class="pulse-dot"></span>Working</div>
+        </div>
+        <div class="timer timer-working">02:45:18</div>
+      </div>
+      <div class="inner-card">
+        <div class="task-name">كتاب التاريخ المصري القديم — الجزء الثاني</div>
+        <div class="task-status">in progress · 4 tasks today</div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-value score-good">82</div><div class="metric-label">Score</div></div>
+        <div class="metric"><div class="metric-value score-good">5h 12m</div><div class="metric-label">Tracked</div></div>
+        <div class="metric"><div class="metric-value score-mid">67%</div><div class="metric-label">Done</div></div>
+      </div>
+    </div>
+
+    <div class="card card-break">
+      <div class="card-header">
+        <div class="avatar avatar-break">AS</div>
+        <div>
+          <div class="name">Alaa Soliman</div>
+          <div class="status-text">On break · 12m</div>
+        </div>
+        <div class="timer timer-break">00:12:04</div>
+      </div>
+    </div>
+
+    <div class="card card-offline">
+      <div class="card-header">
+        <div class="avatar avatar-offline">NM</div>
+        <div>
+          <div class="name">Nada Meshref</div>
+          <div class="status-text">Offline · last seen 2h ago</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="score-card">
+      <div class="score-card-title">Team Overview</div>
+      <div class="progress-row">
+        <span class="progress-label">Time</span>
+        <div class="progress-track"><div class="progress-fill" style="width:78%;background:#10B981;"></div></div>
+        <span class="progress-value score-good">78%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Tasks</span>
+        <div class="progress-track"><div class="progress-fill" style="width:62%;background:#F59E0B;"></div></div>
+        <span class="progress-value score-mid">62%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Done</span>
+        <div class="progress-track"><div class="progress-fill" style="width:45%;background:#EF4444;"></div></div>
+        <span class="progress-value score-low">45%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Comply</span>
+        <div class="progress-track"><div class="progress-fill" style="width:91%;background:#10B981;"></div></div>
+        <span class="progress-value score-good">91%</span>
+      </div>
+    </div>
+
+    <div class="text-samples">
+      <div class="sample-title">Text Readability</div>
+      <div class="sample-row"><span style="color:#ffffff;">Primary text #ffffff</span><span class="contrast-ratio">19.9:1</span></div>
+      <div class="sample-row"><span style="color:#a0a0a0;">Secondary text #a0a0a0</span><span class="contrast-ratio">9.1:1</span></div>
+      <div class="sample-row"><span style="color:#606060;">Muted text #606060</span><span class="contrast-ratio">3.7:1</span></div>
+    </div>
+  </div>
+
+  <!-- Option 2: Warm Dark (#0C0A09) -->
+  <div class="theme-panel" style="background: #0C0A09;">
+    <div class="label">Option 2</div>
+    <div class="hex">#0C0A09</div>
+    <div class="desc">Warm Dark (stone-950) — Organic feel, pairs with emerald/amber</div>
+
+    <div class="card card-working">
+      <div class="card-header">
+        <div class="avatar avatar-working">DI</div>
+        <div>
+          <div class="name">Dina Ibrahim</div>
+          <div class="status-text"><span class="pulse-dot"></span>Working</div>
+        </div>
+        <div class="timer timer-working">02:45:18</div>
+      </div>
+      <div class="inner-card">
+        <div class="task-name">كتاب التاريخ المصري القديم — الجزء الثاني</div>
+        <div class="task-status">in progress · 4 tasks today</div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-value score-good">82</div><div class="metric-label">Score</div></div>
+        <div class="metric"><div class="metric-value score-good">5h 12m</div><div class="metric-label">Tracked</div></div>
+        <div class="metric"><div class="metric-value score-mid">67%</div><div class="metric-label">Done</div></div>
+      </div>
+    </div>
+
+    <div class="card card-break">
+      <div class="card-header">
+        <div class="avatar avatar-break">AS</div>
+        <div>
+          <div class="name">Alaa Soliman</div>
+          <div class="status-text">On break · 12m</div>
+        </div>
+        <div class="timer timer-break">00:12:04</div>
+      </div>
+    </div>
+
+    <div class="card card-offline">
+      <div class="card-header">
+        <div class="avatar avatar-offline">NM</div>
+        <div>
+          <div class="name">Nada Meshref</div>
+          <div class="status-text">Offline · last seen 2h ago</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="score-card">
+      <div class="score-card-title">Team Overview</div>
+      <div class="progress-row">
+        <span class="progress-label">Time</span>
+        <div class="progress-track"><div class="progress-fill" style="width:78%;background:#10B981;"></div></div>
+        <span class="progress-value score-good">78%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Tasks</span>
+        <div class="progress-track"><div class="progress-fill" style="width:62%;background:#F59E0B;"></div></div>
+        <span class="progress-value score-mid">62%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Done</span>
+        <div class="progress-track"><div class="progress-fill" style="width:45%;background:#EF4444;"></div></div>
+        <span class="progress-value score-low">45%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Comply</span>
+        <div class="progress-track"><div class="progress-fill" style="width:91%;background:#10B981;"></div></div>
+        <span class="progress-value score-good">91%</span>
+      </div>
+    </div>
+
+    <div class="text-samples">
+      <div class="sample-title">Text Readability</div>
+      <div class="sample-row"><span style="color:#ffffff;">Primary text #ffffff</span><span class="contrast-ratio">19.3:1</span></div>
+      <div class="sample-row"><span style="color:#a0a0a0;">Secondary text #a0a0a0</span><span class="contrast-ratio">8.9:1</span></div>
+      <div class="sample-row"><span style="color:#606060;">Muted text #606060</span><span class="contrast-ratio">3.6:1</span></div>
+    </div>
+  </div>
+
+  <!-- Option 3: Cool Dark (#030712) -->
+  <div class="theme-panel" style="background: #030712;">
+    <div class="label">Option 3</div>
+    <div class="hex">#030712</div>
+    <div class="desc">Cool Dark (gray-950) — Modern, techy, subtle blue undertone</div>
+
+    <div class="card card-working">
+      <div class="card-header">
+        <div class="avatar avatar-working">DI</div>
+        <div>
+          <div class="name">Dina Ibrahim</div>
+          <div class="status-text"><span class="pulse-dot"></span>Working</div>
+        </div>
+        <div class="timer timer-working">02:45:18</div>
+      </div>
+      <div class="inner-card">
+        <div class="task-name">كتاب التاريخ المصري القديم — الجزء الثاني</div>
+        <div class="task-status">in progress · 4 tasks today</div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-value score-good">82</div><div class="metric-label">Score</div></div>
+        <div class="metric"><div class="metric-value score-good">5h 12m</div><div class="metric-label">Tracked</div></div>
+        <div class="metric"><div class="metric-value score-mid">67%</div><div class="metric-label">Done</div></div>
+      </div>
+    </div>
+
+    <div class="card card-break">
+      <div class="card-header">
+        <div class="avatar avatar-break">AS</div>
+        <div>
+          <div class="name">Alaa Soliman</div>
+          <div class="status-text">On break · 12m</div>
+        </div>
+        <div class="timer timer-break">00:12:04</div>
+      </div>
+    </div>
+
+    <div class="card card-offline">
+      <div class="card-header">
+        <div class="avatar avatar-offline">NM</div>
+        <div>
+          <div class="name">Nada Meshref</div>
+          <div class="status-text">Offline · last seen 2h ago</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="score-card">
+      <div class="score-card-title">Team Overview</div>
+      <div class="progress-row">
+        <span class="progress-label">Time</span>
+        <div class="progress-track"><div class="progress-fill" style="width:78%;background:#10B981;"></div></div>
+        <span class="progress-value score-good">78%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Tasks</span>
+        <div class="progress-track"><div class="progress-fill" style="width:62%;background:#F59E0B;"></div></div>
+        <span class="progress-value score-mid">62%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Done</span>
+        <div class="progress-track"><div class="progress-fill" style="width:45%;background:#EF4444;"></div></div>
+        <span class="progress-value score-low">45%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Comply</span>
+        <div class="progress-track"><div class="progress-fill" style="width:91%;background:#10B981;"></div></div>
+        <span class="progress-value score-good">91%</span>
+      </div>
+    </div>
+
+    <div class="text-samples">
+      <div class="sample-title">Text Readability</div>
+      <div class="sample-row"><span style="color:#ffffff;">Primary text #ffffff</span><span class="contrast-ratio">20.5:1</span></div>
+      <div class="sample-row"><span style="color:#a0a0a0;">Secondary text #a0a0a0</span><span class="contrast-ratio">9.4:1</span></div>
+      <div class="sample-row"><span style="color:#606060;">Muted text #606060</span><span class="contrast-ratio">3.8:1</span></div>
+    </div>
+  </div>
+
+  <!-- Option 4: Deep Charcoal (#121212) -->
+  <div class="theme-panel" style="background: #121212;">
+    <div class="label">Option 4</div>
+    <div class="hex">#121212</div>
+    <div class="desc">Deep Charcoal (Material Dark) — Visible layers, clear card depth</div>
+
+    <div class="card card-working">
+      <div class="card-header">
+        <div class="avatar avatar-working">DI</div>
+        <div>
+          <div class="name">Dina Ibrahim</div>
+          <div class="status-text"><span class="pulse-dot"></span>Working</div>
+        </div>
+        <div class="timer timer-working">02:45:18</div>
+      </div>
+      <div class="inner-card">
+        <div class="task-name">كتاب التاريخ المصري القديم — الجزء الثاني</div>
+        <div class="task-status">in progress · 4 tasks today</div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-value score-good">82</div><div class="metric-label">Score</div></div>
+        <div class="metric"><div class="metric-value score-good">5h 12m</div><div class="metric-label">Tracked</div></div>
+        <div class="metric"><div class="metric-value score-mid">67%</div><div class="metric-label">Done</div></div>
+      </div>
+    </div>
+
+    <div class="card card-break">
+      <div class="card-header">
+        <div class="avatar avatar-break">AS</div>
+        <div>
+          <div class="name">Alaa Soliman</div>
+          <div class="status-text">On break · 12m</div>
+        </div>
+        <div class="timer timer-break">00:12:04</div>
+      </div>
+    </div>
+
+    <div class="card card-offline">
+      <div class="card-header">
+        <div class="avatar avatar-offline">NM</div>
+        <div>
+          <div class="name">Nada Meshref</div>
+          <div class="status-text">Offline · last seen 2h ago</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="score-card">
+      <div class="score-card-title">Team Overview</div>
+      <div class="progress-row">
+        <span class="progress-label">Time</span>
+        <div class="progress-track"><div class="progress-fill" style="width:78%;background:#10B981;"></div></div>
+        <span class="progress-value score-good">78%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Tasks</span>
+        <div class="progress-track"><div class="progress-fill" style="width:62%;background:#F59E0B;"></div></div>
+        <span class="progress-value score-mid">62%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Done</span>
+        <div class="progress-track"><div class="progress-fill" style="width:45%;background:#EF4444;"></div></div>
+        <span class="progress-value score-low">45%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Comply</span>
+        <div class="progress-track"><div class="progress-fill" style="width:91%;background:#10B981;"></div></div>
+        <span class="progress-value score-good">91%</span>
+      </div>
+    </div>
+
+    <div class="text-samples">
+      <div class="sample-title">Text Readability</div>
+      <div class="sample-row"><span style="color:#ffffff;">Primary text #ffffff</span><span class="contrast-ratio">17.9:1</span></div>
+      <div class="sample-row"><span style="color:#a0a0a0;">Secondary text #a0a0a0</span><span class="contrast-ratio">8.2:1</span></div>
+      <div class="sample-row"><span style="color:#606060;">Muted text #606060</span><span class="contrast-ratio">3.4:1</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div style="text-align:center; margin-top:32px; padding-bottom:24px;">
+  <p style="font-size:11px; color:#555; letter-spacing:1px;">
+    Open in browser &middot; Compare side by side &middot; Pick your favorite &middot; Tell Claude the hex code
+  </p>
+</div>
+
+</body>
+</html>

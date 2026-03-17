@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "clickup": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@taazkareem/clickup-mcp-server"
+      ],
+      "env": {
+        "CLICKUP_API_KEY": "pk_87650455_Q9THAZR1XU1P36JYN1H4C631F4V9PSPO",
+        "CLICKUP_TEAM_ID": "9012423410"
+      }
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-puppeteer"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@executeautomation/playwright-mcp-server"
+      ]
+    }
+  }
+}

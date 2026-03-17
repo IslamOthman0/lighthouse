@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Light Themes — Frosted Elegance & Noir Glass</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans Arabic', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ========================================= */
+        /* DARK REFERENCE: TRUE BLACK + EMERALD     */
+        /* ========================================= */
+        .dark-bg {
+            background-color: #000000;
+        }
+        .dark-card {
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.04) 0%,
+                rgba(255, 255, 255, 0.01) 100%
+            );
+            backdrop-filter: blur(20px);
+        }
+        .dark-inner {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .dark-subtle {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .dark-timer {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.4));
+        }
+        .dark-glow {
+            background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+        }
+
+        /* ========================================= */
+        /* VERSION 1: FROSTED ELEGANCE              */
+        /* ========================================= */
+        .v1-bg {
+            background: linear-gradient(165deg, #FDFEFE 0%, #F8FAF9 50%, #F5F7F6 100%);
+        }
+        .v1-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            box-shadow: 
+                0 0 0 1px rgba(0, 0, 0, 0.04),
+                0 1px 2px rgba(0, 0, 0, 0.02),
+                0 4px 8px rgba(0, 0, 0, 0.03),
+                0 12px 24px rgba(0, 0, 0, 0.05),
+                0 24px 48px rgba(0, 0, 0, 0.04);
+        }
+        .v1-inner {
+            background: linear-gradient(
+                145deg,
+                rgba(0, 0, 0, 0.012) 0%,
+                rgba(0, 0, 0, 0.024) 100%
+            );
+            box-shadow: 
+                inset 0 1px 3px rgba(0, 0, 0, 0.03),
+                inset 0 0 0 1px rgba(0, 0, 0, 0.02);
+        }
+        .v1-subtle {
+            background: linear-gradient(
+                135deg,
+                rgba(0, 0, 0, 0.018) 0%,
+                rgba(0, 0, 0, 0.028) 100%
+            );
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+        .v1-timer {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 2px 8px rgba(5, 150, 105, 0.2));
+        }
+        .v1-timer-glow {
+            background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.06) 0%, transparent 70%);
+        }
+        .v1-highlight {
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(16, 185, 129, 0.08) 20%,
+                rgba(16, 185, 129, 0.12) 50%,
+                rgba(16, 185, 129, 0.08) 80%,
+                transparent 100%
+            );
+        }
+        .v1-tag {
+            background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%);
+            backdrop-filter: blur(8px);
+            box-shadow: 
+                0 1px 3px rgba(0, 0, 0, 0.04),
+                inset 0 1px 1px rgba(255, 255, 255, 0.8);
+        }
+        .v1-progress-track {
+            background: rgba(0, 0, 0, 0.06);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+        }
+        .v1-progress-bar {
+            background: linear-gradient(90deg, #059669 0%, #10B981 50%, #34D399 100%);
+            box-shadow: 
+                0 1px 3px rgba(16, 185, 129, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.3);
+        }
+        .v1-avatar-ring {
+            box-shadow: 
+                0 0 0 2px rgba(255, 255, 255, 0.9),
+                0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .v1-divider {
+            background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.06) 50%, transparent 100%);
+        }
+
+        /* ========================================= */
+        /* VERSION 2: NOIR GLASS                    */
+        /* ========================================= */
+        .v2-bg {
+            background: linear-gradient(170deg, #F9F9F7 0%, #F4F4F2 100%);
+        }
+        .v2-card {
+            background: linear-gradient(
+                155deg,
+                rgba(255, 255, 255, 0.95) 0%,
+                rgba(255, 255, 255, 0.88) 100%
+            );
+            backdrop-filter: blur(24px);
+            box-shadow: 
+                0 0 0 1px rgba(0, 0, 0, 0.06),
+                0 1px 1px rgba(0, 0, 0, 0.02),
+                0 2px 4px rgba(0, 0, 0, 0.02),
+                0 4px 8px rgba(0, 0, 0, 0.03),
+                0 8px 16px rgba(0, 0, 0, 0.04),
+                0 16px 32px rgba(0, 0, 0, 0.05);
+        }
+        .v2-inner {
+            background: linear-gradient(
+                150deg,
+                rgba(0, 0, 0, 0.02) 0%,
+                rgba(0, 0, 0, 0.035) 100%
+            );
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 
+                inset 0 2px 4px rgba(0, 0, 0, 0.03),
+                0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+        .v2-subtle {
+            background: linear-gradient(
+                140deg,
+                rgba(0, 0, 0, 0.025) 0%,
+                rgba(0, 0, 0, 0.04) 100%
+            );
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.025);
+        }
+        .v2-timer {
+            background: linear-gradient(135deg, #047857 0%, #065F46 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 3px 12px rgba(6, 95, 70, 0.25));
+        }
+        .v2-timer-glow {
+            background: radial-gradient(ellipse at center, rgba(6, 95, 70, 0.08) 0%, transparent 65%);
+        }
+        .v2-highlight-top {
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(6, 95, 70, 0.06) 15%,
+                rgba(6, 95, 70, 0.1) 50%,
+                rgba(6, 95, 70, 0.06) 85%,
+                transparent 100%
+            );
+        }
+        .v2-highlight-bottom {
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(0, 0, 0, 0.03) 20%,
+                rgba(0, 0, 0, 0.05) 50%,
+                rgba(0, 0, 0, 0.03) 80%,
+                transparent 100%
+            );
+        }
+        .v2-tag {
+            background: linear-gradient(145deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.5) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.04),
+                inset 0 1px 1px rgba(255, 255, 255, 0.9);
+        }
+        .v2-tag-filled {
+            box-shadow: 
+                0 2px 6px rgba(0, 0, 0, 0.15),
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+        .v2-progress-track {
+            background: linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.05) 100%);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .v2-progress-bar {
+            background: linear-gradient(90deg, #065F46 0%, #047857 40%, #059669 100%);
+            box-shadow: 
+                0 1px 4px rgba(6, 95, 70, 0.4),
+                inset 0 1px 1px rgba(255, 255, 255, 0.25);
+        }
+        .v2-avatar-ring {
+            box-shadow: 
+                0 0 0 2.5px rgba(255, 255, 255, 0.95),
+                0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+        .v2-badge-working {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 
+                0 2px 8px rgba(5, 150, 105, 0.35),
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+        .v2-badge-priority {
+            background: linear-gradient(135deg, #1C1917 0%, #292524 100%);
+            box-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+        .v2-divider {
+            background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.08) 50%, transparent 100%);
+        }
+        .v2-metric-divider {
+            background: rgba(0, 0, 0, 0.06);
+        }
+
+        /* Shared */
+        .text-content {
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body class="bg-neutral-800 p-6 lg:p-10 min-h-screen">
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 max-w-[1500px] mx-auto">
+
+        <!-- ============================================== -->
+        <!-- DARK REFERENCE                                 -->
+        <!-- ============================================== -->
+        <div class="flex flex-col items-center">
+            <div class="mb-5 text-center">
+                <span class="text-[10px] text-emerald-400 uppercase tracking-[0.2em] font-semibold">Reference</span>
+                <h2 class="text-base text-white mt-1 font-medium">True Black + Emerald</h2>
+                <p class="text-[11px] text-neutral-500 mt-1">Your chosen dark theme</p>
+            </div>
+            
+            <div class="dark-bg rounded-[28px] p-6 w-full max-w-[380px]">
+                <div class="relative">
+                    <div class="absolute -inset-6 dark-glow blur-2xl opacity-60"></div>
+                    
+                    <div class="relative dark-card rounded-2xl overflow-hidden border border-white/[0.08]">
+                        
+                        <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+
+                        <div class="p-4 flex justify-between items-start">
+                            <div class="flex gap-3 items-center">
+                                <div class="relative">
+                                    <img src="https://i.pravatar.cc/150?img=11" alt="Member" class="w-10 h-10 rounded-xl border border-white/10">
+                                    <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-black"></div>
+                                </div>
+                                <div>
+                                    <h2 class="text-[14px] font-semibold text-white">Ahmed S.</h2>
+                                    <p class="text-[11px] text-neutral-500 mt-0.5">Started 08:15 AM</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-1.5 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                                <span class="relative flex h-1.5 w-1.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-50"></span>
+                                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                                </span>
+                                <span class="text-[10px] font-semibold text-emerald-400">Working</span>
+                            </div>
+                        </div>
+
+                        <div class="px-4 pb-4">
+                            <div class="dark-inner rounded-xl p-4 border border-white/[0.04]">
+                                
+                                <div class="flex justify-between items-start mb-4">
+                                    <div>
+                                        <p class="text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Current Session</p>
+                                        <span class="text-3xl font-semibold dark-timer tracking-tight font-mono">01:42:15</span>
+                                    </div>
+                                    <div class="bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20">
+                                        <span class="text-[9px] font-bold text-rose-400 uppercase tracking-wide">High</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="dark-subtle rounded-lg p-3 mb-3 border border-white/[0.03]">
+                                    <p class="text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Audiobooks → Chapter 4</p>
+                                    <h3 dir="auto" class="text-[13px] text-white/90 leading-relaxed text-content">
+                                        Refactoring Chapter 4 Metadata for Final Export
+                                    </h3>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 mb-3">
+                                    <div class="dark-subtle rounded-lg p-2.5 border border-white/[0.03]">
+                                        <p class="text-[9px] text-neutral-600 uppercase tracking-wide mb-1">Publisher</p>
+                                        <p class="text-[12px] text-neutral-300">Dar Al-Shorouk</p>
+                                    </div>
+                                    <div class="dark-subtle rounded-lg p-2.5 border border-white/[0.03]">
+                                        <p class="text-[9px] text-neutral-600 uppercase tracking-wide mb-1">Genre</p>
+                                        <p class="text-[12px] text-neutral-300">Islamic History</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-between items-center pt-3 border-t border-white/[0.04]">
+                                    <div class="flex -space-x-2">
+                                        <img class="w-6 h-6 rounded-lg ring-2 ring-black/80" src="https://i.pravatar.cc/150?img=33">
+                                        <img class="w-6 h-6 rounded-lg ring-2 ring-black/80" src="https://i.pravatar.cc/150?img=12">
+                                        <div class="w-6 h-6 rounded-lg bg-neutral-800 ring-2 ring-black/80 flex items-center justify-center text-[9px] text-neutral-400 font-medium">+2</div>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        <span class="text-[10px] text-emerald-400/80 bg-emerald-500/10 px-2 py-0.5 rounded-md">#epub3</span>
+                                        <span class="text-[10px] text-rose-400/80 bg-rose-500/10 px-2 py-0.5 rounded-md">#urgent</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="px-4 pb-3">
+                            <div class="flex justify-between text-[9px] text-neutral-600 mb-1.5">
+                                <span>Daily Goal</span>
+                                <span class="text-neutral-500">6h 12m / 6h 30m</span>
+                            </div>
+                            <div class="h-1 bg-white/[0.05] rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 w-[92%] rounded-full"></div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-4 p-3 border-t border-white/[0.04] bg-white/[0.01]">
+                            <div class="text-center">
+                                <p class="text-[8px] text-neutral-600 uppercase tracking-wide">Span</p>
+                                <p class="text-[13px] font-semibold text-white/90 mt-1 font-mono">6h 12m</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[8px] text-neutral-600 uppercase tracking-wide">Breaks</p>
+                                <p class="text-[13px] font-semibold text-amber-400/90 mt-1 font-mono">45m</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[8px] text-neutral-600 uppercase tracking-wide">Tasks</p>
+                                <p class="text-[13px] font-semibold text-emerald-400/90 mt-1 font-mono">4</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[8px] text-neutral-600 uppercase tracking-wide">Score</p>
+                                <p class="text-[13px] font-semibold text-violet-400/90 mt-1 font-mono">92%</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+
+        <!-- ============================================== -->
+        <!-- VERSION 2: NOIR GLASS                         -->
+        <!-- ============================================== -->
+        <div class="flex flex-col items-center">
+            <div class="mb-5 text-center">
+                <span class="text-[10px] text-emerald-400 uppercase tracking-[0.2em] font-semibold">Version 2</span>
+                <h2 class="text-base text-white mt-1 font-medium">Noir Glass</h2>
+                <p class="text-[11px] text-neutral-500 mt-1">Bold, editorial, commanding</p>
+            </div>
+            
+            <div class="v2-bg rounded-[28px] p-6 w-full max-w-[380px]">
+                <div class="relative">
+                    <!-- Ambient emerald glow -->
+                    <div class="absolute top-10 left-1/2 -translate-x-1/2 w-56 h-28 v2-timer-glow blur-2xl"></div>
+                    
+                    <div class="relative v2-card rounded-2xl overflow-hidden">
+                        
+                        <!-- Top highlight -->
+                        <div class="absolute top-0 left-0 right-0 h-[2px] v2-highlight-top"></div>
+
+                        <!-- Header -->
+                        <div class="p-4 flex justify-between items-start">
+                            <div class="flex gap-3 items-center">
+                                <div class="relative">
+                                    <img src="https://i.pravatar.cc/150?img=11" alt="Member" class="w-10 h-10 rounded-xl v2-avatar-ring">
+                                    <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-600 rounded-full ring-2 ring-white shadow-md shadow-emerald-600/40"></div>
+                                </div>
+                                <div>
+                                    <h2 class="text-[14px] font-bold text-gray-900">Ahmed S.</h2>
+                                    <p class="text-[11px] text-gray-500 mt-0.5 font-medium">Started 08:15 AM</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Status Badge -->
+                            <div class="flex items-center gap-1.5 v2-badge-working px-2.5 py-1 rounded-full">
+                                <span class="relative flex h-1.5 w-1.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-40"></span>
+                                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+                                </span>
+                                <span class="text-[10px] font-bold text-white">Working</span>
+                            </div>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="mx-4 h-px v2-divider"></div>
+
+                        <!-- Main Content Area -->
+                        <div class="p-4">
+                            <div class="v2-inner rounded-xl p-4">
+                                
+                                <!-- Timer Row -->
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="relative">
+                                        <div class="absolute -inset-6 v2-timer-glow blur-xl opacity-60"></div>
+                                        <p class="text-[9px] text-gray-500 uppercase tracking-wider mb-1.5 font-bold relative">Current Session</p>
+                                        <span class="text-3xl font-bold v2-timer tracking-tight font-mono relative">01:42:15</span>
+                                    </div>
+                                    <div class="v2-badge-priority px-2.5 py-1 rounded-lg">
+                                        <span class="text-[9px] font-bold text-white uppercase tracking-wide">High</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Task Section -->
+                                <div class="v2-subtle rounded-xl p-3 mb-3">
+                                    <p class="text-[9px] text-gray-500 uppercase tracking-wider mb-1.5 font-bold">Audiobooks → Chapter 4</p>
+                                    <h3 dir="auto" class="text-[13px] text-gray-900 leading-relaxed text-content font-semibold">
+                                        Refactoring Chapter 4 Metadata for Final Export
+                                    </h3>
+                                </div>
+
+                                <!-- Metadata Grid -->
+                                <div class="grid grid-cols-2 gap-2 mb-3">
+                                    <div class="v2-subtle rounded-xl p-2.5">
+                                        <p class="text-[9px] text-gray-500 uppercase tracking-wide mb-1 font-bold">Publisher</p>
+                                        <p class="text-[12px] text-gray-800 font-semibold">Dar Al-Shorouk</p>
+                                    </div>
+                                    <div class="v2-subtle rounded-xl p-2.5">
+                                        <p class="text-[9px] text-gray-500 uppercase tracking-wide mb-1 font-bold">Genre</p>
+                                        <p class="text-[12px] text-gray-800 font-semibold">Islamic History</p>
+                                    </div>
+                                </div>
+
+                                <!-- Assignees & Tags -->
+                                <div class="flex justify-between items-center pt-3 border-t border-black/[0.05]">
+                                    <div class="flex -space-x-2">
+                                        <img class="w-6 h-6 rounded-lg v2-avatar-ring" src="https://i.pravatar.cc/150?img=33">
+                                        <img class="w-6 h-6 rounded-lg v2-avatar-ring" src="https://i.pravatar.cc/150?img=12">
+                                        <div class="w-6 h-6 rounded-lg bg-gray-900 v2-avatar-ring flex items-center justify-center text-[9px] text-white font-bold">+2</div>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        <span class="text-[10px] text-white bg-emerald-700 v2-tag-filled px-2 py-0.5 rounded-md font-bold">#epub3</span>
+                                        <span class="text-[10px] text-white bg-gray-800 v2-tag-filled px-2 py-0.5 rounded-md font-bold">#urgent</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="px-4 pb-3">
+                            <div class="flex justify-between text-[9px] text-gray-500 mb-1.5 font-bold">
+                                <span>Daily Goal</span>
+                                <span class="text-gray-700">6h 12m / 6h 30m</span>
+                            </div>
+                            <div class="h-2 v2-progress-track rounded-full overflow-hidden">
+                                <div class="h-full v2-progress-bar w-[92%] rounded-full"></div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom highlight -->
+                        <div class="h-[2px] v2-highlight-bottom"></div>
+
+                        <!-- Bottom Metrics -->
+                        <div class="grid grid-cols-4 p-3 bg-gradient-to-b from-gray-50/50 to-gray-100/30">
+                            <div class="text-center relative">
+                                <p class="text-[8px] text-gray-500 uppercase tracking-wide font-bold">Span</p>
+                                <p class="text-[13px] font-bold text-gray-900 mt-1 font-mono">6h 12m</p>
+                                <div class="absolute right-0 top-1 bottom-1 w-px v2-metric-divider"></div>
+                            </div>
+                            <div class="text-center relative">
+                                <p class="text-[8px] text-gray-500 uppercase tracking-wide font-bold">Breaks</p>
+                                <p class="text-[13px] font-bold text-amber-700 mt-1 font-mono">45m</p>
+                                <div class="absolute right-0 top-1 bottom-1 w-px v2-metric-divider"></div>
+                            </div>
+                            <div class="text-center relative">
+                                <p class="text-[8px] text-gray-500 uppercase tracking-wide font-bold">Tasks</p>
+                                <p class="text-[13px] font-bold text-emerald-700 mt-1 font-mono">4</p>
+                                <div class="absolute right-0 top-1 bottom-1 w-px v2-metric-divider"></div>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[8px] text-gray-500 uppercase tracking-wide font-bold">Score</p>
+                                <p class="text-[13px] font-bold text-violet-700 mt-1 font-mono">92%</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Comparison Section -->
+    <div class="mt-16 max-w-5xl mx-auto">
+        <h2 class="text-xl font-semibold text-white mb-8 text-center">Design Philosophy</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+            
+            <!-- V2 Details -->
+            <div class="v2-bg rounded-2xl p-6 v2-card">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow-lg">
+                        <span class="text-white font-bold">2</span>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-900">Noir Glass</h3>
+                        <p class="text-xs text-gray-500">Bold • Editorial • Commanding</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4 text-sm text-gray-700">
+                    <div class="v2-subtle rounded-xl p-3">
+                        <p class="font-bold text-gray-900 mb-1">Charcoal Depth</p>
+                        <p class="text-xs text-gray-600 leading-relaxed">Stronger dark gradients in glass layers. Five-layer shadow system creates dramatic lift. Elements feel substantial.</p>
+                    </div>
+                    <div class="v2-subtle rounded-xl p-3">
+                        <p class="font-bold text-gray-900 mb-1">Noir Accents</p>
+                        <p class="text-xs text-gray-600 leading-relaxed">Black and dark emerald badges. Tags use solid fills. The "+2" avatar is pure dark. Confidence in every detail.</p>
+                    </div>
+                    <div class="v2-subtle rounded-xl p-3">
+                        <p class="font-bold text-gray-900 mb-1">Editorial Structure</p>
+                        <p class="text-xs text-gray-600 leading-relaxed">Vertical metric dividers. Top and bottom gradient bars frame content. Magazine-quality hierarchy.</p>
+                    </div>
+                </div>
+                
+                <div class="mt-5 pt-4 border-t border-black/[0.06]">
+                    <p class="text-xs text-gray-500 font-semibold">Best for: Quick scanning, maximum impact, professional dashboards</p>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Unified Design Tokens -->
+    <div class="mt-12 max-w-5xl mx-auto">
+        <h2 class="text-lg font-semibold text-white mb-6 text-center">Unified Token System</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <!-- Colors -->
+            <div class="bg-white/5 backdrop-blur rounded-xl p-5 border border-white/10">
+                <h3 class="text-xs font-semibold text-emerald-400 mb-4 uppercase tracking-wider">Emerald Scale</h3>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-400 shadow-lg shadow-emerald-400/30"></div>
+                        <div>
+                            <code class="text-xs text-white">#34D399</code>
+                            <p class="text-[10px] text-neutral-500">Dark glow</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500 shadow-lg shadow-emerald-500/30"></div>
+                        <div>
+                            <code class="text-xs text-white">#10B981</code>
+                            <p class="text-[10px] text-neutral-500">Dark primary</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-600 shadow-lg shadow-emerald-600/30"></div>
+                        <div>
+                            <code class="text-xs text-white">#059669</code>
+                            <p class="text-[10px] text-neutral-500">Light V1</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-700 shadow-lg shadow-emerald-700/30"></div>
+                        <div>
+                            <code class="text-xs text-white">#047857</code>
+                            <p class="text-[10px] text-neutral-500">Light V2</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-800 shadow-lg shadow-emerald-800/30"></div>
+                        <div>
+                            <code class="text-xs text-white">#065F46</code>
+                            <p class="text-[10px] text-neutral-500">Deepest</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Backgrounds -->
+            <div class="bg-white/5 backdrop-blur rounded-xl p-5 border border-white/10">
+                <h3 class="text-xs font-semibold text-neutral-300 mb-4 uppercase tracking-wider">Backgrounds</h3>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-black border border-white/20"></div>
+                        <div>
+                            <code class="text-xs text-white">#000000</code>
+                            <p class="text-[10px] text-neutral-500">Dark theme</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-[#FDFEFE] border border-black/10"></div>
+                        <div>
+                            <code class="text-xs text-white">#FDFEFE</code>
+                            <p class="text-[10px] text-neutral-500">V1 base</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-[#F9F9F7] border border-black/10"></div>
+                        <div>
+                            <code class="text-xs text-white">#F9F9F7</code>
+                            <p class="text-[10px] text-neutral-500">V2 base</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-white border border-black/10"></div>
+                        <div>
+                            <code class="text-xs text-white">#FFFFFF</code>
+                            <p class="text-[10px] text-neutral-500">Card base</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Effects -->
+            <div class="bg-white/5 backdrop-blur rounded-xl p-5 border border-white/10">
+                <h3 class="text-xs font-semibold text-violet-400 mb-4 uppercase tracking-wider">Key Effects</h3>
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <p class="text-neutral-400 mb-1">Timer Glow</p>
+                        <code class="text-neutral-300 text-[10px] leading-relaxed block">drop-shadow(0 2-3px 8-12px rgba(emerald, 0.2-0.25))</code>
+                    </div>
+                    <div>
+                        <p class="text-neutral-400 mb-1">Card Shadow (V1)</p>
+                        <code class="text-neutral-300 text-[10px] leading-relaxed block">5-layer, max 48px blur, 0.02-0.05 opacity</code>
+                    </div>
+                    <div>
+                        <p class="text-neutral-400 mb-1">Card Shadow (V2)</p>
+                        <code class="text-neutral-300 text-[10px] leading-relaxed block">6-layer, max 32px blur, 0.02-0.06 opacity</code>
+                    </div>
+                    <div>
+                        <p class="text-neutral-400 mb-1">Glass Inner</p>
+                        <code class="text-neutral-300 text-[10px] leading-relaxed block">rgba(0,0,0, 0.012-0.04) gradient + inset shadow</code>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+</body>
+</html>

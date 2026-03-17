@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --version:*)",
+      "Bash(git checkout:*)",
+      "Bash(git init:*)",
+      "Bash(node test-breaks-calculation.mjs:*)",
+      "Bash(node test-all-members.mjs:*)",
+      "Bash(node:*)",
+      "Bash(npm run dev:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(npm test:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
