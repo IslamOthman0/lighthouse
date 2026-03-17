@@ -319,7 +319,7 @@
 - [x] 0.5 Audit: RTL/font coverage gaps
 
 ### Phase 1: Foundation (CSS Custom Properties)
-- [ ] 1.1 Define CSS custom properties in index.css
+- [x] 1.1 Define CSS custom properties in index.css
 - [ ] 1.2 Wire useTheme to set CSS vars at runtime
 - [ ] 1.3 Extend tailwind.config.js to reference CSS vars (th-* tokens)
 - [ ] 1.4 Create useThemeStyles helper hook
@@ -611,6 +611,7 @@ Priority fixes (Phase 9):
 | Session | Date | Tasks Completed | Notes |
 |---------|------|-----------------|-------|
 | 1 | 2026-03-17 | 0.1, 0.2 | UX section added to PROGRESS.md. Inline style baseline: 27 INLINE files, 8 MIXED. 0 pure Tailwind. Top targets: SettingsModal (168), MemberDetailModal (160), ListView (159). |
+| 2 | 2026-03-17 | 1.1 | CSS custom properties defined in index.css. :root = True Black defaults, .theme-noir-glass = Noir Glass overrides. Exact values from themes.js (not template). Zero-visual-change — additive only. |
 | 2 | 2026-03-17 | 0.3 | Console log inventory: 229 raw calls across 17 files. Top: useClickUpSync (56), orchestrator (55), taskCacheV2 (41). All convert→logger except ErrorBoundary (keep) and calculations.js dead comments (remove). |
 | 3 | 2026-03-17 | 0.4 | Touch targets: 5 FAIL (ModalShell close 28px, SettingsModal close 32px, LeavesTab tabs 32px, FilterSort triggers ~36px, StatusPill 26px). 4 MARGINAL. Empty states: 4 partial/missing, 1 skeleton, 1 proper (ProjectBreakdownCard). |
 | 4 | 2026-03-17 | 0.5 | RTL audit: 8 gaps all in leaves sub-components (TeamOverviewPanel ×5, MemberLeaveDetail ×1, LeaveCalendar ×2). All other name-rendering sites covered. ScoreBreakdownCard confirmed no-op. |

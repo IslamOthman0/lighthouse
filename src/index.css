@@ -2,6 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   CSS Custom Properties — Lighthouse Design Tokens
+   Defaults = True Black (dark) theme
+   Overrides = .theme-noir-glass (light) theme
+   These are set ADDITIVELY — existing theme prop system unchanged.
+   ============================================================ */
+
+:root {
+  /* Backgrounds */
+  --color-bg: #0A0A0A;
+  --color-card-bg: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+  --color-inner-bg: rgba(255, 255, 255, 0.03);
+  --color-subtle-bg: rgba(255, 255, 255, 0.02);
+
+  /* Borders */
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-light: rgba(255, 255, 255, 0.06);
+
+  /* Text */
+  --color-text: #ffffff;
+  --color-text-secondary: #a0a0a0;
+  --color-text-muted: #606060;
+
+  /* Status */
+  --color-working: #10B981;
+  --color-working-light: #34D399;
+  --color-working-dark: #059669;
+  --color-working-glow: rgba(16, 185, 129, 0.4);
+  --color-break: #F59E0B;
+  --color-break-light: #FCD34D;
+  --color-break-dark: #D97706;
+  --color-offline: #6B7280;
+  --color-offline-light: #9CA3AF;
+  --color-leave: #8B5CF6;
+  --color-leave-light: #C4B5FD;
+  --color-leave-dark: #7C3AED;
+  --color-no-activity: rgba(255, 255, 255, 0.4);
+
+  /* Accents */
+  --color-accent: #ffffff;
+  --color-accent-glow: rgba(255, 255, 255, 0.2);
+  --color-danger: #EF4444;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-purple: #A855F7;
+
+  /* Effects */
+  --effect-backdrop-blur: blur(20px);
+  --effect-card-shadow: none;
+
+  /* Spacing tokens (match tailwind.config.js) */
+  --spacing-card-padding: 16px;
+  --spacing-section-gap: 24px;
+  --spacing-card-gap: 16px;
+
+  /* Border radius tokens */
+  --radius-card: 12px;
+  --radius-button: 8px;
+  --radius-badge: 6px;
+}
+
+.theme-noir-glass {
+  --color-bg: linear-gradient(170deg, #F9F9F7 0%, #F4F4F2 100%);
+  --color-card-bg: linear-gradient(155deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.88) 100%);
+  --color-inner-bg: linear-gradient(150deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.035) 100%);
+  --color-subtle-bg: linear-gradient(140deg, rgba(0,0,0,0.025) 0%, rgba(0,0,0,0.04) 100%);
+  --color-border: rgba(0, 0, 0, 0.06);
+  --color-border-light: rgba(0, 0, 0, 0.04);
+  --color-text: #111827;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-no-activity: rgba(0, 0, 0, 0.3);
+  --color-accent: #111827;
+  --color-accent-glow: rgba(17, 24, 39, 0.2);
+  --color-danger: #DC2626;
+  --color-success: #059669;
+  --color-warning: #D97706;
+  --color-purple: #7C3AED;
+  --effect-backdrop-blur: blur(24px);
+  --effect-card-shadow: 0 0 0 1px rgba(0,0,0,0.06), 0 1px 1px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.02), 0 4px 8px rgba(0,0,0,0.03), 0 8px 16px rgba(0,0,0,0.04), 0 16px 32px rgba(0,0,0,0.05);
+}
+
 @layer base {
   * {
     @apply box-border;
