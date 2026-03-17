@@ -1,5 +1,23 @@
 import React from 'react';
 
+// Status color values (solid hex for glow/border calculations)
+const STATUS_SOLID = {
+  working:    '#10B981',
+  break:      '#F59E0B',
+  offline:    '#6B7280',
+  leave:      '#8B5CF6',
+  noActivity: 'rgba(255, 255, 255, 0.4)',
+};
+
+// Glow backgrounds (rgba, used as badge background fill)
+const STATUS_GLOW = {
+  working:    'rgba(16, 185, 129, 0.4)',
+  break:      'rgba(245, 158, 11, 0.3)',
+  offline:    'none',
+  leave:      'none',
+  noActivity: 'none',
+};
+
 // Status badge for member status display
 const StatusBadge = ({ status, theme, size = 'normal' }) => {
   const getStatusConfig = () => {
@@ -7,39 +25,39 @@ const StatusBadge = ({ status, theme, size = 'normal' }) => {
       case 'working':
         return {
           label: 'Working',
-          color: theme.working,
-          glow: theme.workingGlow,
+          color: STATUS_SOLID.working,
+          glow: STATUS_GLOW.working,
           icon: '●',
-          pulse: true,  // Add pulsing animation for working status
+          pulse: true,
         };
       case 'break':
         return {
           label: 'Break',
-          color: theme.break,
-          glow: theme.breakGlow,
+          color: STATUS_SOLID.break,
+          glow: STATUS_GLOW.break,
           icon: '◐',
           pulse: false,
         };
       case 'offline':
         return {
           label: 'Offline',
-          color: theme.offline,
-          glow: theme.offlineGlow,
+          color: STATUS_SOLID.offline,
+          glow: STATUS_GLOW.offline,
           icon: '○',
           pulse: false,
         };
       case 'leave':
         return {
           label: 'Leave',
-          color: theme.leave,
-          glow: theme.leaveGlow,
+          color: STATUS_SOLID.leave,
+          glow: STATUS_GLOW.leave,
           icon: '📅',
           pulse: false,
         };
       case 'noActivity':
         return {
           label: 'No Activity',
-          color: theme.noActivity,
+          color: STATUS_SOLID.noActivity,
           glow: 'rgba(255, 255, 255, 0.1)',
           icon: '⚠',
           pulse: false,
@@ -47,7 +65,7 @@ const StatusBadge = ({ status, theme, size = 'normal' }) => {
       default:
         return {
           label: 'Unknown',
-          color: theme.textMuted,
+          color: 'var(--color-text-muted)',
           glow: 'rgba(100, 116, 139, 0.1)',
           icon: '?',
           pulse: false,
@@ -87,24 +105,24 @@ const StatusBadge = ({ status, theme, size = 'normal' }) => {
   const config = getStatusConfig();
   const sizeConfig = getSizeConfig();
 
-  // Use gradient background for Noir Glass theme when working
+  // Light-theme-specific working badge — no CSS var equivalent, keep inline
   const getBadgeBackground = () => {
-    if (status === 'working' && theme.type === 'light' && theme.badgeWorking) {
+    if (status === 'working' && theme?.type === 'light' && theme?.badgeWorking) {
       return theme.badgeWorking;
     }
     return config.glow;
   };
 
   const getBadgeShadow = () => {
-    if (status === 'working' && theme.type === 'light' && theme.badgeWorkingShadow) {
+    if (status === 'working' && theme?.type === 'light' && theme?.badgeWorkingShadow) {
       return theme.badgeWorkingShadow;
     }
     return 'none';
   };
 
   const getBadgeTextColor = () => {
-    if (status === 'working' && theme.type === 'light' && theme.badgeWorking) {
-      return '#ffffff';  // White text on gradient background
+    if (status === 'working' && theme?.type === 'light' && theme?.badgeWorking) {
+      return '#ffffff';
     }
     return config.color;
   };
@@ -135,7 +153,7 @@ const StatusBadge = ({ status, theme, size = 'normal' }) => {
           padding: sizeConfig.padding,
           borderRadius: sizeConfig.borderRadius,
           background: getBadgeBackground(),
-          border: `1px solid ${status === 'working' && theme.type === 'light' ? 'transparent' : config.color}`,
+          border: `1px solid ${status === 'working' && theme?.type === 'light' ? 'transparent' : config.color}`,
           fontSize: sizeConfig.fontSize,
           fontWeight: '500',
           color: getBadgeTextColor(),
