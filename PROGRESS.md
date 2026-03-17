@@ -330,7 +330,7 @@
 - [x] 2.2 useClickUpSync.js (~56 calls)
 - [x] 2.3 taskCacheV2.js (~41 calls)
 - [x] 2.4 clickup.js (~24 calls)
-- [ ] 2.5 syncQueue.js (~16 calls)
+- [x] 2.5 syncQueue.js (~16 calls)
 - [ ] 2.6 Service utils + hooks small files (~23 calls across 8 files)
 - [ ] 2.7 Modal components: MemberDetailModal + SettingsModal (~9 calls)
 - [ ] 2.8 Verify console cleanup
@@ -621,6 +621,7 @@ Priority fixes (Phase 9):
 | 6 | 2026-03-17 | 2.2 | useClickUpSync.js: 56 console calls replaced with logger. logger already imported. 0 console calls remain. 256 tests pass, build clean. |
 | 7 | 2026-03-17 | 2.3 | taskCacheV2.js: 41 console calls replaced with logger (added import). DEV-only console.debug guard removed — logger.debug handles that. 0 console calls remain. 256 tests pass, build clean. |
 | 8 | 2026-03-17 | 2.4 | clickup.js: 24 console calls replaced with logger (added import). 0 console calls remain. 256 tests pass, build clean. |
+| 9 | 2026-03-17 | 2.5 | syncQueue.js: 16 console calls replaced with logger (added import). 0 console calls remain. 256 tests pass, build clean. |
 
 ---
 

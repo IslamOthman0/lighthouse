@@ -4,6 +4,7 @@
  * Uses IndexedDB syncQueue table to persist pending operations
  */
 
+import { logger } from '../utils/logger';
 import { db } from '../db';
 import { clickup } from './clickup';
 
@@ -37,10 +38,10 @@ export async function queueOperation(type, payload, userId) {
     };
 
     const id = await db.syncQueue.add(queueItem);
-    console.log(`📝 Queued operation: ${type} (ID: ${id})`);
+    logger.info(`Queued operation: ${type} (ID: ${id})`);
     return id;
   } catch (error) {
-    console.error('❌ Failed to queue operation:', error);
+    logger.error('Failed to queue operation:', error);
     throw error;
   }
 }
@@ -58,7 +59,7 @@ export async function getPendingQueue() {
 
     return items;
   } catch (error) {
-    console.error('❌ Failed to get pending queue:', error);
+    logger.error('Failed to get pending queue:', error);
     return [];
   }
 }
@@ -70,7 +71,7 @@ export async function getPendingQueue() {
  */
 async function processQueueItem(item) {
   try {
-    console.log(`⚙️ Processing queue item: ${item.type} (ID: ${item.id})`);
+    logger.info(`Processing queue item: ${item.type} (ID: ${item.id})`);
 
     // Update status to processing
     await db.syncQueue.update(item.id, {
@@ -102,12 +103,12 @@ async function processQueueItem(item) {
       case QUEUE_TYPES.LEAVE_REQUEST:
         // Create leave request task (if leave tracking is implemented)
         // await clickup.createTask(item.payload);
-        console.warn('⚠️ Leave request queuing not yet implemented');
+        logger.warn('Leave request queuing not yet implemented');
         success = true; // Mark as success to remove from queue
         break;
 
       default:
-        console.warn(`⚠️ Unknown queue item type: ${item.type}`);
+        logger.warn(`Unknown queue item type: ${item.type}`);
         success = false;
     }
 
@@ -117,7 +118,7 @@ async function processQueueItem(item) {
         status: 'completed',
         error: null
       });
-      console.log(`✅ Queue item processed: ${item.type} (ID: ${item.id})`);
+      logger.info(`Queue item processed: ${item.type} (ID: ${item.id})`);
       return true;
     } else {
       // Mark as failed
@@ -128,7 +129,7 @@ async function processQueueItem(item) {
       return false;
     }
   } catch (error) {
-    console.error(`❌ Failed to process queue item ${item.id}:`, error);
+    logger.error(`Failed to process queue item ${item.id}:`, error);
 
     // Update with error
     await db.syncQueue.update(item.id, {
@@ -150,11 +151,11 @@ export async function processPendingQueue() {
     const pendingItems = await getPendingQueue();
 
     if (pendingItems.length === 0) {
-      console.log('✅ No pending queue items to process');
+      logger.debug('No pending queue items to process');
       return { processed: 0, succeeded: 0, failed: 0 };
     }
 
-    console.log(`🔄 Processing ${pendingItems.length} pending queue items...`);
+    logger.info(`Processing ${pendingItems.length} pending queue items...`);
 
     let succeeded = 0;
     let failed = 0;
@@ -163,7 +164,7 @@ export async function processPendingQueue() {
     for (const item of pendingItems) {
       // Skip items that have been retried too many times
       if (item.retries >= 3) {
-        console.warn(`⚠️ Queue item ${item.id} has exceeded max retries (3)`);
+        logger.warn(`Queue item ${item.id} has exceeded max retries (3)`);
         await db.syncQueue.update(item.id, {
           status: 'failed',
           error: 'Max retries exceeded'
@@ -183,7 +184,7 @@ export async function processPendingQueue() {
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    console.log(`✅ Queue processing complete: ${succeeded} succeeded, ${failed} failed`);
+    logger.info(`Queue processing complete: ${succeeded} succeeded, ${failed} failed`);
 
     return {
       processed: pendingItems.length,
@@ -191,7 +192,7 @@ export async function processPendingQueue() {
       failed
     };
   } catch (error) {
-    console.error('❌ Failed to process pending queue:', error);
+    logger.error('Failed to process pending queue:', error);
     return { processed: 0, succeeded: 0, failed: 0 };
   }
 }
@@ -218,10 +219,10 @@ export async function clearOldQueueItems(daysOld = 7) {
     const idsToDelete = oldItems.map(item => item.id);
     await db.syncQueue.bulkDelete(idsToDelete);
 
-    console.log(`🗑️ Cleared ${idsToDelete.length} old queue items`);
+    logger.info(`Cleared ${idsToDelete.length} old queue items`);
     return idsToDelete.length;
   } catch (error) {
-    console.error('❌ Failed to clear old queue items:', error);
+    logger.error('Failed to clear old queue items:', error);
     return 0;
   }
 }
@@ -244,7 +245,7 @@ export async function getQueueStats() {
 
     return stats;
   } catch (error) {
-    console.error('❌ Failed to get queue stats:', error);
+    logger.error('Failed to get queue stats:', error);
     return { pending: 0, processing: 0, failed: 0, completed: 0, total: 0 };
   }
 }
