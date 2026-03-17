@@ -315,7 +315,7 @@
 - [x] 0.1 Add UX tracking section to PROGRESS.md
 - [x] 0.2 Audit: inline style inventory (baseline)
 - [x] 0.3 Audit: console log inventory
-- [ ] 0.4 Audit: touch targets + empty states
+- [x] 0.4 Audit: touch targets + empty states
 - [ ] 0.5 Audit: RTL/font coverage gaps
 
 ### Phase 1: Foundation (CSS Custom Properties)
@@ -506,11 +506,64 @@ Total raw console.* calls: **~229** across 17 files.
 - useClickUpSync.js already imports logger but doesn't use it — just start using it
 - Phase 2 task mapping: 2.1=orchestrator, 2.2=useClickUpSync, 2.3=taskCacheV2, 2.4=clickup, 2.5=syncQueue, 2.6=projects+baselineService+taskCache+transform+calculations, 2.7=MemberDetailModal+SettingsModal+clickupHelpers+leaveHelpers+useSettings+useTheme
 
+## Touch Target + Empty State Audit (Task 0.4 — 2026-03-17)
+
+### Part A — Touch Target Audit (minimum 44×44px)
+
+Effective height = paddingTop + paddingBottom + lineHeight (approx 20px for 13–14px text).
+
+| Element | File | Padding (T+B) | Est. Height | Status |
+|---------|------|--------------|-------------|--------|
+| ModalShell close button | ModalShell.jsx:130 | 0 (fixed 28×28px) | **28px** | ❌ FAIL (28px < 44px) |
+| FilterSortControls sort trigger | FilterSortControls.jsx:121 | 8+8=16px | ~36px | ❌ FAIL (~36px < 44px) |
+| FilterSortControls filter trigger | FilterSortControls.jsx:219 | 8+8=16px | ~36px | ❌ FAIL (~36px < 44px) |
+| FilterSortControls sort items | FilterSortControls.jsx:174 | 10+10=20px | ~40px | ⚠️ MARGINAL (~40px) |
+| FilterSortControls filter items | FilterSortControls.jsx:274 | 10+10=20px | ~40px | ⚠️ MARGINAL (~40px) |
+| FilterSortControls view toggles | FilterSortControls.jsx:83 | 8+8=16px | ~36px | ❌ FAIL (~36px) |
+| MobileBottomNav tabs | MobileBottomNav.jsx:107 | 10+10=20px | ~52px (icon+label) | ✅ OK |
+| MobileBottomNav avatar tab | MobileBottomNav.jsx:139 | 10+10=20px | ~52px | ✅ OK |
+| MobileBottomNav Settings item | MobileBottomNav.jsx:246 | 11+11=22px | ~42px | ⚠️ MARGINAL |
+| MobileBottomNav Sign Out item | MobileBottomNav.jsx:271 | 11+11=22px | ~42px | ⚠️ MARGINAL |
+| SettingsModal tabs (desktop) | SettingsModal.jsx:492 | 12+12=24px | ~44px | ✅ OK (desktop) |
+| SettingsModal tabs (mobile) | SettingsModal.jsx:492 | 10+10=20px | ~40px | ⚠️ MARGINAL |
+| SettingsModal close button | SettingsModal.jsx:461 | 4+4=8px | ~32px | ❌ FAIL |
+| LeavesTab tab buttons | LeavesTab.jsx:80 | 6+6=12px | ~32px | ❌ FAIL |
+| ProjectBreakdownCard StatusPill | ProjectBreakdownCard.jsx:82 | 3+3=6px | ~26px | ❌ FAIL (but display-only on desktop) |
+
+**Summary: 5 FAIL, 4 MARGINAL, 3 OK**
+
+Priority fixes (Phase 8):
+1. ModalShell close button: 28px → 44px (affects ALL modals)
+2. SettingsModal close button: 32px → 44px
+3. LeavesTab tab buttons: 32px → 44px
+4. FilterSortControls triggers + view toggles: ~36px → 44px
+5. StatusPill: display-only on desktop → skip (Phase 8.2 verify)
+
+### Part B — Empty State Audit
+
+| Screen | Empty condition | Current render | Status |
+|--------|----------------|----------------|--------|
+| Grid View (App.jsx) | members=[] (initial) | Skeleton loader (full-page) | ✅ Skeleton — acceptable |
+| Grid View (App.jsx) | filteredMembers=[] (filter applied) | Nothing rendered (TeamStatusCard+RankingTable get empty array) | ⚠️ PARTIAL — no explicit empty message |
+| List View (ListView.jsx) | members=[] | No rows, table header still visible | ⚠️ PARTIAL — no empty message |
+| LeavesTab | leaves=[] | Overview/Calendar render with no data, no message | ⚠️ PARTIAL — no empty message |
+| ProjectBreakdownCard | projects=[] | "📂 No projects with tracked time today" | ✅ HAS empty state (text-only) |
+| RankingTable | members=[] | Shows "0 members" text on desktop | ⚠️ PARTIAL — minimal, no icon/message |
+
+**Summary: 1 proper empty state (ProjectBreakdownCard), 1 skeleton (App.jsx initial), 4 partial/missing**
+
+Priority fixes (Phase 9):
+1. Grid View: when filteredMembers=[] after filter, show "No members match this filter" message
+2. ListView: when members=[], show "No members to display"
+3. RankingTable: when members=[], show empty state with icon
+4. LeavesTab: when leaves=[], show "No leave records" in both Overview and Calendar views
+
 ## UX Session Log
 | Session | Date | Tasks Completed | Notes |
 |---------|------|-----------------|-------|
 | 1 | 2026-03-17 | 0.1, 0.2 | UX section added to PROGRESS.md. Inline style baseline: 27 INLINE files, 8 MIXED. 0 pure Tailwind. Top targets: SettingsModal (168), MemberDetailModal (160), ListView (159). |
 | 2 | 2026-03-17 | 0.3 | Console log inventory: 229 raw calls across 17 files. Top: useClickUpSync (56), orchestrator (55), taskCacheV2 (41). All convert→logger except ErrorBoundary (keep) and calculations.js dead comments (remove). |
+| 3 | 2026-03-17 | 0.4 | Touch targets: 5 FAIL (ModalShell close 28px, SettingsModal close 32px, LeavesTab tabs 32px, FilterSort triggers ~36px, StatusPill 26px). 4 MARGINAL. Empty states: 4 partial/missing, 1 skeleton, 1 proper (ProjectBreakdownCard). |
 
 ---
 
