@@ -322,7 +322,7 @@
 - [x] 1.1 Define CSS custom properties in index.css
 - [x] 1.2 Wire useTheme to set CSS vars at runtime
 - [x] 1.3 Extend tailwind.config.js to reference CSS vars (th-* tokens)
-- [ ] 1.4 Create useThemeStyles helper hook
+- [x] 1.4 Create useThemeStyles helper hook
 - [ ] 1.5 Verify foundation: build + visual check
 
 ### Phase 2: Console Cleanup (242 raw calls → 0)
