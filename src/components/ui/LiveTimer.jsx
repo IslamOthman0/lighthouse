@@ -67,7 +67,7 @@ const LiveTimer = ({ startTime, status = 'working', theme, compact = false, seco
         style={{
           fontSize: compact ? '13px' : '15px',
           fontWeight: '600',
-          color: theme.textMuted,
+          color: 'var(--color-text-muted)',
           ...tabularNumberStyle,
         }}
       >
@@ -78,13 +78,11 @@ const LiveTimer = ({ startTime, status = 'working', theme, compact = false, seco
 
   const timeString = formatTime(elapsed);
 
-  // Use solid color instead of gradient to avoid rendering issues
-  // The CSS gradient text effect can fail in some browsers/React versions
   const textColor = status === 'working'
-    ? theme.working
+    ? 'var(--color-working)'
     : status === 'break'
-      ? theme.break
-      : theme.textMuted;
+      ? 'var(--color-break)'
+      : 'var(--color-text-muted)';
 
   return (
     <span
@@ -94,7 +92,7 @@ const LiveTimer = ({ startTime, status = 'working', theme, compact = false, seco
         color: textColor,
         ...tabularNumberStyle,
         letterSpacing: compact ? 'normal' : '1px',
-        textShadow: status === 'working' ? `0 0 20px ${theme.workingGlow}` : 'none',
+        textShadow: status === 'working' ? '0 0 20px var(--color-working-glow)' : 'none',
       }}
     >
       {timeString}
