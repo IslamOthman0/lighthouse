@@ -22,35 +22,27 @@ const Avatar = ({ name, status, theme, size = 48, profilePicture = null, clickUp
     return trimmedName.substring(0, 2).toUpperCase();
   };
 
-  // Get status color
-  const getStatusColor = () => {
-    switch (status) {
-      case 'working':
-        return theme.working;
-      case 'break':
-        return theme.break;
-      case 'offline':
-        return theme.offline;
-      case 'leave':
-        return theme.leave;
-      default:
-        return theme.offline;
-    }
+  // Status color values (solid hex needed for boxShadow glow calculation)
+  const STATUS_COLORS = {
+    working: '#10B981',
+    break:   '#F59E0B',
+    leave:   '#8B5CF6',
+    offline: '#6B7280',
   };
-
-  const statusColor = getStatusColor();
+  const statusColor = STATUS_COLORS[status] || STATUS_COLORS.offline;
   const indicatorSize = size * 0.25;
 
   // Determine background color
+  // theme.accent used directly — hex suffix opacity not expressible via CSS var
   const backgroundColor = clickUpColor
     ? `${clickUpColor}40`
-    : `linear-gradient(135deg, ${theme.accent}40, ${theme.accent}20)`;
+    : `linear-gradient(135deg, ${theme?.accent || '#ffffff'}40, ${theme?.accent || '#ffffff'}20)`;
 
   // Show image if available and not errored
   const showImage = profilePicture && !imageError;
 
-  // Add white ring shadow for light theme
-  const avatarShadow = theme.type === 'light' && theme.avatarRing
+  // avatarRing is a Noir Glass-only box-shadow — no CSS var exists, keep inline
+  const avatarShadow = theme?.type === 'light' && theme?.avatarRing
     ? { boxShadow: theme.avatarRing }
     : {};
 
@@ -63,13 +55,13 @@ const Avatar = ({ name, status, theme, size = 48, profilePicture = null, clickUp
           height: size,
           borderRadius: '12px',
           background: backgroundColor,
-          border: ringColor ? `3px solid ${ringColor}` : `2px solid ${theme.border}`,
+          border: ringColor ? `3px solid ${ringColor}` : '2px solid var(--color-border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: size * 0.35,
           fontWeight: '600',
-          color: theme.text,
+          color: 'var(--color-text)',
           userSelect: 'none',
           overflow: 'hidden',
           position: 'relative',
@@ -104,7 +96,7 @@ const Avatar = ({ name, status, theme, size = 48, profilePicture = null, clickUp
           height: indicatorSize,
           borderRadius: '50%',
           background: statusColor,
-          border: `2px solid ${theme.cardBg}`,
+          border: `2px solid ${theme?.cardBg || '#0A0A0A'}`,
           boxShadow: `0 0 8px ${statusColor}60`,
         }}
       />
