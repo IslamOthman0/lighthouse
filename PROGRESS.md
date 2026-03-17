@@ -326,7 +326,7 @@
 - [x] 1.5 Verify foundation: build + visual check
 
 ### Phase 2: Console Cleanup (242 raw calls → 0)
-- [ ] 2.1 orchestrator.js (~55 calls)
+- [x] 2.1 orchestrator.js (~55 calls)
 - [ ] 2.2 useClickUpSync.js (~56 calls)
 - [ ] 2.3 taskCacheV2.js (~41 calls)
 - [ ] 2.4 clickup.js (~24 calls)
@@ -617,6 +617,7 @@ Priority fixes (Phase 9):
 | 2 | 2026-03-17 | 0.3 | Console log inventory: 229 raw calls across 17 files. Top: useClickUpSync (56), orchestrator (55), taskCacheV2 (41). All convert→logger except ErrorBoundary (keep) and calculations.js dead comments (remove). |
 | 3 | 2026-03-17 | 0.4 | Touch targets: 5 FAIL (ModalShell close 28px, SettingsModal close 32px, LeavesTab tabs 32px, FilterSort triggers ~36px, StatusPill 26px). 4 MARGINAL. Empty states: 4 partial/missing, 1 skeleton, 1 proper (ProjectBreakdownCard). |
 | 4 | 2026-03-17 | 0.5 | RTL audit: 8 gaps all in leaves sub-components (TeamOverviewPanel ×5, MemberLeaveDetail ×1, LeaveCalendar ×2). All other name-rendering sites covered. ScoreBreakdownCard confirmed no-op. |
+| 5 | 2026-03-17 | 2.1 | orchestrator.js: 55 console calls replaced with logger (info/warn/error/debug). 0 console calls remain. 256 tests pass, build clean. |
 
 ---
 

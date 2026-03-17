@@ -21,6 +21,7 @@
  * SYNC LOCK: Prevents concurrent syncs and supports abort via AbortController
  */
 
+import { logger } from '../../utils/logger';
 import { clickup } from '../clickup';
 import { taskCacheV2 } from '../taskCacheV2';
 import { timeEntryCache } from '../timeEntryCacheService';
@@ -86,7 +87,7 @@ async function fetchTaskDetailsInBatches(taskIds, globalTaskCache, batchSize = 1
 
   if (totalTasks === 0) return;
 
-  console.log(`📦 Reading ${totalTasks} task details from cache...`);
+  logger.debug(`Reading ${totalTasks} task details from cache...`);
   const fetchStart = Date.now();
   let cacheHits = 0;
   let cacheMisses = 0;
@@ -120,13 +121,13 @@ async function fetchTaskDetailsInBatches(taskIds, globalTaskCache, batchSize = 1
   }
 
   const duration = Date.now() - fetchStart;
-  console.log(`✅ Task details loaded in ${duration}ms: ${cacheHits} from cache, ${alreadyCached} already cached`);
+  logger.debug(`Task details loaded in ${duration}ms: ${cacheHits} from cache, ${alreadyCached} already cached`);
 
   if (cacheMisses > 0) {
-    console.log(`ℹ️ ${cacheMisses} tasks not in cache - will be fetched by background sync`);
+    logger.debug(`${cacheMisses} tasks not in cache - will be fetched by background sync`);
   }
 
-  console.log(`📊 TaskCacheV2 stats:`, {
+  logger.debug(`TaskCacheV2 stats:`, {
     cacheHits,
     cacheMisses,
     alreadyCached,
@@ -159,7 +160,7 @@ async function syncSingleMember(member, todayTimeEntries, avgTasksBaseline = 3, 
       entry => String(entry.user?.id) === memberClickUpId
     );
 
-    console.log(`📋 ${member.name}: Found ${memberTimeEntries.length} time entries today`);
+    logger.debug(`${member.name}: Found ${memberTimeEntries.length} time entries today`);
 
     // Level 2: Get task details for current task and all unique tasks in time entries
     // Use global cache to avoid duplicate fetches
@@ -220,7 +221,7 @@ async function syncSingleMember(member, todayTimeEntries, avgTasksBaseline = 3, 
           taskCacheV2.cache.set(currentTaskId, { id: currentTaskId, data: taskDetails, dateUpdated: Date.now() });
         }
       } catch (fetchErr) {
-        console.warn(`⚠️ Failed to fetch task ${currentTaskId} for ${member.name}:`, fetchErr.message);
+        logger.warn(`Failed to fetch task ${currentTaskId} for ${member.name}:`, fetchErr.message);
       }
     }
 
@@ -232,18 +233,18 @@ async function syncSingleMember(member, todayTimeEntries, avgTasksBaseline = 3, 
         const leaveDays = countLeaveDaysInRange(memberLeaves, startDate, endDate, settings);
         memberWorkingDays = Math.max(workingDays - leaveDays, 1);
         if (leaveDays > 0) {
-          console.log(`📅 ${member.name}: ${leaveDays} leave day(s) in range → memberWorkingDays=${memberWorkingDays}`);
+          logger.debug(`${member.name}: ${leaveDays} leave day(s) in range → memberWorkingDays=${memberWorkingDays}`);
         }
       } catch (leaveErr) {
         // Non-critical — fall back to team working days
-        console.warn(`⚠️ Could not load leaves for ${member.name}:`, leaveErr.message);
+        logger.warn(`Could not load leaves for ${member.name}:`, leaveErr.message);
       }
     }
 
     // Transform and return updated member data
     return transformMember(member, runningEntry, taskDetails, memberTimeEntries, taskDetailsCache, avgTasksBaseline, settings, memberWorkingDays);
   } catch (error) {
-    console.error(`❌ Failed to sync member ${member.name}:`, error);
+    logger.error(`Failed to sync member ${member.name}:`, error);
     // Return member unchanged on error
     return member;
   }
@@ -263,7 +264,7 @@ async function fetchAllRunningTimers(members) {
       const runningEntry = await clickup.getRunningTimer(member.clickUpId);
       return { clickUpId: member.clickUpId, runningEntry };
     } catch (error) {
-      console.warn(`⚠️ Failed to get running timer for ${member.name}:`, error.message);
+      logger.warn(`Failed to get running timer for ${member.name}:`, error.message);
       return { clickUpId: member.clickUpId, runningEntry: null };
     }
   });
@@ -311,11 +312,11 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
   if (syncLock.inProgress) {
     if (pollMode) {
       // Poll syncs are low-priority — skip immediately if lock is held
-      console.log(`⏳ [${syncId}] Poll sync skipped — another sync in progress`);
+      logger.debug(`[${syncId}] Poll sync skipped — another sync in progress`);
       return { members, projectBreakdown: {}, dateRangeInfo: { workingDays: 1 }, skipped: true };
     }
     // Full syncs (date-range changes) are user-initiated — wait up to 10s for lock release
-    console.log(`⏳ [${syncId}] Full sync waiting for lock release (up to 10s)...`);
+    logger.info(`[${syncId}] Full sync waiting for lock release (up to 10s)...`);
     const lockWaitStart = Date.now();
     while (syncLock.inProgress && Date.now() - lockWaitStart < 10000) {
       checkAbort(signal); // Bail out immediately if user changed date again
@@ -323,15 +324,15 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
     }
     if (syncLock.inProgress) {
       // Lock still held after 10s — abort gracefully
-      console.warn(`⚠️ [${syncId}] Lock wait timed out, skipping full sync`);
+      logger.warn(`[${syncId}] Lock wait timed out, skipping full sync`);
       return { members, projectBreakdown: {}, dateRangeInfo: { workingDays: 1 }, skipped: true };
     }
-    console.log(`✅ [${syncId}] Lock released after ${Date.now() - lockWaitStart}ms, proceeding`);
+    logger.info(`[${syncId}] Lock released after ${Date.now() - lockWaitStart}ms, proceeding`);
   }
 
   syncLock.inProgress = true;
   syncLock.currentSyncId = syncId;
-  console.log(`🔒 [${syncId}] Sync lock acquired`);
+  logger.debug(`[${syncId}] Sync lock acquired`);
 
   // Reset per-sync request counter
   clickup.resetSyncCounter();
@@ -370,7 +371,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
     const startSeconds = Math.floor(startOfDay.getTime() / 1000);
     const endSeconds = Math.floor(endOfDay.getTime() / 1000);
 
-    console.log(`🕐 [${syncId}] Time range: ${startOfDay.toLocaleString()} to ${endOfDay.toLocaleString()} (${workingDays} working days)`);
+    logger.info(`[${syncId}] Time range: ${startOfDay.toLocaleString()} to ${endOfDay.toLocaleString()} (${workingDays} working days)`);
 
     // Check abort before proceeding
     checkAbort(signal);
@@ -387,7 +388,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
     const assigneeIds = (allMemberIds && allMemberIds.length > 0)
       ? allMemberIds
       : members.map(m => m.clickUpId).filter(Boolean);
-    console.log(`👥 Fetching data for ${assigneeIds.length} members (monitored: ${members.length})...`);
+    logger.info(`Fetching data for ${assigneeIds.length} members (monitored: ${members.length})...`);
 
     const globalTaskCache = {};
 
@@ -422,7 +423,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
         await timeEntryCache.storeEntries(freshEntries);
       }
 
-      console.log(`📊 [${syncId}] Poll mode: ${cached.length} cached + ${freshEntries.length} fresh entries, ${uncachedChunks.length} chunks fetched`);
+      logger.info(`[${syncId}] Poll mode: ${cached.length} cached + ${freshEntries.length} fresh entries, ${uncachedChunks.length} chunks fetched`);
     } else {
       // FULL MODE: fetch all chunks in parallel, then cache them
       const spanDays = Math.ceil((endOfDay.getTime() - startOfDay.getTime()) / (1000 * 60 * 60 * 24)) + 1;
@@ -433,7 +434,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
         onProgress({ phase: 'fetching', message: `Fetching time entries (${numChunks} chunk${numChunks > 1 ? 's' : ''})...`, progress: 10 });
       }
 
-      console.log(`📊 Fetching time entries for date range (${spanDays} days, ${numChunks} chunks) and running timers...`);
+      logger.info(`Fetching time entries for date range (${spanDays} days, ${numChunks} chunks) and running timers...`);
 
       // Generate chunks of at most 30 days covering [startOfDay, endOfDay]
       const timeEntryPromises = [];
@@ -465,7 +466,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
         await timeEntryCache.storeEntries(allTimeEntries);
       }
 
-      console.log(`📊 [${syncId}] Full mode: Got ${allTimeEntries.length} time entries (${numChunks} chunks), ${Object.keys(runningTimersMap).length} running timers`);
+      logger.info(`[${syncId}] Full mode: Got ${allTimeEntries.length} time entries (${numChunks} chunks), ${Object.keys(runningTimersMap).length} running timers`);
     }
 
     // Filter time entries for selected date range (for scoring/display)
@@ -478,7 +479,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
       return entryStart <= endSeconds * 1000 && entryEnd >= startSeconds * 1000;
     });
 
-    console.log(`📊 [${syncId}] Filtered to ${todayTimeEntries.length} entries for date range`);
+    logger.debug(`[${syncId}] Filtered to ${todayTimeEntries.length} entries for date range`);
 
     // Check abort after fetching data
     checkAbort(signal);
@@ -502,7 +503,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
     let page = 0;
     let hasMore = true;
 
-    console.log(`📦 Fetching fresh tasks for ${assigneeIds.length} members (since ${startOfDay.toLocaleDateString()})...`);
+    logger.info(`Fetching fresh tasks for ${assigneeIds.length} members (since ${startOfDay.toLocaleDateString()})...`);
 
     // Fetch first page to determine if there are more pages
     try {
@@ -522,7 +523,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
       }
     } catch (taskFetchErr) {
       if (taskFetchErr.name === 'AbortError') throw taskFetchErr;
-      console.error(`❌ Failed to fetch tasks (page 0):`, taskFetchErr.message);
+      logger.error(`Failed to fetch tasks (page 0):`, taskFetchErr.message);
       hasMore = false;
     }
 
@@ -573,7 +574,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
       }
     }
 
-    console.log(`✅ Fetched ${allTasks.length} fresh tasks from ClickUp (${page} pages)`);
+    logger.info(`Fetched ${allTasks.length} fresh tasks from ClickUp (${page} pages)`);
 
     // Populate globalTaskCache from fresh task results
     allTasks.forEach(task => {
@@ -583,7 +584,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
     // Update taskCacheV2 memory cache for faster lookups
     if (allTasks.length > 0) {
       await taskCacheV2.storeTasks(allTasks);
-      console.log(`✅ Updated taskCacheV2 with ${allTasks.length} fresh tasks`);
+      logger.debug(`Updated taskCacheV2 with ${allTasks.length} fresh tasks`);
     }
 
     // Eager background fetch: populate taskCacheV2 from /list/{id}/task for richer task details
@@ -593,7 +594,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
     if (!pollMode && allTimeEntries.length > 0) {
       const discoveredListIds = clickup.discoverListIds(allTimeEntries);
       if (discoveredListIds.length > 0) {
-        console.log(`🔍 Starting eager background fetch for ${discoveredListIds.length} lists...`);
+        logger.info(`Starting eager background fetch for ${discoveredListIds.length} lists...`);
         // Cancel any previous eager fetch still running
         if (_eagerAbortController) _eagerAbortController.abort();
         _eagerAbortController = new AbortController();
@@ -611,7 +612,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
               });
             } catch (err) {
               if (!eagerSignal.aborted) {
-                console.warn(`⚠️ Eager fetch failed for list ${listId}:`, err.message);
+                logger.warn(`Eager fetch failed for list ${listId}:`, err.message);
               }
             }
             if (!eagerSignal.aborted && !signal?.aborted) {
@@ -619,7 +620,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
             }
           }
           if (!eagerSignal.aborted) {
-            console.log(`✅ Eager background list fetch complete`);
+            logger.info(`Eager background list fetch complete`);
           }
         })();
       }
@@ -649,7 +650,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
       : results.filter(m => m.status === 'noActivity');
 
     if (noActivityWithoutDate.length > 0) {
-      console.log(`📅 Backfilling lastActiveDate for ${noActivityWithoutDate.length} members from 90-day entries...`);
+      logger.debug(`Backfilling lastActiveDate for ${noActivityWithoutDate.length} members from 90-day entries...`);
 
       for (const member of noActivityWithoutDate) {
         // Filter allTimeEntries (90 days) for this member
@@ -662,14 +663,14 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
 
           if (lastEndMs > 0) {
             member.lastActiveDate = new Date(lastEndMs).toISOString();
-            console.log(`📅 ${member.name}: last active ${member.lastActiveDate}`);
+            logger.debug(`${member.name}: last active ${member.lastActiveDate}`);
           }
         } else {
-          console.log(`📅 ${member.name}: no entries found in last 90 days`);
+          logger.debug(`${member.name}: no entries found in last 90 days`);
         }
       }
 
-      console.log(`📅 Backfilled lastActiveDate for ${noActivityWithoutDate.filter(m => m.lastActiveDate).length}/${noActivityWithoutDate.length} noActivity members`);
+      logger.debug(`Backfilled lastActiveDate for ${noActivityWithoutDate.filter(m => m.lastActiveDate).length}/${noActivityWithoutDate.length} noActivity members`);
       lastActiveDateBackfilled = true;
     }
 
@@ -678,15 +679,15 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
     // Pass monitored member IDs so avatars only show monitored members
     const monitoredMemberIds = new Set(members.map(m => String(m.clickUpId)));
     let projectBreakdown = calculateFastProjectBreakdown(todayTimeEntries, globalTaskCache, monitoredMemberIds);
-    console.log(`📂 Project breakdown from time entries: ${Object.keys(projectBreakdown).length} projects`)
+    logger.debug(`Project breakdown from time entries: ${Object.keys(projectBreakdown).length} projects`);
 
     if (onProgress) {
       onProgress({ phase: 'complete', message: 'Sync complete!', progress: 100 });
     }
 
     const syncDuration = Date.now() - syncStartTime;
-    console.log(`✅ [${syncId}] Synced ${results.length} members in ${syncDuration}ms`);
-    console.log(`📂 [${syncId}] Found ${Object.keys(projectBreakdown).length} projects`);
+    logger.info(`[${syncId}] Synced ${results.length} members in ${syncDuration}ms`);
+    logger.info(`[${syncId}] Found ${Object.keys(projectBreakdown).length} projects`);
 
     // Return date range info for dynamic target calculation
     return {
@@ -703,17 +704,17 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
   } catch (error) {
     // Handle abort errors gracefully
     if (error.name === 'AbortError') {
-      console.log(`⏸️ [${syncId}] Sync aborted`);
+      logger.info(`[${syncId}] Sync aborted`);
       throw error; // Re-throw so caller can handle
     }
-    console.error(`❌ [${syncId}] Sync failed:`, error);
+    logger.error(`[${syncId}] Sync failed:`, error);
     // Return members unchanged on error
     return { members, projectBreakdown: {}, dateRangeInfo: { workingDays: 1 } };
   } finally {
     // Always release the lock
     syncLock.inProgress = false;
     syncLock.currentSyncId = null;
-    console.log(`🔓 [${syncId}] Sync lock released`);
+    logger.debug(`[${syncId}] Sync lock released`);
   }
 }
 
@@ -724,7 +725,7 @@ export async function syncMemberData(members, avgTasksBaseline = 3, settings = n
  */
 export function initializeSync(apiKey, teamId) {
   clickup.initialize(apiKey, teamId);
-  console.log('🚀 ClickUp sync initialized');
+  logger.info('ClickUp sync initialized');
 }
 
 /**
@@ -756,7 +757,7 @@ export async function mapClickUpUsers(members, clickUpUsers) {
     return member;
   });
 
-  console.log(`🔗 Mapped ${mapped.filter(m => m.clickUpId).length}/${members.length} members to ClickUp users`);
+  logger.info(`Mapped ${mapped.filter(m => m.clickUpId).length}/${members.length} members to ClickUp users`);
   return mapped;
 }
 
@@ -782,11 +783,11 @@ export async function syncLeaveAndWfh(settings, members) {
   const wfhListId = settings?.clickup?.wfhListId;
 
   if (!leaveListId && !wfhListId) {
-    console.log('⏭️ Leave/WFH sync skipped: No list IDs configured');
+    logger.info('Leave/WFH sync skipped: No list IDs configured');
     return leaves;
   }
 
-  console.log(`📅 Starting Leave/WFH sync...`);
+  logger.info(`Starting Leave/WFH sync...`);
 
   // Helper: parse a ClickUp custom-field date value (timestamp ms, timestamp s, or ISO string)
   const parseFieldDate = (value) => {
@@ -879,12 +880,12 @@ export async function syncLeaveAndWfh(settings, members) {
   // Fetch Leave tasks
   if (leaveListId) {
     try {
-      console.log(`📋 Fetching tasks from Leave list: ${leaveListId}`);
+      logger.info(`Fetching tasks from Leave list: ${leaveListId}`);
       const leaveTasks = await clickup.getTasks(leaveListId, { include_closed: true });
-      console.log(`✅ Found ${leaveTasks.length} leave tasks`);
+      logger.info(`Found ${leaveTasks.length} leave tasks`);
       // Debug: log custom_fields of first task so field names are visible in console
       if (leaveTasks.length > 0 && leaveTasks[0].custom_fields?.length) {
-        console.log('📋 Leave task custom_fields sample:', JSON.stringify(leaveTasks[0].custom_fields.map(f => ({ name: f.name, value: f.value, type: f.type }))));
+        logger.debug('Leave task custom_fields sample:', JSON.stringify(leaveTasks[0].custom_fields.map(f => ({ name: f.name, value: f.value, type: f.type }))));
       }
 
       leaveTasks.forEach(task => {
@@ -894,7 +895,7 @@ export async function syncLeaveAndWfh(settings, members) {
           .filter(Boolean);
 
         if (matchedMembers.length === 0) {
-          console.log(`⚠️ Leave task "${task.name}" has no matching member`);
+          logger.warn(`Leave task "${task.name}" has no matching member`);
           return;
         }
 
@@ -913,7 +914,7 @@ export async function syncLeaveAndWfh(settings, members) {
         if (!endDate) endDate = startDate;
 
         if (!startDate) {
-          console.log(`⚠️ Leave task "${task.name}" has no start date (checked start_date + custom fields)`);
+          logger.warn(`Leave task "${task.name}" has no start date (checked start_date + custom fields)`);
           return;
         }
 
@@ -953,18 +954,18 @@ export async function syncLeaveAndWfh(settings, members) {
         });
       });
     } catch (error) {
-      console.error(`❌ Failed to fetch leave tasks:`, error);
+      logger.error(`Failed to fetch leave tasks:`, error);
     }
   }
 
   // Fetch WFH tasks
   if (wfhListId) {
     try {
-      console.log(`🏠 Fetching tasks from WFH list: ${wfhListId}`);
+      logger.info(`Fetching tasks from WFH list: ${wfhListId}`);
       const wfhTasks = await clickup.getTasks(wfhListId, { include_closed: true });
-      console.log(`✅ Found ${wfhTasks.length} WFH tasks`);
+      logger.info(`Found ${wfhTasks.length} WFH tasks`);
       if (wfhTasks.length > 0 && wfhTasks[0].custom_fields?.length) {
-        console.log('🏠 WFH task custom_fields sample:', JSON.stringify(wfhTasks[0].custom_fields.map(f => ({ name: f.name, value: f.value, type: f.type }))));
+        logger.debug('WFH task custom_fields sample:', JSON.stringify(wfhTasks[0].custom_fields.map(f => ({ name: f.name, value: f.value, type: f.type }))));
       }
 
       wfhTasks.forEach(task => {
@@ -974,7 +975,7 @@ export async function syncLeaveAndWfh(settings, members) {
           .filter(Boolean);
 
         if (matchedMembers.length === 0) {
-          console.log(`⚠️ WFH task "${task.name}" has no matching member`);
+          logger.warn(`WFH task "${task.name}" has no matching member`);
           return;
         }
 
@@ -992,7 +993,7 @@ export async function syncLeaveAndWfh(settings, members) {
         if (!endDate) endDate = startDate;
 
         if (!startDate) {
-          console.log(`⚠️ WFH task "${task.name}" has no start date (checked start_date + custom fields)`);
+          logger.warn(`WFH task "${task.name}" has no start date (checked start_date + custom fields)`);
           return;
         }
 
@@ -1017,10 +1018,10 @@ export async function syncLeaveAndWfh(settings, members) {
         });
       });
     } catch (error) {
-      console.error(`❌ Failed to fetch WFH tasks:`, error);
+      logger.error(`Failed to fetch WFH tasks:`, error);
     }
   }
 
-  console.log(`📅 Leave/WFH sync complete: ${leaves.length} records`);
+  logger.info(`Leave/WFH sync complete: ${leaves.length} records`);
   return leaves;
 }
