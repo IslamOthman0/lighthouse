@@ -8,6 +8,8 @@
  *   - Level 2: Task details (on-demand + 60s cache)
  */
 
+import { logger } from '../utils/logger.js';
+
 const CLICKUP_API_BASE = 'https://api.clickup.com/api/v2';
 
 // List IDs for bulk fetching (all workspace lists)
@@ -40,7 +42,7 @@ class ClickUpService {
       'Authorization': apiKey,
       'Content-Type': 'application/json'
     };
-    console.log('✅ ClickUp service initialized');
+    logger.info('ClickUp service initialized');
   }
 
   /**
@@ -54,7 +56,7 @@ class ClickUpService {
 
     // Reset counter every minute
     if (elapsed >= 60000) {
-      console.log(`📊 Rate limit: ${this.requestCount} requests in last minute`);
+      logger.debug(`Rate limit: ${this.requestCount} requests in last minute`);
       this.requestCount = 0;
       this.requestWindow = now;
     }
@@ -64,7 +66,7 @@ class ClickUpService {
 
     // Warn if approaching limit (80 req/min = 80% of 100)
     if (this.requestCount >= 80) {
-      console.warn('⚠️ Approaching rate limit! Current:', this.requestCount, '/100 per minute');
+      logger.warn('Approaching rate limit! Current:', this.requestCount, '/100 per minute');
     }
   }
 
@@ -114,7 +116,7 @@ class ClickUpService {
 
       return await response.json();
     } catch (error) {
-      console.error('❌ ClickUp API request failed:', error);
+      logger.error('ClickUp API request failed:', error);
       throw error;
     }
   }
@@ -138,7 +140,7 @@ class ClickUpService {
       // ClickUp returns { data: { ... } } or { data: null }
       return data.data || null;
     } catch (error) {
-      console.error(`❌ Failed to get running timer for user ${userId}:`, error);
+      logger.error(`Failed to get running timer for user ${userId}:`, error);
       return null;
     }
   }
@@ -182,7 +184,7 @@ class ClickUpService {
       const data = await this.request(`/task/${taskId}`);
       return data;
     } catch (error) {
-      console.error(`❌ Failed to get task details for ${taskId}:`, error);
+      logger.error(`Failed to get task details for ${taskId}:`, error);
       return null;
     }
   }
@@ -203,15 +205,15 @@ class ClickUpService {
       : '';
 
     const endpoint = `/team/${this.teamId}/time_entries?start_date=${startDate}&end_date=${endDate}${assigneeParam}&include_task_tags=true&include_location_names=true`;
-    console.log(`📡 Fetching time entries: GET ${endpoint}`);
+    logger.debug(`Fetching time entries: GET ${endpoint}`);
 
     try {
       const data = await this.request(endpoint);
-      console.log(`📥 Received ${data.data?.length || 0} time entries from ClickUp`);
+      logger.debug(`Received ${data.data?.length || 0} time entries from ClickUp`);
 
       return data.data || [];
     } catch (error) {
-      console.error('❌ Failed to get time entries:', error);
+      logger.error('Failed to get time entries:', error);
       return [];
     }
   }
@@ -227,7 +229,7 @@ class ClickUpService {
       const data = await this.request(`/team/${this.teamId}`);
       return data.team?.members || [];
     } catch (error) {
-      console.error('❌ Failed to get team members:', error);
+      logger.error('Failed to get team members:', error);
       return [];
     }
   }
@@ -248,7 +250,7 @@ class ClickUpService {
       const data = await this.request(endpoint);
       return data.tasks || [];
     } catch (error) {
-      console.error(`❌ Failed to get tasks for list ${listId}:`, error);
+      logger.error(`Failed to get tasks for list ${listId}:`, error);
       return [];
     }
   }
@@ -309,7 +311,7 @@ class ClickUpService {
 
       return { tasks, hasMore };
     } catch (error) {
-      console.error('❌ Failed to get filtered team tasks:', error);
+      logger.error('Failed to get filtered team tasks:', error);
       return { tasks: [], hasMore: false };
     }
   }
@@ -334,7 +336,7 @@ class ClickUpService {
     let page = 0;
     let hasMore = true;
 
-    console.log(`📦 Starting bulk fetch for list ${listId}...`);
+    logger.info(`Starting bulk fetch for list ${listId}...`);
 
     while (hasMore) {
       try {
@@ -346,7 +348,7 @@ class ClickUpService {
         page++;
 
         // Progress logging
-        console.log(`📦 List ${listId}: Fetched page ${page}, total ${allTasks.length} tasks`);
+        logger.debug(`List ${listId}: Fetched page ${page}, total ${allTasks.length} tasks`);
 
         if (onProgress) {
           onProgress({ page, totalFetched: allTasks.length });
@@ -357,12 +359,12 @@ class ClickUpService {
           await this.delay(100);
         }
       } catch (error) {
-        console.error(`❌ Error fetching page ${page} for list ${listId}:`, error);
+        logger.error(`Error fetching page ${page} for list ${listId}:`, error);
         break;
       }
     }
 
-    console.log(`✅ Completed bulk fetch for list ${listId}: ${allTasks.length} tasks`);
+    logger.info(`Completed bulk fetch for list ${listId}: ${allTasks.length} tasks`);
     return allTasks;
   }
 
@@ -377,7 +379,7 @@ class ClickUpService {
     let page = 0;
     let hasMore = true;
 
-    console.log(`📦 Starting streamed fetch for list ${listId}...`);
+    logger.info(`Starting streamed fetch for list ${listId}...`);
 
     while (hasMore) {
       try {
@@ -390,18 +392,18 @@ class ClickUpService {
           await onPageFetched(tasks);
         }
 
-        console.log(`📦 List ${listId}: page ${page} (${tasks.length} tasks)`);
+        logger.debug(`List ${listId}: page ${page} (${tasks.length} tasks)`);
 
         if (hasMore) {
           await this.delay(100);
         }
       } catch (error) {
-        console.error(`❌ Error fetching page ${page} for list ${listId}:`, error);
+        logger.error(`Error fetching page ${page} for list ${listId}:`, error);
         break;
       }
     }
 
-    console.log(`✅ Completed streamed fetch for list ${listId} (${page} pages)`);
+    logger.info(`Completed streamed fetch for list ${listId} (${page} pages)`);
   }
 
   /**
@@ -415,7 +417,7 @@ class ClickUpService {
     let completedLists = 0;
     const totalLists = listIds.length;
 
-    console.log(`🚀 Starting bulk fetch for ${totalLists} lists...`);
+    logger.info(`Starting bulk fetch for ${totalLists} lists...`);
 
     for (const listId of listIds) {
       try {
@@ -455,11 +457,11 @@ class ClickUpService {
           await this.delay(500);
         }
       } catch (error) {
-        console.error(`❌ Failed to fetch list ${listId}:`, error);
+        logger.error(`Failed to fetch list ${listId}:`, error);
       }
     }
 
-    console.log(`✅ Bulk fetch complete: ${Object.keys(taskMap).length} tasks from ${totalLists} lists`);
+    logger.info(`Bulk fetch complete: ${Object.keys(taskMap).length} tasks from ${totalLists} lists`);
     return taskMap;
   }
 
@@ -478,7 +480,7 @@ class ClickUpService {
     });
 
     const idsArray = Array.from(listIds);
-    console.log(`🔍 Discovered ${idsArray.length} unique lists from time entries`);
+    logger.debug(`Discovered ${idsArray.length} unique lists from time entries`);
     return idsArray;
   }
 
