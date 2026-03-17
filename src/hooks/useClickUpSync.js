@@ -41,7 +41,7 @@ function loadSettings() {
       return sanitizeSettings(parsed, DEFAULT_SETTINGS);
     }
   } catch (error) {
-    console.error('[useClickUpSync] Error loading settings:', error);
+    logger.error('Error loading settings:', error);
   }
   return DEFAULT_SETTINGS;
 }
@@ -58,7 +58,7 @@ const LEAVE_SYNC_VERSION = '2'; // v2: custom-field date fallback added
     if (localStorage.getItem(LEAVE_SYNC_VERSION_KEY) !== LEAVE_SYNC_VERSION) {
       localStorage.removeItem(LEAVE_SYNC_KEY);
       localStorage.setItem(LEAVE_SYNC_VERSION_KEY, LEAVE_SYNC_VERSION);
-      console.log('📋 Leave sync version bumped → re-sync scheduled');
+      logger.info('Leave sync version bumped → re-sync scheduled');
     }
   } catch {}
 })();
@@ -98,18 +98,18 @@ async function performLeaveSync(members, settings) {
     const leaveListId = settings?.clickup?.leaveListId;
     const wfhListId = settings?.clickup?.wfhListId;
     if (!leaveListId && !wfhListId) {
-      console.log('⏭️ Leave/WFH sync skipped: No list IDs configured in Settings');
+      logger.info('Leave/WFH sync skipped: No list IDs configured in Settings');
       return;
     }
 
-    console.log('📅 Checking if leave/WFH sync is needed...');
+    logger.debug('Checking if leave/WFH sync is needed...');
 
     if (!shouldSyncLeaves()) {
-      console.log('⏭️ Leave/WFH sync already done today, skipping');
+      logger.debug('Leave/WFH sync already done today, skipping');
       return;
     }
 
-    console.log('📅 Performing daily leave/WFH sync...');
+    logger.info('Performing daily leave/WFH sync...');
     const leaves = await syncLeaveAndWfh(settings, members);
 
     // Always clear and replace — even if 0 records (clears stale data)
@@ -117,11 +117,11 @@ async function performLeaveSync(members, settings) {
     if (leaves.length > 0) {
       await db.leaves.bulkPut(leaves);
     }
-    console.log(`✅ Stored ${leaves.length} leave/WFH records in database`);
+    logger.info(`Stored ${leaves.length} leave/WFH records in database`);
 
     markLeaveSyncComplete();
   } catch (error) {
-    console.error('❌ Leave/WFH sync failed:', error);
+    logger.error('Leave/WFH sync failed:', error);
   }
 }
 
@@ -136,11 +136,11 @@ async function discoverAndMergeTeamMembers() {
     const clickUpUsers = await clickup.getTeamMembers();
 
     if (!clickUpUsers || clickUpUsers.length === 0) {
-      console.log('⚠️ No team members returned from ClickUp API');
+      logger.warn('No team members returned from ClickUp API');
       return;
     }
 
-    console.log(`👥 ClickUp returned ${clickUpUsers.length} team members`);
+    logger.info(`ClickUp returned ${clickUpUsers.length} team members`);
 
     const existingMembers = await db.members.toArray();
     const existingClickUpIds = new Set(existingMembers.map(m => String(m.clickUpId)));
@@ -193,21 +193,21 @@ async function discoverAndMergeTeamMembers() {
           updatedAt: Date.now(),
         });
         added++;
-        console.log(`➕ Added new member: ${name} (ClickUp ID: ${cuId})`);
+        logger.info(`Added new member: ${name} (ClickUp ID: ${cuId})`);
       }
     }
 
-    console.log(`👥 Team discovery: ${added} added, ${updated} updated, ${existingMembers.length} existing`);
+    logger.info(`Team discovery: ${added} added, ${updated} updated, ${existingMembers.length} existing`);
 
     // Refresh Zustand store from db so new members appear on next sync
     // DON'T trigger updateStats() to avoid immediate re-sync cascade
     if (added > 0) {
       const refreshed = await db.members.toArray();
       useAppStore.getState().setMembers(refreshed);
-      console.log(`✅ Store updated with ${refreshed.length} total members (will sync on next cycle)`);
+      logger.info(`Store updated with ${refreshed.length} total members (will sync on next cycle)`);
     }
   } catch (error) {
-    console.error('❌ Failed to discover team members:', error);
+    logger.error('Failed to discover team members:', error);
   }
 }
 
@@ -289,13 +289,13 @@ export function useClickUpSync(config = {}) {
   useEffect(() => {
     // Skip if sync is disabled
     if (!enabled) {
-      console.log('⏸️ ClickUp sync disabled');
+      logger.info('ClickUp sync disabled');
       return;
     }
 
     // Validate configuration
     if (!apiKey || !teamId) {
-      console.error('❌ ClickUp API key or team ID missing');
+      logger.error('ClickUp API key or team ID missing');
       setSyncError('Missing API configuration');
       return;
     }
@@ -340,17 +340,17 @@ export function useClickUpSync(config = {}) {
         try {
           // Initialize TaskCacheV2 first
           await taskCacheV2.initialize(null);
-          console.log('✅ TaskCacheV2 initialized (silent mode)');
+          logger.debug('TaskCacheV2 initialized (silent mode)');
 
           // Check if historical fetch is needed
           const cacheStats = await taskCacheV2.getStats();
-          console.log('📊 Cache stats:', cacheStats);
+          logger.debug('Cache stats:', cacheStats);
 
           // Perform historical fetch if cache is empty or stale (> 7 days)
           const needsHistoricalFetch = cacheStats.count === 0 || cacheStats.isStale;
 
           if (needsHistoricalFetch) {
-            console.log('🚀 Cache is empty or stale, initiating historical task fetch...');
+            logger.info('Cache is empty or stale, initiating historical task fetch...');
 
             setSyncProgress({
               phase: 'historical',
@@ -375,7 +375,7 @@ export function useClickUpSync(config = {}) {
             const assigneeIds = membersForHistorical.map(m => m.clickUpId).filter(Boolean);
 
             if (assigneeIds.length > 0) {
-              console.log(`📋 Fetching ALL historical tasks for ${assigneeIds.length} monitored members...`);
+              logger.info(`Fetching ALL historical tasks for ${assigneeIds.length} monitored members...`);
 
               // Fetch ALL tasks (no date filter = full history) with throttling
               const delay = (ms) => new Promise(r => setTimeout(r, ms));
@@ -409,12 +409,12 @@ export function useClickUpSync(config = {}) {
                     await delay(600);
                   }
                 } catch (fetchErr) {
-                  console.error(`❌ Failed to fetch historical tasks (page ${page}):`, fetchErr.message);
+                  logger.error(`Failed to fetch historical tasks (page ${page}):`, fetchErr.message);
                   hasMore = false; // Stop on error
                 }
               }
 
-              console.log(`✅ Fetched ${allHistoricalTasks.length} historical tasks (${page} pages)`);
+              logger.info(`Fetched ${allHistoricalTasks.length} historical tasks (${page} pages)`);
 
               // Bulk load into cache
               setSyncProgress({
@@ -437,21 +437,21 @@ export function useClickUpSync(config = {}) {
                 progress: 100
               });
 
-              console.log(`✅ Historical fetch complete: ${allHistoricalTasks.length} tasks cached`);
+              logger.info(`Historical fetch complete: ${allHistoricalTasks.length} tasks cached`);
 
               // Clear progress after 2 seconds
               setTimeout(() => {
                 setSyncProgress({ phase: 'idle', message: '', progress: 0 });
               }, 2000);
             } else {
-              console.log('⚠️ No members with ClickUp IDs, skipping historical fetch');
+              logger.warn('No members with ClickUp IDs, skipping historical fetch');
               setSyncProgress({ phase: 'idle', message: '', progress: 0 });
             }
           } else {
-            console.log(`✅ Cache is fresh with ${cacheStats.count} tasks (last sync: ${new Date(cacheStats.lastFullSync).toLocaleString()})`);
+            logger.info(`Cache is fresh with ${cacheStats.count} tasks (last sync: ${new Date(cacheStats.lastFullSync).toLocaleString()})`);
           }
         } catch (err) {
-          console.error('❌ TaskCacheV2 initialization or historical fetch failed:', err);
+          logger.error('TaskCacheV2 initialization or historical fetch failed:', err);
           setSyncProgress({ phase: 'idle', message: '', progress: 0 });
         }
       })();
@@ -491,13 +491,13 @@ export function useClickUpSync(config = {}) {
     const sync = async (forceNew = false) => {
       // Only sync when tab is visible (saves API calls when tab is in background)
       if (document.visibilityState !== 'visible') {
-        console.log('⏸️ Tab hidden, skipping sync');
+        logger.debug('Tab hidden, skipping sync');
         return;
       }
 
       // Abort any previous sync if forceNew is true (e.g., date range changed)
       if (forceNew && abortControllerRef.current) {
-        console.log('🔄 Aborting previous sync for new request...');
+        logger.debug('Aborting previous sync for new request...');
         abortControllerRef.current.abort();
       }
 
@@ -511,7 +511,7 @@ export function useClickUpSync(config = {}) {
 
       // Skip polling for fully historical ranges — data can't change
       if (isRangeFullyPast(currentDateRange)) {
-        console.log('⏭️ Skipping poll — date range is fully historical (no live data)');
+        logger.debug('Skipping poll — date range is fully historical (no live data)');
         return;
       }
 
@@ -524,18 +524,18 @@ export function useClickUpSync(config = {}) {
         ? allMembers.filter(m => monitored.includes(String(m.clickUpId)))
         : allMembers; // Fallback: if no filter set, use all (backwards compat)
 
-      console.log(`👥 Monitoring ${currentMembers.length}/${allMembers.length} members (filter: ${monitored.length > 0 ? 'active' : 'disabled'})`);
+      logger.debug(`Monitoring ${currentMembers.length}/${allMembers.length} members (filter: ${monitored.length > 0 ? 'active' : 'disabled'})`);
 
       // Skip if no members to sync
       if (!currentMembers || currentMembers.length === 0) {
-        console.log('⏭️ No members to sync');
+        logger.debug('No members to sync');
         return;
       }
 
       // Check if members have clickUpId
       const membersWithClickUpId = currentMembers.filter(m => m.clickUpId);
       if (membersWithClickUpId.length === 0) {
-        console.log('⏭️ No members with ClickUp IDs to sync');
+        logger.debug('No members with ClickUp IDs to sync');
         return;
       }
 
@@ -544,12 +544,12 @@ export function useClickUpSync(config = {}) {
         // Full syncs (date-range changes) set isSyncing via the dateRange useEffect below.
         // setIsSyncing(false) is always called in finally to clear any prior state.
 
-        console.log(`🔄 Syncing ${currentMembers.length} members from ClickUp (poll mode)...`);
+        logger.info(`Syncing ${currentMembers.length} members from ClickUp (poll mode)...`);
 
         // Get baseline for score calculation (uses cached value or fetches fresh)
         const assigneeIds = currentMembers.map(m => m.clickUpId).filter(Boolean);
         const avgTasksBaseline = await getAvgTasksBaseline(assigneeIds);
-        console.log(`📊 Using baseline: ${avgTasksBaseline.toFixed(2)} avg tasks/member/day`);
+        logger.debug(`Using baseline: ${avgTasksBaseline.toFixed(2)} avg tasks/member/day`);
 
         // Update team baseline in store (used by updateStats for team workload)
         setTeamBaseline(avgTasksBaseline);
@@ -569,13 +569,13 @@ export function useClickUpSync(config = {}) {
 
         // Check if sync was skipped due to lock
         if (syncResult.skipped) {
-          console.log('⏭️ Sync skipped - another sync in progress');
+          logger.debug('Sync skipped - another sync in progress');
           return;
         }
 
         // Check if aborted before updating state
         if (signal.aborted) {
-          console.log('⏸️ Sync aborted - not updating state');
+          logger.debug('Sync aborted - not updating state');
           return;
         }
 
@@ -636,19 +636,19 @@ export function useClickUpSync(config = {}) {
           await saveSnapshot(currentScoreMetrics);
         }
 
-        console.log('✅ Sync completed successfully');
+        logger.info('Sync completed successfully');
       } catch (error) {
         // Handle abort errors gracefully - don't log as error
         if (error.name === 'AbortError') {
-          console.log('⏸️ Sync aborted (date range changed or new sync started)');
+          logger.info('Sync aborted (date range changed or new sync started)');
           return;
         }
 
-        console.error('❌ Sync failed:', error.message);
+        logger.error('Sync failed:', error.message);
 
         // Handle network errors gracefully
         if (error.message?.includes('Failed to fetch') || error.message?.includes('Network')) {
-          console.warn('⚠️ Network error - will retry on next sync interval');
+          logger.warn('Network error - will retry on next sync interval');
           setSyncError('Network error - retrying...');
         } else {
           setSyncError(error.message);
@@ -664,7 +664,7 @@ export function useClickUpSync(config = {}) {
     };
 
     // Initial sync - wait a bit for members to load from database
-    console.log('🚀 Starting ClickUp sync...');
+    logger.info('Starting ClickUp sync...');
     const initialSyncTimeout = setTimeout(() => {
       sync();
     }, 1000); // Wait 1 second for database to load
@@ -672,7 +672,7 @@ export function useClickUpSync(config = {}) {
     // Set up polling interval — adaptive: longer ranges poll less frequently
     const currentDr = useAppStore.getState().dateRange;
     const effectiveInterval = getEffectiveInterval(currentDr, interval);
-    console.log(`⏱️ Polling interval: ${effectiveInterval / 1000}s (base: ${interval / 1000}s)`);
+    logger.info(`Polling interval: ${effectiveInterval / 1000}s (base: ${interval / 1000}s)`);
     intervalRef.current = setInterval(sync, effectiveInterval);
 
     // Cleanup on unmount or dependency change
@@ -680,7 +680,7 @@ export function useClickUpSync(config = {}) {
       clearTimeout(initialSyncTimeout);
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
-        console.log('🛑 ClickUp sync stopped');
+        logger.info('ClickUp sync stopped');
       }
       if (dateRangeDebounceRef.current) {
         clearTimeout(dateRangeDebounceRef.current);
@@ -713,7 +713,7 @@ export function useClickUpSync(config = {}) {
     // Update previous date range ref
     previousDateRangeRef.current = dateRange;
 
-    console.log('📅 Date range changed, scheduling sync with debounce...');
+    logger.info('Date range changed, scheduling sync with debounce...');
 
     // Clear any pending debounced sync
     if (dateRangeDebounceRef.current) {
@@ -729,7 +729,7 @@ export function useClickUpSync(config = {}) {
     // Do NOT clear projectBreakdown or members here — retain old data so the UI
     // doesn't flash blank. New data will overwrite it atomically when sync completes.
     dateRangeDebounceRef.current = setTimeout(async () => {
-      console.log('📅 Debounce complete, starting sync for new date range...');
+      logger.info('Debounce complete, starting sync for new date range...');
 
       // Reset progress now that we're actually starting
       setSyncProgress({ phase: 'idle', message: '', progress: 0 });
@@ -743,7 +743,7 @@ export function useClickUpSync(config = {}) {
         : allMembers;
 
       if (!currentMembers || currentMembers.length === 0) {
-        console.log('⏭️ No members to sync for date range change');
+        logger.debug('No members to sync for date range change');
         return;
       }
 
@@ -800,14 +800,14 @@ export function useClickUpSync(config = {}) {
           isSyncing: false, // Atomically set isSyncing=false with data — prevents flicker
         });
 
-        console.log('✅ Date range sync completed');
+        logger.info('Date range sync completed');
       } catch (error) {
         if (error.name === 'AbortError') {
-          console.log('⏸️ Date range sync aborted');
+          logger.info('Date range sync aborted');
           setIsSyncing(false);
           return;
         }
-        console.error('❌ Date range sync failed:', error.message);
+        logger.error('Date range sync failed:', error.message);
         setSyncError(error.message);
         setIsSyncing(false);
       }
@@ -818,18 +818,18 @@ export function useClickUpSync(config = {}) {
   // Handle reconnection - process queue and trigger sync
   useEffect(() => {
     if (wasOffline && isOnline && enabled) {
-      console.log('🔄 Connection restored - processing sync queue...');
+      logger.info('Connection restored - processing sync queue...');
 
       // Process any queued operations from offline period
       processPendingQueue()
         .then(result => {
           if (result.processed > 0) {
-            console.log(`✅ Processed ${result.succeeded}/${result.processed} queued operations`);
+            logger.info(`Processed ${result.succeeded}/${result.processed} queued operations`);
           }
 
           // Trigger immediate sync after processing queue
           setTimeout(() => {
-            console.log('🔄 Triggering sync after reconnection...');
+            logger.info('Triggering sync after reconnection...');
             // Trigger sync by temporarily disabling and re-enabling
             const currentMembers = useAppStore.getState().members;
             if (currentMembers && currentMembers.length > 0) {
@@ -840,7 +840,7 @@ export function useClickUpSync(config = {}) {
           }, 1000);
         })
         .catch(error => {
-          console.error('❌ Failed to process sync queue:', error);
+          logger.error('Failed to process sync queue:', error);
         });
     }
   }, [wasOffline, isOnline, enabled]);
@@ -848,11 +848,11 @@ export function useClickUpSync(config = {}) {
   // Pause sync when offline (graceful degradation)
   useEffect(() => {
     if (!isOnline && intervalRef.current) {
-      console.log('⏸️ Pausing sync - offline mode');
+      logger.info('Pausing sync - offline mode');
       // Don't clear the interval, just log that syncs will fail gracefully
       // The sync function already handles fetch errors
     } else if (isOnline && enabled) {
-      console.log('▶️ Resuming sync - online mode');
+      logger.info('Resuming sync - online mode');
     }
   }, [isOnline, enabled]);
 
@@ -927,7 +927,7 @@ export function useManualSync() {
 
       return { success: true };
     } catch (error) {
-      console.error('❌ Manual sync failed:', error);
+      logger.error('Manual sync failed:', error);
       setSyncError(error.message);
       setSyncProgress({ phase: 'idle', message: '', progress: 0 });
       setIsSyncing(false);
