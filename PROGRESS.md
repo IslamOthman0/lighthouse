@@ -316,7 +316,7 @@
 - [x] 0.2 Audit: inline style inventory (baseline)
 - [x] 0.3 Audit: console log inventory
 - [x] 0.4 Audit: touch targets + empty states
-- [ ] 0.5 Audit: RTL/font coverage gaps
+- [x] 0.5 Audit: RTL/font coverage gaps
 
 ### Phase 1: Foundation (CSS Custom Properties)
 - [ ] 1.1 Define CSS custom properties in index.css
@@ -558,12 +558,62 @@ Priority fixes (Phase 9):
 3. RankingTable: when members=[], show empty state with icon
 4. LeavesTab: when leaves=[], show "No leave records" in both Overview and Calendar views
 
+## RTL / Font Coverage Audit (Task 0.5 — 2026-03-17)
+
+**Legend:** ✅ Covered | ❌ Gap | ➖ N/A (English-only content)
+
+### Member names (Arabic names expected)
+| Location | RTL font applied? | Notes |
+|----------|------------------|-------|
+| TeamStatusCard.jsx:86 | ✅ `getTextFontStyle(member.name)` | |
+| WorkingCard / BreakCard / OfflineCard | ➖ | Member name not rendered in these cards (only task/project) |
+| RankingTable.jsx:264 | ✅ `getTextFontStyle(member.name)` | Both desktop + mobile rows |
+| ListView.jsx:327 | ✅ `getTextFontStyle(member.name)` | Main member row |
+| MemberDetailModal.jsx | ✅ `getAdaptiveFontFamily` used | header name covered |
+| SettingsModal.jsx:628,632,685 | ✅ `getAdaptiveFontFamily(memberName)` | member picker + score tab |
+| TeamOverviewPanel.jsx:162,213,263,267,344 | ❌ **MISSING** — member.name rendered with no font style | 5 locations |
+| MemberLeaveDetail.jsx:101 | ❌ **MISSING** — `{member.name}` no font family | |
+| LeaveCalendar.jsx:124,254 | ❌ **MISSING** — member names in filter list + day tooltip | |
+
+### Task names (Arabic task names common)
+| Location | RTL font applied? | Notes |
+|----------|------------------|-------|
+| WorkingCard.jsx:152 | ✅ `getTextFontStyle(task)` | |
+| BreakCard.jsx:135 | ✅ `getTextFontStyle(task)` | |
+| OfflineCard.jsx:131 | ✅ `getTextFontStyle(task)` | |
+| MemberDetailModal.jsx:471 | ✅ `getAdaptiveFontFamily(task.name)` | Timeline task cards |
+| TaskListModal.jsx:428,577 | ✅ `getAdaptiveFontFamily(task.name)` | Both desktop + mobile |
+| ListView.jsx:360 | ✅ `isRTL()` for direction attr on task text | |
+
+### Project / publisher / genre names (Arabic possible)
+| Location | RTL font applied? | Notes |
+|----------|------------------|-------|
+| WorkingCard / BreakCard / OfflineCard (publisher, genre) | ✅ `getTextFontStyle(publisher/genre)` | |
+| WorkingCard / BreakCard / OfflineCard (location/project) | ✅ `getTextFontStyle(location \|\| project)` | |
+| ProjectBreakdownCard.jsx:329 | ✅ `getAdaptiveFontFamily(project.name)` | project title |
+| TaskListModal.jsx:501,517,651,668 | ✅ `getAdaptiveFontFamily(publisher/genre)` | |
+| TaskListModal.jsx:276 | ✅ `getAdaptiveFontFamily(name)` | assignee group header |
+
+### Summary of gaps
+**3 files with missing RTL on member names:**
+1. `leaves/TeamOverviewPanel.jsx` — 5 locations: lines 166, 267, 344 (name display) + 162, 213, 263 (Avatar's name prop is fine, but the text label next to it is bare)
+2. `leaves/MemberLeaveDetail.jsx` — line 101: `{member.name}` with no fontFamily
+3. `leaves/LeaveCalendar.jsx` — lines 124, 254: member names in filter + tooltip
+
+**Phase 10 fix mapping:**
+- 10.1 SettingsModal — ✅ already covered
+- 10.2 TaskListModal — ✅ already covered
+- 10.3 ScoreBreakdownCard — ➖ English labels only, no-op confirmed
+- 10.4 Leaves sub-components — ❌ TeamOverviewPanel (5 locs) + MemberLeaveDetail (1) + LeaveCalendar (2) = **8 gaps**
+- 10.5 RankingTable + ListView — ✅ already covered
+
 ## UX Session Log
 | Session | Date | Tasks Completed | Notes |
 |---------|------|-----------------|-------|
 | 1 | 2026-03-17 | 0.1, 0.2 | UX section added to PROGRESS.md. Inline style baseline: 27 INLINE files, 8 MIXED. 0 pure Tailwind. Top targets: SettingsModal (168), MemberDetailModal (160), ListView (159). |
 | 2 | 2026-03-17 | 0.3 | Console log inventory: 229 raw calls across 17 files. Top: useClickUpSync (56), orchestrator (55), taskCacheV2 (41). All convert→logger except ErrorBoundary (keep) and calculations.js dead comments (remove). |
 | 3 | 2026-03-17 | 0.4 | Touch targets: 5 FAIL (ModalShell close 28px, SettingsModal close 32px, LeavesTab tabs 32px, FilterSort triggers ~36px, StatusPill 26px). 4 MARGINAL. Empty states: 4 partial/missing, 1 skeleton, 1 proper (ProjectBreakdownCard). |
+| 4 | 2026-03-17 | 0.5 | RTL audit: 8 gaps all in leaves sub-components (TeamOverviewPanel ×5, MemberLeaveDetail ×1, LeaveCalendar ×2). All other name-rendering sites covered. ScoreBreakdownCard confirmed no-op. |
 
 ---
 
