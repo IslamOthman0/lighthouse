@@ -14,6 +14,7 @@
  * - Persistent across page reloads
  */
 
+import { logger } from '../utils/logger.js';
 import { db } from '../db/index.js';
 import { clickup } from './clickup.js';
 
@@ -50,12 +51,12 @@ class TaskCacheV2 {
    */
   async initialize(onProgress = null) {
     if (this.isInitialized) {
-      console.log('✅ TaskCacheV2 already initialized');
+      logger.debug('TaskCacheV2 already initialized');
       return;
     }
 
     this.onProgressCallback = onProgress;
-    console.log('🔄 Initializing TaskCacheV2...');
+    logger.info('Initializing TaskCacheV2...');
 
     try {
       // Load sync metadata
@@ -67,20 +68,20 @@ class TaskCacheV2 {
         this.cache.set(task.id, task);
       });
 
-      console.log(`✅ Loaded ${tasks.length} tasks from IndexedDB`);
+      logger.info(`Loaded ${tasks.length} tasks from IndexedDB`);
       this.stats.cacheSize = tasks.length;
 
       // Check if we need a full sync
       const needsFullSync = this.shouldPerformFullSync();
 
       if (needsFullSync) {
-        console.log('🔄 Cache empty or stale, will perform full sync when assignee IDs available...');
+        logger.debug('Cache empty or stale, will perform full sync when assignee IDs available...');
         // Full sync will be triggered by startBackgroundSync() with assignee IDs
       }
 
       this.isInitialized = true;
     } catch (error) {
-      console.error('❌ TaskCacheV2 initialization failed:', error);
+      logger.error('TaskCacheV2 initialization failed:', error);
       this.isInitialized = true; // Continue anyway, fallback to old method
     }
   }
@@ -96,12 +97,12 @@ class TaskCacheV2 {
       this.lastFullSync = lastFullSyncMeta?.value || null;
       this.lastIncrementalSync = lastIncrementalSyncMeta?.value || null;
 
-      console.log('📊 Sync metadata:', {
+      logger.debug('Sync metadata:', {
         lastFullSync: this.lastFullSync ? new Date(this.lastFullSync).toLocaleString() : 'Never',
         lastIncrementalSync: this.lastIncrementalSync ? new Date(this.lastIncrementalSync).toLocaleString() : 'Never'
       });
     } catch (error) {
-      console.error('❌ Failed to load sync metadata:', error);
+      logger.error('Failed to load sync metadata:', error);
     }
   }
 
@@ -118,7 +119,7 @@ class TaskCacheV2 {
     const age = Date.now() - this.lastFullSync;
 
     if (age > WEEKLY_REFRESH_MS) {
-      console.log(`📅 Cache is ${Math.floor(age / (24 * 60 * 60 * 1000))} days old (weekly refresh needed)`);
+      logger.info(`Cache is ${Math.floor(age / (24 * 60 * 60 * 1000))} days old (weekly refresh needed)`);
       return true;
     }
 
@@ -131,7 +132,7 @@ class TaskCacheV2 {
    */
   async fullSync(assigneeIds = []) {
     if (this.isSyncing) {
-      console.log('⏳ Sync already in progress, skipping...');
+      logger.debug('Sync already in progress, skipping...');
       return;
     }
 
@@ -139,7 +140,7 @@ class TaskCacheV2 {
     const startTime = Date.now();
 
     try {
-      console.log('🔄 Starting full task sync...');
+      logger.info('Starting full task sync...');
       let allTasks = [];
       let page = 0;
       let hasMore = true;
@@ -164,11 +165,11 @@ class TaskCacheV2 {
         hasMore = more;
         page++;
 
-        console.log(`📥 Fetched page ${page}: ${tasks.length} tasks (total: ${totalFetched})`);
+        logger.debug(`Fetched page ${page}: ${tasks.length} tasks (total: ${totalFetched})`);
 
         // Safety limit: max 10 pages (1000 tasks)
         if (page >= 10) {
-          if (import.meta.env.DEV) console.debug('[Lighthouse] Reached page limit (10 pages), stopping full sync');
+          logger.debug('Reached page limit (10 pages), stopping full sync');
           break;
         }
       }
@@ -183,10 +184,10 @@ class TaskCacheV2 {
       const duration = Date.now() - startTime;
       this.stats.lastSyncDuration = duration;
 
-      console.log(`✅ Full sync complete: ${allTasks.length} tasks in ${duration}ms`);
+      logger.info(`Full sync complete: ${allTasks.length} tasks in ${duration}ms`);
       this.emitProgress({ phase: 'idle', message: '', progress: 100 });
     } catch (error) {
-      console.error('❌ Full sync failed:', error);
+      logger.error('Full sync failed:', error);
       this.emitProgress({ phase: 'error', message: 'Sync failed', progress: 0 });
     } finally {
       this.isSyncing = false;
@@ -199,7 +200,7 @@ class TaskCacheV2 {
    */
   async incrementalSync(assigneeIds = null) {
     if (this.isSyncing) {
-      console.log('⏳ Sync already in progress, skipping incremental sync...');
+      logger.debug('Sync already in progress, skipping incremental sync...');
       return;
     }
 
@@ -207,7 +208,7 @@ class TaskCacheV2 {
     const sinceTimestamp = this.lastIncrementalSync || this.lastFullSync;
 
     if (!sinceTimestamp) {
-      console.log('⚠️ No baseline timestamp, performing full sync instead');
+      logger.warn('No baseline timestamp, performing full sync instead');
       return;
     }
 
@@ -218,7 +219,7 @@ class TaskCacheV2 {
     const startTime = Date.now();
 
     try {
-      console.log(`🔄 Starting incremental sync (since ${new Date(sinceTimestamp).toLocaleString()}) for ${idsToUse.length} assignees...`);
+      logger.info(`Starting incremental sync (since ${new Date(sinceTimestamp).toLocaleString()}) for ${idsToUse.length} assignees...`);
 
       const { tasks } = await clickup.getFilteredTeamTasks({
         assignees: idsToUse, // CRITICAL FIX: Include assignee filter
@@ -229,10 +230,10 @@ class TaskCacheV2 {
       });
 
       if (tasks.length > 0) {
-        console.log(`📥 Incremental sync: ${tasks.length} updated tasks`);
+        logger.info(`Incremental sync: ${tasks.length} updated tasks`);
         await this.storeTasks(tasks);
       } else {
-        console.log('✅ Incremental sync: No updates');
+        logger.debug('Incremental sync: No updates');
       }
 
       // Update lastIncrementalSync timestamp
@@ -240,9 +241,9 @@ class TaskCacheV2 {
       await db.taskSyncMeta.put({ key: 'lastIncrementalSync', value: this.lastIncrementalSync });
 
       const duration = Date.now() - startTime;
-      console.log(`✅ Incremental sync complete in ${duration}ms`);
+      logger.info(`Incremental sync complete in ${duration}ms`);
     } catch (error) {
-      console.error('❌ Incremental sync failed:', error);
+      logger.error('Incremental sync failed:', error);
     } finally {
       this.isSyncing = false;
     }
@@ -273,9 +274,9 @@ class TaskCacheV2 {
       });
 
       this.stats.cacheSize = this.cache.size;
-      console.log(`💾 Stored ${tasks.length} tasks (cache size: ${this.cache.size})`);
+      logger.debug(`Stored ${tasks.length} tasks (cache size: ${this.cache.size})`);
     } catch (error) {
-      console.error('❌ Failed to store tasks:', error);
+      logger.error('Failed to store tasks:', error);
     }
   }
 
@@ -289,11 +290,11 @@ class TaskCacheV2 {
     const tasks = Object.values(taskMap);
 
     if (tasks.length === 0) {
-      console.log('⚠️ No tasks to bulk load');
+      logger.warn('No tasks to bulk load');
       return;
     }
 
-    console.log(`🚀 Bulk loading ${tasks.length} tasks into cache...`);
+    logger.info(`Bulk loading ${tasks.length} tasks into cache...`);
     const startTime = Date.now();
 
     try {
@@ -320,9 +321,9 @@ class TaskCacheV2 {
       await db.taskSyncMeta.put({ key: 'lastFullSync', value: this.lastFullSync });
 
       const duration = Date.now() - startTime;
-      console.log(`✅ Bulk loaded ${tasks.length} tasks in ${duration}ms (cache size: ${this.cache.size})`);
+      logger.info(`Bulk loaded ${tasks.length} tasks in ${duration}ms (cache size: ${this.cache.size})`);
     } catch (error) {
-      console.error('❌ Bulk load failed:', error);
+      logger.error('Bulk load failed:', error);
       throw error;
     }
   }
@@ -379,33 +380,33 @@ class TaskCacheV2 {
    */
   startBackgroundSync(assigneeIds = []) {
     if (this.syncInterval) {
-      console.log('✅ Background sync already running');
+      logger.debug('Background sync already running');
       return;
     }
 
     // Cache assignee IDs for incremental sync
     this.cachedAssigneeIds = assigneeIds;
-    console.log(`🔄 Starting background sync (every ${BACKGROUND_SYNC_INTERVAL / 1000}s) for ${assigneeIds.length} assignees...`);
+    logger.info(`Starting background sync (every ${BACKGROUND_SYNC_INTERVAL / 1000}s) for ${assigneeIds.length} assignees...`);
 
     // ALWAYS perform full sync on startup to ensure cache is fresh
     if (assigneeIds.length > 0) {
       const needsFullSync = this.shouldPerformFullSync();
-      console.log(`🔍 Cache status: size=${this.cache.size}, needsFullSync=${needsFullSync}`);
+      logger.debug(`Cache status: size=${this.cache.size}, needsFullSync=${needsFullSync}`);
 
       if (needsFullSync) {
-        console.log('🔄 Performing initial full sync with assignee IDs...');
+        logger.info('Performing initial full sync with assignee IDs...');
       } else {
-        console.log('🔄 Cache exists, performing full sync to update with latest tasks...');
+        logger.info('Cache exists, performing full sync to update with latest tasks...');
       }
 
       // Always do full sync on startup
       this.fullSync(assigneeIds).then(() => {
-        console.log('✅ Startup full sync completed');
+        logger.info('Startup full sync completed');
       }).catch(err => {
-        console.error('❌ Startup full sync failed:', err);
+        logger.error('Startup full sync failed:', err);
       });
     } else {
-      console.warn('⚠️ No assignee IDs provided, skipping full sync');
+      logger.warn('No assignee IDs provided, skipping full sync');
     }
 
     // Start incremental sync interval (pass assignee IDs)
@@ -413,7 +414,7 @@ class TaskCacheV2 {
       try {
         await this.incrementalSync(this.cachedAssigneeIds);
       } catch (error) {
-        console.error('❌ Background sync error:', error);
+        logger.error('Background sync error:', error);
       }
     }, BACKGROUND_SYNC_INTERVAL);
   }
@@ -425,7 +426,7 @@ class TaskCacheV2 {
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
       this.syncInterval = null;
-      console.log('⏹️ Background sync stopped');
+      logger.info('Background sync stopped');
     }
   }
 
@@ -451,10 +452,10 @@ class TaskCacheV2 {
       this.stats.cacheSize = this.cache.size;
 
       if (removedCount > 0) {
-        console.log(`🧹 Cleaned up ${removedCount} old tasks (older than ${CACHE_HISTORY_DAYS} days)`);
+        logger.info(`Cleaned up ${removedCount} old tasks (older than ${CACHE_HISTORY_DAYS} days)`);
       }
     } catch (error) {
-      console.error('❌ Cleanup failed:', error);
+      logger.error('Cleanup failed:', error);
     }
   }
 
@@ -468,7 +469,7 @@ class TaskCacheV2 {
     this.lastFullSync = null;
     this.lastIncrementalSync = null;
     this.stats = { hits: 0, misses: 0, cacheSize: 0, lastSyncDuration: 0 };
-    console.log('🗑️ TaskCacheV2 cleared');
+    logger.info('TaskCacheV2 cleared');
   }
 
   /**
@@ -493,7 +494,7 @@ class TaskCacheV2 {
    */
   logStats() {
     const stats = this.getCacheHitStats();
-    console.log('📊 TaskCacheV2 Stats:', {
+    logger.debug('TaskCacheV2 Stats:', {
       hits: stats.hits,
       misses: stats.misses,
       hitRate: `${stats.hitRate}%`,

@@ -328,7 +328,7 @@
 ### Phase 2: Console Cleanup (242 raw calls → 0)
 - [x] 2.1 orchestrator.js (~55 calls)
 - [x] 2.2 useClickUpSync.js (~56 calls)
-- [ ] 2.3 taskCacheV2.js (~41 calls)
+- [x] 2.3 taskCacheV2.js (~41 calls)
 - [ ] 2.4 clickup.js (~24 calls)
 - [ ] 2.5 syncQueue.js (~16 calls)
 - [ ] 2.6 Service utils + hooks small files (~23 calls across 8 files)
@@ -619,6 +619,7 @@ Priority fixes (Phase 9):
 | 4 | 2026-03-17 | 0.5 | RTL audit: 8 gaps all in leaves sub-components (TeamOverviewPanel ×5, MemberLeaveDetail ×1, LeaveCalendar ×2). All other name-rendering sites covered. ScoreBreakdownCard confirmed no-op. |
 | 5 | 2026-03-17 | 2.1 | orchestrator.js: 55 console calls replaced with logger (info/warn/error/debug). 0 console calls remain. 256 tests pass, build clean. |
 | 6 | 2026-03-17 | 2.2 | useClickUpSync.js: 56 console calls replaced with logger. logger already imported. 0 console calls remain. 256 tests pass, build clean. |
+| 7 | 2026-03-17 | 2.3 | taskCacheV2.js: 41 console calls replaced with logger (added import). DEV-only console.debug guard removed — logger.debug handles that. 0 console calls remain. 256 tests pass, build clean. |
 
 ---
 
