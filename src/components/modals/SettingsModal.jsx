@@ -12,6 +12,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { logger } from '../../utils/logger';
 import { useSettings } from '../../hooks/useSettings';
 import { useTheme } from '../../hooks/useTheme';
 import { useWindowSize } from '../../hooks/useWindowSize';
@@ -213,7 +214,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
             setClickUpMembers(fromDb);
           }
         } catch (err) {
-          console.log('[SettingsModal] Could not load members from db:', err);
+          logger.warn('Could not load members from db:', err);
         }
       }
 
@@ -231,7 +232,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
           }
         } catch (err) {
           // Silently fail — we already have store/db members as fallback
-          console.log('[SettingsModal] API fetch failed, using cached members:', err.message);
+          logger.warn('API fetch failed, using cached members:', err.message);
         }
       }
     };

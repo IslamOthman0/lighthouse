@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { logger } from '../../utils/logger';
 import Avatar from '../ui/Avatar';
 import StatusBadge from '../ui/StatusBadge';
 import Sparkline, { SparklineWithStats } from '../ui/Sparkline';
@@ -187,7 +188,7 @@ const fetchWeeklyPerformanceData = async (member, startDate, endDate) => {
       totalTasks: taskIds.size,
     };
   } catch (error) {
-    console.error('Failed to fetch weekly performance data:', error);
+    logger.error('Failed to fetch weekly performance data:', error);
     return { weeklyHours: [], byProject: [], totalTracked: 0, totalTasks: 0 };
   }
 };
@@ -357,7 +358,7 @@ const fetchTimelineData = async (member, startDate, endDate) => {
 
     return { tasks, breaks };
   } catch (error) {
-    console.error('Failed to fetch timeline data:', error);
+    logger.error('Failed to fetch timeline data:', error);
     return { tasks: [], breaks: [] };
   }
 };
@@ -731,7 +732,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
           }
         })
         .catch(error => {
-          console.error('Error fetching timeline:', error);
+          logger.error('Error fetching timeline:', error);
           if (!isCancelled) {
             setTimelineData({ tasks: [], breaks: [] });
             setIsLoading(false);
@@ -760,7 +761,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
         }
       })
       .catch(error => {
-        console.error('Error fetching performance data:', error);
+        logger.error('Error fetching performance data:', error);
         if (!isCancelled) {
           setPerformanceData({ weeklyHours: [], byProject: [], totalTracked: 0, totalTasks: 0 });
           setIsPerfLoading(false);
@@ -800,7 +801,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
             return year === currentYear;
           });
         } catch (err) {
-          console.log('No leaves data in DB:', err);
+          logger.debug('No leaves data in DB:', err);
         }
 
         // Calculate used days by type
@@ -852,7 +853,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
         setMemberLeavesRaw(memberLeaves);
         setCalendarDate(new Date());
       } catch (error) {
-        console.error('Error fetching leaves data:', error);
+        logger.error('Error fetching leaves data:', error);
         // Set default values if fetch fails
         setLeavesData({
           year: new Date().getFullYear(),
@@ -917,7 +918,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
         setIsLoading(false);
       })
       .catch(error => {
-        console.error('Error refreshing timeline:', error);
+        logger.error('Error refreshing timeline:', error);
         setIsLoading(false);
       });
   }, [member, selectedDate, selectedEndDate]);

@@ -5,6 +5,7 @@
 
 import { db } from '../db';
 import { DEFAULT_MEMBER_QUOTAS } from '../constants/defaults';
+import { logger } from './logger';
 
 /**
  * Check if a member is on leave or WFH today
@@ -191,7 +192,7 @@ export async function enrichMembersWithLeaveStatus(members) {
       return member;
     });
   } catch (error) {
-    console.error('[leaveHelpers] Error enriching members with leave status:', error);
+    logger.error('Error enriching members with leave status:', error);
     return members;
   }
 }
