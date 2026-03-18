@@ -372,7 +372,7 @@ const TabButton = ({ label, isActive, onClick, theme }) => (
       padding: '8px 16px',
       border: 'none',
       background: isActive ? hexToRgba(theme.accent, 0.12) : 'transparent',
-      color: isActive ? theme.accent : theme.textSecondary,
+      color: isActive ? 'var(--color-accent)' : 'var(--color-text-secondary)',
       fontSize: '13px',
       fontWeight: '600',
       cursor: 'pointer',
@@ -391,9 +391,9 @@ const DatePickerButton = ({ label, isActive, onClick, theme }) => (
     onClick={onClick}
     style={{
       padding: '6px 12px',
-      border: `1px solid ${isActive ? theme.accent : theme.borderLight}`,
+      border: `1px solid ${isActive ? 'var(--color-accent)' : 'var(--color-border-light)'}`,
       background: isActive ? hexToRgba(theme.accent, 0.08) : 'transparent',
-      color: isActive ? theme.accent : theme.textSecondary,
+      color: isActive ? 'var(--color-accent)' : 'var(--color-text-secondary)',
       fontSize: '12px',
       fontWeight: '500',
       cursor: 'pointer',
@@ -417,22 +417,22 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
         display: 'flex',
         gap: '12px',
         padding: '16px',
-        background: theme.secondaryBg,
+        background: 'var(--color-inner-bg)',
         borderRadius: '8px',
-        border: `1px solid ${theme.borderLight}`,
+        border: `1px solid var(--color-border-light)`,
         borderLeft: `4px solid ${taskStatusStyle.dot}`,
         transition: 'all 0.15s',
         animation: isLive ? 'softPulse 2s ease-in-out infinite' : 'none',
         boxShadow: isLive ? `0 0 12px ${theme.working}30` : 'none',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.background = theme.tertiaryBg || theme.cardBg;
+        e.currentTarget.style.background = 'var(--color-card-bg)';
         e.currentTarget.style.borderColor = hexToRgba(theme.accent, 0.25);
         e.currentTarget.style.borderLeftColor = taskStatusStyle.dot;
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = theme.secondaryBg;
-        e.currentTarget.style.borderColor = theme.borderLight;
+        e.currentTarget.style.background = 'var(--color-inner-bg)';
+        e.currentTarget.style.borderColor = 'var(--color-border-light)';
         e.currentTarget.style.borderLeftColor = taskStatusStyle.dot;
       }}
     >
@@ -446,16 +446,16 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
           ...tabularNumberStyle,
         }}
       >
-        <div style={{ fontSize: '14px', fontWeight: '700', color: theme.text }}>
+        <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-text)' }}>
           {formatTime12h(task.startTime)}
         </div>
-        <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '2px' }}>
+        <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
           {task.endTime ? formatTime12h(task.endTime) : (
-            <span style={{ color: theme.working }}>ongoing</span>
+            <span style={{ color: 'var(--color-working)' }}>ongoing</span>
           )}
         </div>
         {task.trackedMinutes > 0 && (
-          <div style={{ fontSize: '11px', color: theme.break || '#f59e0b', marginTop: '4px', fontWeight: '500' }}>
+          <div style={{ fontSize: '11px', color: 'var(--color-break)', marginTop: '4px', fontWeight: '500' }}>
             {formatMinutesToHM(task.trackedMinutes)}
           </div>
         )}
@@ -468,7 +468,7 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
           style={{
             fontSize: '13px',
             fontWeight: '600',
-            color: theme.text,
+            color: 'var(--color-text)',
             fontFamily: getAdaptiveFontFamily(task.name),
             marginBottom: '8px',
             display: 'flex',
@@ -509,7 +509,7 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
               fontSize: '9px',
               padding: '2px 6px',
               background: hexToRgba(theme.working, 0.12),
-              color: theme.working,
+              color: 'var(--color-working)',
               borderRadius: '4px',
               fontWeight: '600',
               fontFamily: getFontFamily('english'),
@@ -526,7 +526,7 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
           alignItems: 'center',
           gap: '12px',
           fontSize: '11px',
-          color: theme.textSecondary,
+          color: 'var(--color-text-secondary)',
           flexWrap: 'wrap',
         }}>
           <span style={{ fontFamily: getFontFamily('english') }}>
@@ -556,7 +556,7 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
                   padding: '1px 6px',
                   borderRadius: '3px',
                   background: hexToRgba(theme.text, 0.06),
-                  color: theme.textSecondary,
+                  color: 'var(--color-text-secondary)',
                   fontFamily: getFontFamily('english'),
                   border: `1px solid ${hexToRgba(theme.text, 0.12)}`,
                   fontWeight: '600',
@@ -589,10 +589,10 @@ const BreakCard = ({ breakData, theme }) => (
     }}
   >
     <span style={{ fontSize: '13px' }}>☕</span>
-    <span style={{ fontSize: '12px', color: theme.break || '#f59e0b', fontWeight: '600', ...tabularNumberStyle }}>
+    <span style={{ fontSize: '12px', color: 'var(--color-break)', fontWeight: '600', ...tabularNumberStyle }}>
       {formatMinutesToHM(breakData.durationMinutes)}
     </span>
-    <span style={{ fontSize: '11px', color: theme.textMuted, ...tabularNumberStyle }}>
+    <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', ...tabularNumberStyle }}>
       {formatTime12h(breakData.startTime)} → {formatTime12h(breakData.endTime)}
     </span>
   </div>
@@ -624,7 +624,7 @@ const SummaryMetrics = ({ tasks, breaks, member, theme }) => {
         display: 'flex',
         gap: '16px',
         padding: '10px 16px',
-        background: theme.secondaryBg,
+        background: 'var(--color-inner-bg)',
         borderRadius: '8px',
         marginBottom: '16px',
       }}
@@ -636,14 +636,14 @@ const SummaryMetrics = ({ tasks, breaks, member, theme }) => {
         { label: 'Efficiency', value: `${efficiency}%`, icon: '📊', subtitle: 'tracked / session span' },
       ].map((metric, i) => (
         <div key={i} style={{ textAlign: 'center', flex: 1 }}>
-          <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '2px', fontFamily: getFontFamily('english') }}>
+          <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '2px', fontFamily: getFontFamily('english') }}>
             {metric.icon} {metric.label}
           </div>
-          <div style={{ fontSize: '14px', fontWeight: '700', color: theme.text, ...tabularNumberStyle }}>
+          <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-text)', ...tabularNumberStyle }}>
             {metric.value}
           </div>
           {metric.subtitle && (
-            <div style={{ fontSize: '9px', color: theme.textMuted, marginTop: '2px', fontFamily: getFontFamily('english') }}>
+            <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', marginTop: '2px', fontFamily: getFontFamily('english') }}>
               {metric.subtitle}
             </div>
           )}
@@ -936,9 +936,9 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
     : 0;
 
   const getProgressColor = (percent) => {
-    if (percent >= 80) return theme.success;
-    if (percent >= 60) return theme.warning;
-    return theme.danger;
+    if (percent >= 80) return 'var(--color-success)';
+    if (percent >= 60) return 'var(--color-warning)';
+    return 'var(--color-danger)';
   };
 
   return (
@@ -987,7 +987,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
             ? 'linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06))'
             : 'linear-gradient(155deg, rgba(255,255,255,0.98), rgba(255,255,255,0.95))',
           borderRadius: '12px',
-          border: `1px solid ${theme.border}`,
+          border: `1px solid var(--color-border)`,
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           display: 'flex',
           flexDirection: 'column',
@@ -999,7 +999,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
         <div
           style={{
             padding: '16px',
-            borderBottom: `1px solid ${theme.borderLight}`,
+            borderBottom: `1px solid var(--color-border-light)`,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
@@ -1012,7 +1012,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 style={{
                   fontSize: '16px',
                   fontWeight: '700',
-                  color: theme.text,
+                  color: 'var(--color-text)',
                   fontFamily: getAdaptiveFontFamily(member.name),
                   marginBottom: '4px',
                 }}
@@ -1030,8 +1030,8 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 height: '28px',
                 borderRadius: '6px',
                 border: 'none',
-                background: theme.secondaryBg,
-                color: theme.textSecondary,
+                background: 'var(--color-inner-bg)',
+                color: 'var(--color-text-secondary)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -1044,8 +1044,8 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 e.target.style.color = theme.danger;
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = theme.secondaryBg;
-                e.target.style.color = theme.textSecondary;
+                e.target.style.background = 'var(--color-inner-bg)';
+                e.target.style.color = 'var(--color-text-secondary)';
               }}
             >
               ✕
@@ -1063,7 +1063,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                   marginBottom: '4px',
                 }}
               >
-                <span style={{ fontSize: '11px', color: theme.textMuted }}>
+                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
                   {(!globalDateRange || globalDateRange.preset === 'today' || !globalDateRange.startDate)
                     ? "Today's Progress"
                     : (dateRangeInfo?.workingDays || 1) > 1
@@ -1085,7 +1085,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 style={{
                   width: '100%',
                   height: '6px',
-                  background: theme.secondaryBg,
+                  background: 'var(--color-inner-bg)',
                   borderRadius: '3px',
                   overflow: 'hidden',
                 }}
@@ -1110,8 +1110,8 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
             display: 'flex',
             gap: '4px',
             padding: '8px 16px',
-            borderBottom: `1px solid ${theme.borderLight}`,
-            background: theme.secondaryBg,
+            borderBottom: `1px solid var(--color-border-light)`,
+            background: 'var(--color-inner-bg)',
           }}
         >
           <TabButton
@@ -1183,7 +1183,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                     padding: '6px 10px',
                     border: 'none',
                     background: 'transparent',
-                    color: theme.textSecondary,
+                    color: 'var(--color-text-secondary)',
                     fontSize: '14px',
                     cursor: isLoading ? 'wait' : 'pointer',
                     borderRadius: '6px',
@@ -1216,9 +1216,9 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                         onClick={() => handleWeekDaySelect(index)}
                         style={{
                           padding: '8px 12px',
-                          border: `1px solid ${isSelected ? theme.accent : theme.borderLight}`,
+                          border: `1px solid ${isSelected ? 'var(--color-accent)' : 'var(--color-border-light)'}`,
                           background: isSelected ? hexToRgba(theme.accent, 0.08) : 'transparent',
-                          color: isSelected ? theme.accent : theme.textSecondary,
+                          color: isSelected ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                           fontSize: '11px',
                           fontWeight: '500',
                           cursor: 'pointer',
@@ -1239,7 +1239,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                             style={{
                               width: '4px',
                               height: '4px',
-                              background: theme.accent,
+                              background: 'var(--color-accent)',
                               borderRadius: '50%',
                               margin: '4px auto 0',
                             }}
@@ -1255,7 +1255,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
               <div
                 style={{
                   fontSize: '12px',
-                  color: theme.textMuted,
+                  color: 'var(--color-text-muted)',
                   marginBottom: '12px',
                   fontFamily: getFontFamily('english'),
                 }}
@@ -1277,7 +1277,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                   style={{
                     textAlign: 'center',
                     padding: '40px',
-                    color: theme.textMuted,
+                    color: 'var(--color-text-muted)',
                   }}
                 >
                   <div style={{ fontSize: '24px', marginBottom: '8px' }}>⏳</div>
@@ -1288,7 +1288,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                   style={{
                     textAlign: 'center',
                     padding: '40px',
-                    color: theme.textMuted,
+                    color: 'var(--color-text-muted)',
                   }}
                 >
                   <div style={{ fontSize: '32px', marginBottom: '8px', opacity: 0.5 }}>📋</div>
@@ -1325,7 +1325,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
             // Show loading state
             if (isPerfLoading) {
               return (
-                <div style={{ textAlign: 'center', padding: '40px', color: theme.textMuted }}>
+                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
                   <div style={{ fontSize: '24px', marginBottom: '8px' }}>⏳</div>
                   <div style={{ fontSize: '13px' }}>Loading performance data...</div>
                 </div>
@@ -1397,20 +1397,20 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                     textAlign: 'center',
                   }}
                 >
-                  <div style={{ fontSize: '11px', color: theme.textMuted, marginBottom: '8px', fontFamily: getFontFamily('english') }}>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '8px', fontFamily: getFontFamily('english') }}>
                     🏆 Performance Score
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '8px' }}>
-                    <div style={{ fontSize: '36px', fontWeight: '700', color: theme.text, ...tabularNumberStyle }}>
+                    <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--color-text)', ...tabularNumberStyle }}>
                       {perfData.score}
                     </div>
-                    <div style={{ fontSize: '18px', color: theme.textMuted, ...tabularNumberStyle }}>/100</div>
+                    <div style={{ fontSize: '18px', color: 'var(--color-text-muted)', ...tabularNumberStyle }}>/100</div>
                     {scoreDiff !== 0 && (
                       <div
                         style={{
                           fontSize: '12px',
                           fontWeight: '600',
-                          color: scoreDiff >= 0 ? theme.success : theme.error,
+                          color: scoreDiff >= 0 ? 'var(--color-success)' : 'var(--color-danger)',
                           display: 'flex',
                           alignItems: 'center',
                           gap: '2px',
@@ -1421,10 +1421,10 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                     )}
                   </div>
                   {/* Progress bar */}
-                  <div style={{ width: '100%', height: '6px', background: theme.border, borderRadius: '3px', marginBottom: '10px', overflow: 'hidden' }}>
-                    <div style={{ width: `${perfData.score}%`, height: '100%', background: theme.accent, borderRadius: '3px' }} />
+                  <div style={{ width: '100%', height: '6px', background: 'var(--color-border)', borderRadius: '3px', marginBottom: '10px', overflow: 'hidden' }}>
+                    <div style={{ width: `${perfData.score}%`, height: '100%', background: 'var(--color-accent)', borderRadius: '3px' }} />
                   </div>
-                  <div style={{ fontSize: '11px', color: theme.textSecondary, fontFamily: getFontFamily('english') }}>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontFamily: getFontFamily('english') }}>
                     #{perfData.rank} of {perfData.teamSize} team members • Top {percentile}%
                   </div>
                 </div>
@@ -1438,7 +1438,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                       value: formatHoursToHM(perfData.tracked.current),
                       sub: `/ ${formatHoursToHM(perfData.tracked.target)}`,
                       percent: perfData.timePercent,
-                      color: perfData.timePercent >= 90 ? theme.success : theme.warning,
+                      color: perfData.timePercent >= 90 ? 'var(--color-success)' : 'var(--color-warning)',
                     },
                     {
                       icon: '✅',
@@ -1446,7 +1446,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                       value: `${perfData.tasks.completed}/${perfData.tasks.total}`,
                       sub: `${perfData.tasksPercent}%`,
                       percent: perfData.tasksPercent,
-                      color: perfData.tasksPercent >= 80 ? theme.success : theme.warning,
+                      color: perfData.tasksPercent >= 80 ? 'var(--color-success)' : 'var(--color-warning)',
                     },
                     {
                       icon: '🎯',
@@ -1454,29 +1454,29 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                       value: `${perfData.tasks.onTime}/${perfData.tasks.completed}`,
                       sub: `${perfData.onTimePercent}%`,
                       percent: perfData.onTimePercent,
-                      color: perfData.onTimePercent >= 80 ? theme.success : theme.warning,
+                      color: perfData.onTimePercent >= 80 ? 'var(--color-success)' : 'var(--color-warning)',
                     },
                   ].map((m, i) => (
                     <div
                       key={i}
                       style={{
-                        background: theme.secondaryBg,
+                        background: 'var(--color-inner-bg)',
                         padding: '10px',
                         borderRadius: '8px',
-                        border: `1px solid ${theme.borderLight}`,
+                        border: `1px solid var(--color-border-light)`,
                         textAlign: 'center',
                       }}
                     >
-                      <div style={{ fontSize: '9px', color: theme.textMuted, marginBottom: '4px', fontFamily: getFontFamily('english') }}>
+                      <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', marginBottom: '4px', fontFamily: getFontFamily('english') }}>
                         {m.icon} {m.label}
                       </div>
-                      <div style={{ fontSize: '16px', fontWeight: '700', color: theme.text, ...tabularNumberStyle }}>
+                      <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--color-text)', ...tabularNumberStyle }}>
                         {m.value}
                       </div>
-                      <div style={{ fontSize: '10px', color: theme.textSecondary, marginBottom: '6px', ...tabularNumberStyle }}>
+                      <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginBottom: '6px', ...tabularNumberStyle }}>
                         {m.sub}
                       </div>
-                      <div style={{ width: '100%', height: '4px', background: theme.border, borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{ width: '100%', height: '4px', background: 'var(--color-border)', borderRadius: '2px', overflow: 'hidden' }}>
                         <div style={{ width: `${Math.min(m.percent, 100)}%`, height: '100%', background: m.color, borderRadius: '2px' }} />
                       </div>
                     </div>
@@ -1486,18 +1486,18 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 {/* Weekly Hours Trend - Sparkline */}
                 <div
                   style={{
-                    background: theme.secondaryBg,
+                    background: 'var(--color-inner-bg)',
                     padding: '14px',
                     borderRadius: '8px',
-                    border: `1px solid ${theme.borderLight}`,
+                    border: `1px solid var(--color-border-light)`,
                     marginBottom: '12px',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: '600', color: theme.text, fontFamily: getFontFamily('english') }}>
+                    <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text)', fontFamily: getFontFamily('english') }}>
                       📈 Weekly Hours Trend
                     </div>
-                    <div style={{ fontSize: '10px', color: theme.textSecondary, ...tabularNumberStyle }}>
+                    <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', ...tabularNumberStyle }}>
                       {formatHoursToHM(totalWeekHours)} total
                     </div>
                   </div>
@@ -1514,7 +1514,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                       formatValue={(v) => formatHoursToHM(v)}
                     />
                   ) : (
-                    <div style={{ textAlign: 'center', padding: '20px', color: theme.textMuted, fontSize: '12px' }}>
+                    <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-text-muted)', fontSize: '12px' }}>
                       Not enough data for trend chart
                     </div>
                   )}
@@ -1528,7 +1528,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                         return (
                           <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', height: '100%', justifyContent: 'flex-end' }}>
                             {!data.isFuture && data.hours > 0 && (
-                              <div style={{ fontSize: '8px', color: theme.textMuted, ...tabularNumberStyle }}>
+                              <div style={{ fontSize: '8px', color: 'var(--color-text-muted)', ...tabularNumberStyle }}>
                                 {data.hours.toFixed(1)}h
                               </div>
                             )}
@@ -1537,12 +1537,12 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                                 width: '100%',
                                 height: `${height}%`,
                                 minHeight: data.isFuture ? '0' : '4px',
-                                background: data.isFuture ? theme.border : data.hours >= targetHours ? theme.success : data.hours > 0 ? theme.warning : theme.border,
+                                background: data.isFuture ? 'var(--color-border)' : data.hours >= targetHours ? 'var(--color-success)' : data.hours > 0 ? 'var(--color-warning)' : 'var(--color-border)',
                                 borderRadius: '3px 3px 0 0',
                                 opacity: data.isFuture ? 0.3 : 1,
                               }}
                             />
-                            <div style={{ fontSize: '9px', color: theme.textMuted, fontFamily: getFontFamily('english') }}>
+                            <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontFamily: getFontFamily('english') }}>
                               {data.day}
                             </div>
                           </div>
@@ -1550,8 +1550,8 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                       })}
                     </div>
                     {/* Target line indicator */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '9px', color: theme.textMuted }}>
-                      <span style={{ width: '12px', borderTop: `1px dashed ${theme.textMuted}` }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '9px', color: 'var(--color-text-muted)' }}>
+                      <span style={{ width: '12px', borderTop: `1px dashed var(--color-text-muted)` }} />
                       <span>{targetHours}h target</span>
                     </div>
                   </div>
@@ -1560,18 +1560,18 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 {/* Tasks by Project */}
                 <div
                   style={{
-                    background: theme.secondaryBg,
+                    background: 'var(--color-inner-bg)',
                     padding: '14px',
                     borderRadius: '8px',
-                    border: `1px solid ${theme.borderLight}`,
+                    border: `1px solid var(--color-border-light)`,
                     marginBottom: '12px',
                   }}
                 >
-                  <div style={{ fontSize: '11px', fontWeight: '600', color: theme.text, marginBottom: '10px', fontFamily: getFontFamily('english') }}>
+                  <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text)', marginBottom: '10px', fontFamily: getFontFamily('english') }}>
                     📁 Time by Project
                   </div>
                   {perfData.byProject.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '16px', color: theme.textMuted, fontSize: '11px' }}>
+                    <div style={{ textAlign: 'center', padding: '16px', color: 'var(--color-text-muted)', fontSize: '11px' }}>
                       No project data this week
                     </div>
                   ) : (
@@ -1581,19 +1581,19 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                       return (
                         <div key={i} style={{ marginBottom: i < perfData.byProject.length - 1 ? '10px' : '0' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                            <span style={{ fontSize: '11px', color: theme.text, fontWeight: '600', fontFamily: getAdaptiveFontFamily(project.name) }}>
+                            <span style={{ fontSize: '11px', color: 'var(--color-text)', fontWeight: '600', fontFamily: getAdaptiveFontFamily(project.name) }}>
                               {project.name}
                             </span>
-                            <span style={{ fontSize: '10px', color: theme.textSecondary, display: 'flex', alignItems: 'center', gap: '4px', ...tabularNumberStyle }}>
+                            <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '4px', ...tabularNumberStyle }}>
                               {formatHoursToHM(project.hours)} • {project.tasks} tasks
                             </span>
                           </div>
-                          <div style={{ width: '100%', height: '6px', background: theme.border, borderRadius: '3px', overflow: 'hidden' }}>
+                          <div style={{ width: '100%', height: '6px', background: 'var(--color-border)', borderRadius: '3px', overflow: 'hidden' }}>
                             <div
                               style={{
                                 width: `${percent}%`,
                                 height: '100%',
-                                background: theme.accent,
+                                background: 'var(--color-accent)',
                                 borderRadius: '3px',
                               }}
                             />
@@ -1607,31 +1607,31 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 {/* Insights */}
                 <div
                   style={{
-                    background: theme.secondaryBg,
+                    background: 'var(--color-inner-bg)',
                     padding: '12px 14px',
                     borderRadius: '8px',
-                    border: `1px solid ${theme.borderLight}`,
+                    border: `1px solid var(--color-border-light)`,
                   }}
                 >
-                  <div style={{ fontSize: '11px', fontWeight: '600', color: theme.text, marginBottom: '8px', fontFamily: getFontFamily('english') }}>
+                  <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text)', marginBottom: '8px', fontFamily: getFontFamily('english') }}>
                     💡 Insights
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '10px', color: theme.textSecondary }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '10px', color: 'var(--color-text-secondary)' }}>
                     {bestDay.hours > 0 && (
-                      <span style={{ background: theme.cardBg, padding: '4px 8px', borderRadius: '4px', fontFamily: getFontFamily('english') }}>
+                      <span style={{ background: 'var(--color-card-bg)', padding: '4px 8px', borderRadius: '4px', fontFamily: getFontFamily('english') }}>
                         Best: {bestDay.day} ({formatHoursToHM(bestDay.hours)})
                       </span>
                     )}
-                    <span style={{ background: theme.cardBg, padding: '4px 8px', borderRadius: '4px', fontFamily: getFontFamily('english') }}>
+                    <span style={{ background: 'var(--color-card-bg)', padding: '4px 8px', borderRadius: '4px', fontFamily: getFontFamily('english') }}>
                       {performanceData?.totalTasks || totalTasks} tasks worked this week
                     </span>
                     {perfData.timePercent >= 90 && (
-                      <span style={{ background: hexToRgba(theme.success, 0.12), color: theme.success, padding: '4px 8px', borderRadius: '4px', fontFamily: getFontFamily('english') }}>
+                      <span style={{ background: hexToRgba(theme.success, 0.12), color: 'var(--color-success)', padding: '4px 8px', borderRadius: '4px', fontFamily: getFontFamily('english') }}>
                         On track! ⭐
                       </span>
                     )}
                     {perfData.timePercent < 70 && perfData.timePercent > 0 && (
-                      <span style={{ background: hexToRgba(theme.warning, 0.12), color: theme.warning, padding: '4px 8px', borderRadius: '4px', fontFamily: getFontFamily('english') }}>
+                      <span style={{ background: hexToRgba(theme.warning, 0.12), color: 'var(--color-warning)', padding: '4px 8px', borderRadius: '4px', fontFamily: getFontFamily('english') }}>
                         Below target
                       </span>
                     )}
@@ -1646,7 +1646,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
             // Use real leaves data from state, or show loading/empty state
             if (!leavesData) {
               return (
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: theme.textSecondary }}>
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--color-text-secondary)' }}>
                   <div style={{ fontSize: '24px', marginBottom: '12px' }}>📅</div>
                   <div style={{ fontSize: '14px' }}>Loading leave data...</div>
                 </div>
@@ -1686,25 +1686,25 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                     marginBottom: '12px',
                   }}
                 >
-                  <div style={{ fontSize: '11px', color: theme.textMuted, marginBottom: '8px', fontFamily: getFontFamily('english') }}>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '8px', fontFamily: getFontFamily('english') }}>
                     📅 {leavesData.year} Leave Balance
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px' }}>
-                    <div style={{ fontSize: '28px', fontWeight: '700', color: theme.text, ...tabularNumberStyle }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-text)', ...tabularNumberStyle }}>
                       {totalRemaining}
                     </div>
-                    <div style={{ fontSize: '14px', color: theme.textMuted }}>days remaining</div>
-                    <div style={{ fontSize: '12px', color: theme.textSecondary, ...tabularNumberStyle }}>
+                    <div style={{ fontSize: '14px', color: 'var(--color-text-muted)' }}>days remaining</div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', ...tabularNumberStyle }}>
                       (of {totalQuota})
                     </div>
                   </div>
                   {/* Progress bar */}
-                  <div style={{ width: '100%', height: '6px', background: theme.border, borderRadius: '3px', marginBottom: '10px', overflow: 'hidden' }}>
-                    <div style={{ width: `${usedPercent}%`, height: '100%', background: theme.accent, borderRadius: '3px' }} />
+                  <div style={{ width: '100%', height: '6px', background: 'var(--color-border)', borderRadius: '3px', marginBottom: '10px', overflow: 'hidden' }}>
+                    <div style={{ width: `${usedPercent}%`, height: '100%', background: 'var(--color-accent)', borderRadius: '3px' }} />
                   </div>
-                  <div style={{ fontSize: '10px', color: theme.textSecondary, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', fontFamily: getFontFamily('english') }}>
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', fontFamily: getFontFamily('english') }}>
                     {daysToLose > 0 && (
-                      <span style={{ color: theme.warning, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ color: 'var(--color-warning)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         ⚠️ {daysToLose} days expire Dec 31
                       </span>
                     )}
@@ -1715,27 +1715,27 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 {/* 3 Leave Type Cards */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '12px' }}>
                   {[
-                    { icon: '🏖️', type: 'Annual', used: leavesData.annual.used, total: leavesData.annual.total, color: theme.accent },
-                    { icon: '🏥', type: 'Sick', used: leavesData.sick.used, total: leavesData.sick.total, color: theme.warning },
-                    { icon: '🎁', type: 'Bonus', used: leavesData.bonus.used, total: leavesData.bonus.total, color: theme.success },
+                    { icon: '🏖️', type: 'Annual', used: leavesData.annual.used, total: leavesData.annual.total, color: 'var(--color-accent)' },
+                    { icon: '🏥', type: 'Sick', used: leavesData.sick.used, total: leavesData.sick.total, color: 'var(--color-warning)' },
+                    { icon: '🎁', type: 'Bonus', used: leavesData.bonus.used, total: leavesData.bonus.total, color: 'var(--color-success)' },
                   ].map((q, i) => (
                     <div
                       key={i}
                       style={{
-                        background: theme.secondaryBg,
+                        background: 'var(--color-inner-bg)',
                         padding: '10px',
                         borderRadius: '8px',
-                        border: `1px solid ${theme.borderLight}`,
+                        border: `1px solid var(--color-border-light)`,
                         textAlign: 'center',
                       }}
                     >
-                      <div style={{ fontSize: '9px', color: theme.textMuted, marginBottom: '4px', fontFamily: getFontFamily('english') }}>
+                      <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', marginBottom: '4px', fontFamily: getFontFamily('english') }}>
                         {q.icon} {q.type}
                       </div>
-                      <div style={{ fontSize: '16px', fontWeight: '700', color: theme.text, ...tabularNumberStyle }}>
+                      <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--color-text)', ...tabularNumberStyle }}>
                         {q.total - q.used}
                       </div>
-                      <div style={{ fontSize: '9px', color: theme.textSecondary, ...tabularNumberStyle }}>
+                      <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)', ...tabularNumberStyle }}>
                         {q.used}/{q.total} used
                       </div>
                     </div>
@@ -1760,10 +1760,10 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                   return (
                     <div
                       style={{
-                        background: theme.secondaryBg,
+                        background: 'var(--color-inner-bg)',
                         padding: '12px',
                         borderRadius: '8px',
-                        border: `1px solid ${theme.borderLight}`,
+                        border: `1px solid var(--color-border-light)`,
                         marginBottom: '12px',
                       }}
                     >
@@ -1771,20 +1771,20 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                         <button
                           onClick={() => setCalendarDate(new Date(calYear, calMonth - 1, 1))}
-                          style={{ background: 'none', border: `1px solid ${theme.border}`, borderRadius: '4px', color: theme.text, cursor: 'pointer', padding: '2px 8px', fontSize: '14px' }}
+                          style={{ background: 'none', border: `1px solid var(--color-border)`, borderRadius: '4px', color: 'var(--color-text)', cursor: 'pointer', padding: '2px 8px', fontSize: '14px' }}
                         >&lsaquo;</button>
-                        <span style={{ fontSize: '11px', fontWeight: '600', color: theme.text, fontFamily: getFontFamily('english') }}>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text)', fontFamily: getFontFamily('english') }}>
                           {calMonthName}
                         </span>
                         <button
                           onClick={() => setCalendarDate(new Date(calYear, calMonth + 1, 1))}
-                          style={{ background: 'none', border: `1px solid ${theme.border}`, borderRadius: '4px', color: theme.text, cursor: 'pointer', padding: '2px 8px', fontSize: '14px' }}
+                          style={{ background: 'none', border: `1px solid var(--color-border)`, borderRadius: '4px', color: 'var(--color-text)', cursor: 'pointer', padding: '2px 8px', fontSize: '14px' }}
                         >&rsaquo;</button>
                       </div>
                       {/* Day headers */}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', marginBottom: '4px' }}>
                         {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-                          <div key={d} style={{ fontSize: '8px', color: theme.textMuted, textAlign: 'center', fontFamily: getFontFamily('english') }}>
+                          <div key={d} style={{ fontSize: '8px', color: 'var(--color-text-muted)', textAlign: 'center', fontFamily: getFontFamily('english') }}>
                             {d}
                           </div>
                         ))}
@@ -1799,7 +1799,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                           const isTodayDay = isCurrentMonth && day === today.getDate();
                           const event = calEvents[day];
                           let bgColor = 'transparent';
-                          let textColor = theme.textSecondary;
+                          let textColor = 'var(--color-text-secondary)';
                           if (event === 'leave') { bgColor = leaveColor; textColor = '#fff'; }
                           if (event === 'wfh') { bgColor = wfhColor; textColor = '#fff'; }
                           if (event === 'holiday') { bgColor = holidayColor; textColor = '#fff'; }
@@ -1816,7 +1816,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                                 color: textColor,
                                 background: bgColor,
                                 borderRadius: '4px',
-                                border: isTodayDay ? `2px solid ${theme.text}` : 'none',
+                                border: isTodayDay ? `2px solid var(--color-text)` : 'none',
                                 ...tabularNumberStyle,
                               }}
                             >
@@ -1826,7 +1826,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                         })}
                       </div>
                       {/* Legend */}
-                      <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: '8px', color: theme.textMuted, fontFamily: getFontFamily('english') }}>
+                      <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: '8px', color: 'var(--color-text-muted)', fontFamily: getFontFamily('english') }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <span style={{ width: '8px', height: '8px', background: leaveColor, borderRadius: '2px' }} /> Leave
                         </span>
@@ -1844,14 +1844,14 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 {/* Upcoming (Combined Leaves + WFH) */}
                 <div
                   style={{
-                    background: theme.secondaryBg,
+                    background: 'var(--color-inner-bg)',
                     padding: '12px',
                     borderRadius: '8px',
-                    border: `1px solid ${theme.borderLight}`,
+                    border: `1px solid var(--color-border-light)`,
                     marginBottom: '12px',
                   }}
                 >
-                  <div style={{ fontSize: '11px', fontWeight: '600', color: theme.text, marginBottom: '10px', fontFamily: getFontFamily('english') }}>
+                  <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text)', marginBottom: '10px', fontFamily: getFontFamily('english') }}>
                     📋 Upcoming
                   </div>
                   {leavesData.upcoming.map((item, i) => (
@@ -1862,18 +1862,18 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                         alignItems: 'center',
                         gap: '10px',
                         padding: '8px',
-                        background: theme.cardBg,
+                        background: 'var(--color-card-bg)',
                         borderRadius: '6px',
                         marginBottom: i < leavesData.upcoming.length - 1 ? '6px' : '0',
-                        border: `1px solid ${theme.borderLight}`,
+                        border: `1px solid var(--color-border-light)`,
                       }}
                     >
                       <div style={{ fontSize: '16px' }}>{item.icon}</div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '10px', fontWeight: '600', color: theme.text, fontFamily: getFontFamily('english') }}>
+                        <div style={{ fontSize: '10px', fontWeight: '600', color: 'var(--color-text)', fontFamily: getFontFamily('english') }}>
                           {item.date} {item.day && `(${item.day})`}
                         </div>
-                        <div style={{ fontSize: '9px', color: theme.textSecondary, fontFamily: getFontFamily('english') }}>
+                        <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)', fontFamily: getFontFamily('english') }}>
                           {item.label} {item.days && `(${item.days}d)`}
                         </div>
                       </div>
@@ -1904,22 +1904,22 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 {/* WFH This Month */}
                 <div
                   style={{
-                    background: theme.secondaryBg,
+                    background: 'var(--color-inner-bg)',
                     padding: '12px',
                     borderRadius: '8px',
-                    border: `1px solid ${theme.borderLight}`,
+                    border: `1px solid var(--color-border-light)`,
                     marginBottom: '12px',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: '600', color: theme.text, fontFamily: getFontFamily('english') }}>
+                    <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text)', fontFamily: getFontFamily('english') }}>
                       🏠 WFH This Month
                     </div>
-                    <div style={{ fontSize: '10px', color: theme.textSecondary, ...tabularNumberStyle }}>
+                    <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', ...tabularNumberStyle }}>
                       {leavesData.wfh.usedThisMonth}/{leavesData.wfh.monthlyQuota} used
                     </div>
                   </div>
-                  <div style={{ width: '100%', height: '6px', background: theme.border, borderRadius: '3px', marginBottom: '8px', overflow: 'hidden' }}>
+                  <div style={{ width: '100%', height: '6px', background: 'var(--color-border)', borderRadius: '3px', marginBottom: '8px', overflow: 'hidden' }}>
                     <div
                       style={{
                         width: `${(leavesData.wfh.usedThisMonth / leavesData.wfh.monthlyQuota) * 100}%`,
@@ -1929,7 +1929,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                       }}
                     />
                   </div>
-                  <div style={{ fontSize: '9px', color: theme.textSecondary, fontFamily: getFontFamily('english') }}>
+                  <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)', fontFamily: getFontFamily('english') }}>
                     {leavesData.wfh.monthlyQuota} days/month quota
                   </div>
                 </div>
@@ -1937,13 +1937,13 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 {/* Smart Suggestions */}
                 <div
                   style={{
-                    background: theme.secondaryBg,
+                    background: 'var(--color-inner-bg)',
                     padding: '12px',
                     borderRadius: '8px',
-                    border: `1px solid ${theme.borderLight}`,
+                    border: `1px solid var(--color-border-light)`,
                   }}
                 >
-                  <div style={{ fontSize: '11px', fontWeight: '600', color: theme.text, marginBottom: '8px', fontFamily: getFontFamily('english') }}>
+                  <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text)', marginBottom: '8px', fontFamily: getFontFamily('english') }}>
                     💡 Suggestions
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -1952,9 +1952,9 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                         key={i}
                         style={{
                           fontSize: '10px',
-                          color: theme.textSecondary,
+                          color: 'var(--color-text-secondary)',
                           padding: '6px 10px',
-                          background: theme.cardBg,
+                          background: 'var(--color-card-bg)',
                           borderRadius: '4px',
                           fontFamily: getFontFamily('english'),
                         }}
