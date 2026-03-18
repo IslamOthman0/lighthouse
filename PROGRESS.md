@@ -404,12 +404,12 @@
 - [x] 8.5 SettingsModal form controls — close button minHeight 44px; tabs padding 10-12px→15px
 - [x] 8.6 LeavesTab tab buttons — py-[6px]→py-[15px]
 
-### Phase 9: Empty States
-- [ ] 9.1 Grid View (App.jsx) — no members empty state
-- [ ] 9.2 ListView — no members empty state
-- [ ] 9.3 LeavesTab — no leave data empty state
-- [ ] 9.4 ProjectBreakdownCard — standardize empty state
-- [ ] 9.5 RankingTable — no members empty state
+### Phase 9: Empty States ✅ COMPLETE (2026-03-18)
+- [x] 9.1 Grid View (App.jsx) — empty state when filter yields no members
+- [x] 9.2 ListView — empty state for mobile cards + desktop tbody (👥 No members to display)
+- [x] 9.3 LeavesTab — empty state when members.length === 0 (📅 No team members configured)
+- [x] 9.4 ProjectBreakdownCard — standardized (py-6→py-10, icon opacity/size consistent)
+- [x] 9.5 RankingTable — empty state for mobile cards + desktop tbody (🏆 No members to rank)
 
 ### Phase 10: RTL Polish
 - [ ] 10.1 SettingsModal — RTL font handling for member names
