@@ -412,11 +412,11 @@
 - [x] 9.5 RankingTable — empty state for mobile cards + desktop tbody (🏆 No members to rank)
 
 ### Phase 10: RTL Polish
-- [ ] 10.1 SettingsModal — RTL font handling for member names
-- [ ] 10.2 TaskListModal — RTL font handling for task/project names
-- [ ] 10.3 ScoreBreakdownCard — verify RTL (likely no-op, English labels only)
-- [ ] 10.4 Leaves sub-components — RTL font handling for member names
-- [ ] 10.5 RankingTable + ListView — complete RTL font coverage
+- [x] 10.1 SettingsModal — RTL font handling for member names (already done)
+- [x] 10.2 TaskListModal — RTL font handling for task/project names (already done)
+- [x] 10.3 ScoreBreakdownCard — verify RTL (English labels only, confirmed)
+- [x] 10.4 Leaves sub-components — RTL font handling for member names (TeamOverviewPanel, MemberLeaveDetail, LeaveCalendar)
+- [x] 10.5 RankingTable + ListView — complete RTL font coverage (getTextFontStyle already in place)
 
 ### Phase 11: Final Verification
 - [ ] 11.1 Full build + test suite (228+ Vitest + 177 Playwright)
