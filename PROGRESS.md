@@ -379,22 +379,22 @@
 ### Phase 7: Large Components
 - [x] 7.1 ModalShell.jsx (317 lines) — theme-conditional modal bg simplified to var(--color-card-bg); all sub-components (ModalHero, ModalSection, StatRow, ProgressBar, EmptyState) migrated; boxShadow kept inline (dark/light differ)
 - [x] 7.2 DashboardDetailModal.jsx (544 lines) — theme.working/accent/success/warning hex-suffix patterns replaced with CSS vars + rgba constants; StatGridItem helper extracted; gridTemplateColumns kept inline (dynamic)
-- [ ] 7.3 TaskListModal.jsx (775 lines)
-- [ ] 7.4 DatePickerModal.jsx (608 lines)
-- [ ] 7.5 MemberDetailModal.jsx: Timeline tab
-- [ ] 7.6 MemberDetailModal.jsx: Performance tab
-- [ ] 7.7 MemberDetailModal.jsx: Leaves tab
-- [ ] 7.8 SettingsModal.jsx: shell + ClickUp tab
-- [ ] 7.9 SettingsModal.jsx: Team + Score tabs
-- [ ] 7.10 SettingsModal.jsx: remaining tabs (Thresholds/Sync/Calendar/Display/Audit)
-- [ ] 7.11 ListView.jsx: header + table structure
-- [ ] 7.12 ListView.jsx: member rows + expanded content
-- [ ] 7.13 ListView.jsx: footer + mobile adaptations
+- [x] 7.3 TaskListModal.jsx (775 lines) — all theme.* refs removed; CSS vars used throughout
+- [x] 7.4 DatePickerModal.jsx (608 lines) — Tailwind for layout; isDark kept for accent/calendar colors (no CSS var equivalent)
+- [x] 7.5 MemberDetailModal.jsx: Timeline tab — hexToRgba(theme.*) replaced with CSS vars (accent-subtle, working-subtle, break-subtle/border, accent-border)
+- [x] 7.6 MemberDetailModal.jsx: Performance tab — hexToRgba(theme.success/warning/accent) replaced; theme.type→var(--color-card-bg)
+- [x] 7.7 MemberDetailModal.jsx: Leaves tab — theme.success/warning hex-suffix replaced; softPulse keyframe uses CSS vars
+- [x] 7.8 SettingsModal.jsx: shell + ClickUp tab — hexToRgba(theme.accent) → var(--color-accent-subtle-sm)
+- [x] 7.9 SettingsModal.jsx: Team + Score tabs — theme.text fallback → var(--color-border); theme.subtleBg → var(--color-inner-bg)
+- [x] 7.10 SettingsModal.jsx: remaining tabs — theme.subtleBg → var(--color-inner-bg) for all score weight inputs
+- [x] 7.11 ListView.jsx: header + table structure — theme.working → var(--color-working); lightMode comment added
+- [x] 7.12 ListView.jsx: member rows + expanded content — theme.accent+'20' → var(--color-accent-subtle)
+- [x] 7.13 ListView.jsx: footer + mobile adaptations — View Full Profile button hover uses var(--color-accent-subtle/contrast)
 - [x] 7.14 RankingTable.jsx (610 lines) — full Tailwind migration; score badge uses runtime rgba (CSS var hex-suffix not viable); rank colors extracted to RANK_COLORS constant; theme prop retained for Avatar + getMetricColor lightMode
 - [x] 7.15 Leaves sub-components (5 files: LeavesTab, TeamOverviewPanel, LeaveCalendar, MemberLeaveDetail, QuotaBar) — dynamic hex-suffix patterns (color+18/30/40) kept inline; TYPE_COLORS hex values kept inline as they're fixed data constants not theme tokens; CSS vars used for all theme.text/border/cardBg/accent refs
 - [x] 7.16 ErrorBoundary.jsx (259 lines) — dropped isDarkMode detection; CSS custom properties from :root always apply even before useTheme runs
 - [x] 7.17 App.jsx (563 lines) — scrollbar style switched to CSS vars; skeleton loading + main layout fully Tailwind; theme.working/cardBg/border/text all replaced; theme prop retained for child components not yet migrated
-- [ ] 7.18 Verify large component migration
+- [x] 7.18 Verify large component migration — 256 tests passing, production build clean
 
 ### Phase 8: Touch Target Fixes (44×44px minimum)
 - [ ] 8.1 ModalShell close button (28px → 44px)
