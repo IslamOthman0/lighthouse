@@ -43,6 +43,18 @@
   /* Accents */
   --color-accent: #ffffff;
   --color-accent-glow: rgba(255, 255, 255, 0.2);
+  --color-accent-subtle: rgba(255, 255, 255, 0.12);
+  --color-accent-subtle-sm: rgba(255, 255, 255, 0.08);
+  --color-accent-subtle-xs: rgba(255, 255, 255, 0.03);
+  --color-accent-border: rgba(255, 255, 255, 0.25);
+  --color-accent-contrast: #000000;
+  --color-success-subtle: rgba(16, 185, 129, 0.12);
+  --color-warning-subtle: rgba(245, 158, 11, 0.12);
+  --color-danger-subtle: rgba(239, 68, 68, 0.12);
+  --color-working-subtle: rgba(16, 185, 129, 0.12);
+  --color-working-glow-sm: rgba(16, 185, 129, 0.19);
+  --color-break-subtle: rgba(245, 158, 11, 0.08);
+  --color-break-border: rgba(245, 158, 11, 0.3);
   --color-danger: #EF4444;
   --color-success: #10B981;
   --color-warning: #F59E0B;
@@ -76,6 +88,18 @@
   --color-no-activity: rgba(0, 0, 0, 0.3);
   --color-accent: #111827;
   --color-accent-glow: rgba(17, 24, 39, 0.2);
+  --color-accent-subtle: rgba(17, 24, 39, 0.12);
+  --color-accent-subtle-sm: rgba(17, 24, 39, 0.08);
+  --color-accent-subtle-xs: rgba(17, 24, 39, 0.03);
+  --color-accent-border: rgba(17, 24, 39, 0.25);
+  --color-accent-contrast: #ffffff;
+  --color-success-subtle: rgba(5, 150, 105, 0.12);
+  --color-warning-subtle: rgba(217, 119, 6, 0.12);
+  --color-danger-subtle: rgba(220, 38, 38, 0.12);
+  --color-working-subtle: rgba(16, 185, 129, 0.12);
+  --color-working-glow-sm: rgba(16, 185, 129, 0.19);
+  --color-break-subtle: rgba(245, 158, 11, 0.08);
+  --color-break-border: rgba(245, 158, 11, 0.3);
   --color-danger: #DC2626;
   --color-success: #059669;
   --color-warning: #D97706;

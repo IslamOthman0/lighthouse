@@ -295,102 +295,71 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
     return `${formatDate(tempRange.startDate)} — ${formatDate(tempRange.endDate)}`;
   };
 
-  // Keep theme.type conditionals inline — no CSS var equivalent
+  // theme.type needed for dynamic accent/bg values (no CSS var equivalent for selection colors)
   const isDark = theme.type === 'dark';
   const accent = isDark ? '#ffffff' : '#111827';
   const accentBg = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(17,24,39,0.08)';
-  const modalBg = isDark ? 'rgba(18, 18, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)';
+  // SVG chevron color for native select element (must be inline data URI)
+  const chevronColor = isDark ? '%23ffffff' : '%23374151';
 
   return (
     <div
-      style={{
-        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-        background: 'rgba(0, 0, 0, 0.5)',
-        backdropFilter: 'blur(4px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 1100, padding: '20px',
-      }}
+      className="fixed inset-0 z-[1100] flex items-center justify-center p-5 bg-black/50 backdrop-blur-sm"
       onClick={handleCancel}
     >
       <div
-        style={{
-          background: modalBg,
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderRadius: '16px',
-          maxWidth: '420px',
-          width: '100%',
-          maxHeight: '90vh',
-          overflow: 'auto',
-          padding: '20px',
-          border: '1px solid var(--color-border)',
-          boxShadow: '0 8px 40px rgba(0, 0, 0, 0.5)',
-        }}
+        className="w-full max-w-[420px] max-h-[90vh] overflow-auto rounded-2xl border border-[var(--color-border)] p-5 shadow-2xl"
+        style={{ background: 'var(--color-card-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--color-text)', margin: 0 }}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-[var(--color-text)] m-0">
             Select Date Range
           </h3>
           <button
             onClick={handleCancel}
-            style={{
-              background: 'transparent', border: 'none', fontSize: '24px',
-              cursor: 'pointer', color: 'var(--color-text-muted)', padding: '0',
-              width: '32px', height: '32px', display: 'flex',
-              alignItems: 'center', justifyContent: 'center', borderRadius: '8px',
-            }}
+            className="bg-transparent border-none text-2xl cursor-pointer text-[var(--color-text-muted)] p-0 w-8 h-8 flex items-center justify-center rounded-lg"
           >×</button>
         </div>
 
         {/* Selected Range Display */}
         <div
-          style={{
-            padding: '12px 16px', borderRadius: '10px',
-            background: accentBg,
-            border: '1px solid var(--color-border)',
-            marginBottom: '16px', textAlign: 'center',
-          }}
+          className="px-4 py-3 rounded-[10px] border border-[var(--color-border)] mb-4 text-center"
+          style={{ background: accentBg }}
         >
-          <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
+          <div className="text-[11px] text-[var(--color-text-muted)] mb-1">
             Selected Range
           </div>
-          <div style={{ fontSize: '15px', fontWeight: '600', color: 'var(--color-text)' }}>
+          <div className="text-[15px] font-semibold text-[var(--color-text)]">
             {formatRangeDisplay()}
           </div>
           {tempRange.preset !== 'custom' && tempRange.preset !== 'today' && (
-            <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+            <div className="text-[11px] text-[var(--color-text-muted)] mt-[2px]">
               {quickPresets.find(p => p.value === tempRange.preset)?.label}
             </div>
           )}
           {getLongRangeInfo() && (
-            <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+            <div className="text-[11px] text-[var(--color-text-muted)] mt-[6px] flex items-center gap-1 justify-center">
               ℹ Syncing {getLongRangeInfo().chunks} chunks — may take a moment
             </div>
           )}
         </div>
 
         {/* Quick Filters */}
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
+        <div className="mb-4">
+          <div className="text-[12px] font-semibold text-[var(--color-text-muted)] mb-2">
             Quick Select
           </div>
           <select
             value={tempRange.preset === 'custom' ? '' : tempRange.preset}
             onChange={(e) => { if (e.target.value) handlePresetClick(e.target.value); }}
+            className="w-full px-3 py-[9px] rounded-lg border border-[var(--color-border)] bg-[var(--color-inner-bg)] text-[var(--color-text)] text-[13px] font-medium cursor-pointer outline-none pr-8"
             style={{
-              width: '100%', padding: '9px 12px', borderRadius: '8px',
-              border: '1px solid var(--color-border)',
-              background: 'var(--color-inner-bg)',
-              color: 'var(--color-text)',
-              fontSize: '13px', fontWeight: '500',
-              cursor: 'pointer', outline: 'none',
               appearance: 'none', WebkitAppearance: 'none',
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${isDark ? '%23ffffff' : '%23374151'}' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='${chevronColor}' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
               backgroundRepeat: 'no-repeat',
               backgroundPosition: 'right 12px center',
-              paddingRight: '32px',
             }}
           >
             <option value="" disabled>— pick a preset —</option>
@@ -401,56 +370,46 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
         </div>
 
         {/* Calendar */}
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
+        <div className="mb-4">
+          <div className="text-[12px] font-semibold text-[var(--color-text-muted)] mb-2">
             Custom Range
           </div>
 
           {/* Selection mode hint */}
           {tempRange.preset === 'custom' && (
-            <div style={{
-              fontSize: '11px', textAlign: 'center', marginBottom: '8px',
-              color: selectionMode === 'start' ? 'var(--color-text-muted)' : accent,
-              fontWeight: '500',
-            }}>
+            <div
+              className="text-[11px] text-center mb-2 font-medium"
+              style={{ color: selectionMode === 'start' ? 'var(--color-text-muted)' : accent }}
+            >
               {selectionMode === 'start' ? 'Click a day to set start date' : '▶ Now click end date'}
             </div>
           )}
 
           {/* Month/Year Navigation */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <div className="flex items-center justify-between mb-[10px]">
             <button
               onClick={handlePrevMonth}
-              style={{
-                background: 'var(--color-inner-bg)', border: '1px solid var(--color-border)',
-                borderRadius: '8px', width: '32px', height: '32px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: 'var(--color-text)', fontSize: '16px',
-              }}
+              className="bg-[var(--color-inner-bg)] border border-[var(--color-border)] rounded-lg w-8 h-8 flex items-center justify-center cursor-pointer text-[var(--color-text)] text-base"
             >‹</button>
 
             {/* Month/Year header — click to open year/month picker */}
-            <div style={{ display: 'flex', gap: '4px' }}>
+            <div className="flex gap-1">
               <button
                 onClick={() => setNavMode(navMode === 'month' ? null : 'month')}
+                className="rounded-[6px] px-2 py-1 text-[14px] font-semibold text-[var(--color-text)] cursor-pointer"
                 style={{
                   background: navMode === 'month' ? accentBg : 'transparent',
                   border: `1px solid ${navMode === 'month' ? accent : 'transparent'}`,
-                  borderRadius: '6px', padding: '4px 8px',
-                  fontSize: '14px', fontWeight: '600', color: 'var(--color-text)',
-                  cursor: 'pointer',
                 }}
               >
                 {monthNames[currentMonth]}
               </button>
               <button
                 onClick={() => setNavMode(navMode === 'year' ? null : 'year')}
+                className="rounded-[6px] px-2 py-1 text-[14px] font-semibold text-[var(--color-text)] cursor-pointer"
                 style={{
                   background: navMode === 'year' ? accentBg : 'transparent',
                   border: `1px solid ${navMode === 'year' ? accent : 'transparent'}`,
-                  borderRadius: '6px', padding: '4px 8px',
-                  fontSize: '14px', fontWeight: '600', color: 'var(--color-text)',
-                  cursor: 'pointer',
                 }}
               >
                 {currentYear}
@@ -459,24 +418,19 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
 
             <button
               onClick={handleNextMonth}
-              style={{
-                background: 'var(--color-inner-bg)', border: '1px solid var(--color-border)',
-                borderRadius: '8px', width: '32px', height: '32px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: 'var(--color-text)', fontSize: '16px',
-              }}
+              className="bg-[var(--color-inner-bg)] border border-[var(--color-border)] rounded-lg w-8 h-8 flex items-center justify-center cursor-pointer text-[var(--color-text)] text-base"
             >›</button>
           </div>
 
           {/* Year picker dropdown */}
           {navMode === 'year' && (
-            <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px',
-              marginBottom: '10px', padding: '8px', borderRadius: '8px',
-              background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-              border: '1px solid var(--color-border)',
-              maxHeight: '120px', overflowY: 'auto',
-            }}>
+            <div
+              className="grid gap-1 mb-[10px] p-2 rounded-lg border border-[var(--color-border)] max-h-[120px] overflow-y-auto"
+              style={{
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+              }}
+            >
               {yearList.map(y => (
                 <button
                   key={y}
@@ -484,13 +438,12 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
                     setViewDate(new Date(y, currentMonth, 1));
                     setNavMode(null);
                   }}
+                  className="px-1 py-[6px] rounded-[6px] text-[13px] cursor-pointer"
                   style={{
-                    padding: '6px 4px', borderRadius: '6px', fontSize: '13px',
                     fontWeight: y === currentYear ? '700' : '400',
                     border: y === currentYear ? `1px solid ${accent}` : '1px solid transparent',
                     background: y === currentYear ? accentBg : 'transparent',
                     color: y === currentYear ? accent : 'var(--color-text)',
-                    cursor: 'pointer',
                   }}
                 >{y}</button>
               ))}
@@ -499,12 +452,13 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
 
           {/* Month picker dropdown */}
           {navMode === 'month' && (
-            <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px',
-              marginBottom: '10px', padding: '8px', borderRadius: '8px',
-              background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-              border: '1px solid var(--color-border)',
-            }}>
+            <div
+              className="grid gap-1 mb-[10px] p-2 rounded-lg border border-[var(--color-border)]"
+              style={{
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+              }}
+            >
               {monthShort.map((m, idx) => (
                 <button
                   key={m}
@@ -512,37 +466,32 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
                     setViewDate(new Date(currentYear, idx, 1));
                     setNavMode(null);
                   }}
+                  className="px-1 py-[6px] rounded-[6px] text-[12px] cursor-pointer"
                   style={{
-                    padding: '6px 4px', borderRadius: '6px', fontSize: '12px',
                     fontWeight: idx === currentMonth ? '700' : '400',
                     border: idx === currentMonth ? `1px solid ${accent}` : '1px solid transparent',
                     background: idx === currentMonth ? accentBg : 'transparent',
                     color: idx === currentMonth ? accent : 'var(--color-text)',
-                    cursor: 'pointer',
                   }}
                 >{m}</button>
               ))}
             </div>
           )}
 
-          {/* Day Names */}
+          {/* Day Names + Calendar Grid */}
           {!navMode && (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', marginBottom: '4px' }}>
+              <div className="grid gap-[2px] mb-1" style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}>
                 {dayNames.map(day => (
-                  <div key={day} style={{
-                    textAlign: 'center', fontSize: '10px',
-                    fontWeight: '600', color: 'var(--color-text-muted)', padding: '4px 0',
-                  }}>
+                  <div key={day} className="text-center text-[10px] font-semibold text-[var(--color-text-muted)] py-1">
                     {day}
                   </div>
                 ))}
               </div>
 
-              {/* Calendar Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
+              <div className="grid gap-[2px]" style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}>
                 {calendarDays.map((date, index) => {
-                  if (!date) return <div key={`empty-${index}`} style={{ padding: '6px' }} />;
+                  if (!date) return <div key={`empty-${index}`} className="p-[6px]" />;
 
                   const inRange = isInRange(date);
                   const isStart = isStartDate(date);
@@ -555,21 +504,18 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
                       key={index}
                       onClick={() => handleDateClick(date)}
                       disabled={isFuture}
+                      className="p-[6px] text-[12px] transition-all duration-150"
                       style={{
-                        padding: '6px', borderRadius: isStart || isEnd ? '6px' : '0',
+                        borderRadius: isStart || isEnd ? '6px' : '0',
                         border: isTodayDate && !inRange && !isStart && !isEnd
                           ? `1px solid ${isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)'}` : 'none',
-                        background: isStart || isEnd
-                          ? accent
-                          : inRange ? accentBg : 'transparent',
+                        background: isStart || isEnd ? accent : inRange ? accentBg : 'transparent',
                         color: isStart || isEnd
                           ? (isDark ? '#000000' : '#ffffff')
                           : inRange ? accent : 'var(--color-text)',
-                        fontSize: '12px',
                         fontWeight: isStart || isEnd || isTodayDate ? '600' : '400',
                         cursor: isFuture ? 'not-allowed' : 'pointer',
                         opacity: isFuture ? 0.25 : 1,
-                        transition: 'all 0.15s ease',
                       }}
                     >
                       {date.getDate()}
@@ -582,22 +528,17 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div className="flex gap-3">
           <button
             onClick={handleCancel}
-            style={{
-              flex: 1, padding: '12px', borderRadius: '10px',
-              border: '1px solid var(--color-border)', background: 'var(--color-inner-bg)',
-              color: 'var(--color-text-secondary)', fontSize: '14px', fontWeight: '600', cursor: 'pointer',
-            }}
+            className="flex-1 py-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-inner-bg)] text-[var(--color-text-secondary)] text-[14px] font-semibold cursor-pointer"
           >Cancel</button>
           <button
             onClick={handleApply}
+            className="flex-1 py-3 rounded-[10px] border-none text-[14px] font-semibold cursor-pointer"
             style={{
-              flex: 1, padding: '12px', borderRadius: '10px',
-              border: 'none', background: accent,
+              background: accent,
               color: isDark ? '#000000' : '#ffffff',
-              fontSize: '14px', fontWeight: '600', cursor: 'pointer',
             }}
           >Apply</button>
         </div>

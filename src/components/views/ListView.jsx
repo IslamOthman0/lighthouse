@@ -17,6 +17,7 @@ const isRTL = (text) => /[\u0600-\u06FF]/.test(text);
 
 const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDashboardCardClick, controls, dateRangeInfo }) => {
   const { isMobile } = useWindowSize();
+  // theme.type needed for getMetricColor lightMode flag (no CSS var equivalent)
   const lightMode = theme.type !== 'dark';
   const [sortBy, setSortBy] = useState('tracked'); // tracked, tasks, breaks, timeSpan, status, firstActivity, lastActivity
   const [sortOrder, setSortOrder] = useState('desc'); // asc, desc
@@ -195,7 +196,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
             subValue={teamStats?.tracked.sub || '/ 0h'}
             label={(dateRangeInfo?.workingDays || 1) > 1 ? `Team Tracked (${dateRangeInfo.workingDays} days)` : 'Team Tracked'}
             progress={teamStats?.tracked.progress || 0}
-            color={theme.working}
+            color="var(--color-working)"
             onClick={() => onDashboardCardClick?.('time')}
           />
           <OverviewCard
@@ -723,7 +724,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                               padding: '10px 16px',
                               borderRadius: '8px',
                               border: `1px solid var(--color-accent)`,
-                              background: theme.accent + '20',
+                              background: 'var(--color-accent-subtle)',
                               color: 'var(--color-accent)',
                               cursor: 'pointer',
                               fontSize: '11px',
@@ -734,12 +735,12 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                               fontFamily: getFontFamily('english'),
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.background = theme.accent;
-                              e.currentTarget.style.color = '#fff';
+                              e.currentTarget.style.background = 'var(--color-accent)';
+                              e.currentTarget.style.color = 'var(--color-accent-contrast)';
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.background = theme.accent + '20';
-                              e.currentTarget.style.color = theme.accent;
+                              e.currentTarget.style.background = 'var(--color-accent-subtle)';
+                              e.currentTarget.style.color = 'var(--color-accent)';
                             }}
                           >
                             View Full Profile →
@@ -1336,7 +1337,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                     padding: '8px 20px',
                                     borderRadius: '8px',
                                     border: `1px solid var(--color-accent)`,
-                                    background: theme.accent + '20',
+                                    background: 'var(--color-accent-subtle)',
                                     color: 'var(--color-accent)',
                                     cursor: 'pointer',
                                     fontSize: '12px',
@@ -1344,12 +1345,12 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                     transition: 'all 0.2s ease',
                                   }}
                                   onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = theme.accent;
-                                    e.currentTarget.style.color = '#fff';
+                                    e.currentTarget.style.background = 'var(--color-accent)';
+                                    e.currentTarget.style.color = 'var(--color-accent-contrast)';
                                   }}
                                   onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = theme.accent + '20';
-                                    e.currentTarget.style.color = theme.accent;
+                                    e.currentTarget.style.background = 'var(--color-accent-subtle)';
+                                    e.currentTarget.style.color = 'var(--color-accent)';
                                   }}
                                 >
                                   View Full Profile →

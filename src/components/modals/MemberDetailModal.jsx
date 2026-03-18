@@ -371,7 +371,7 @@ const TabButton = ({ label, isActive, onClick, theme }) => (
     style={{
       padding: '8px 16px',
       border: 'none',
-      background: isActive ? hexToRgba(theme.accent, 0.12) : 'transparent',
+      background: isActive ? 'var(--color-accent-subtle)' : 'transparent',
       color: isActive ? 'var(--color-accent)' : 'var(--color-text-secondary)',
       fontSize: '13px',
       fontWeight: '600',
@@ -392,7 +392,7 @@ const DatePickerButton = ({ label, isActive, onClick, theme }) => (
     style={{
       padding: '6px 12px',
       border: `1px solid ${isActive ? 'var(--color-accent)' : 'var(--color-border-light)'}`,
-      background: isActive ? hexToRgba(theme.accent, 0.08) : 'transparent',
+      background: isActive ? 'var(--color-accent-subtle-sm)' : 'transparent',
       color: isActive ? 'var(--color-accent)' : 'var(--color-text-secondary)',
       fontSize: '12px',
       fontWeight: '500',
@@ -423,11 +423,11 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
         borderLeft: `4px solid ${taskStatusStyle.dot}`,
         transition: 'all 0.15s',
         animation: isLive ? 'softPulse 2s ease-in-out infinite' : 'none',
-        boxShadow: isLive ? `0 0 12px ${theme.working}30` : 'none',
+        boxShadow: isLive ? '0 0 12px var(--color-working-glow-sm)' : 'none',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = 'var(--color-card-bg)';
-        e.currentTarget.style.borderColor = hexToRgba(theme.accent, 0.25);
+        e.currentTarget.style.borderColor = 'var(--color-accent-border)';
         e.currentTarget.style.borderLeftColor = taskStatusStyle.dot;
       }}
       onMouseLeave={(e) => {
@@ -508,7 +508,7 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
             <span style={{
               fontSize: '9px',
               padding: '2px 6px',
-              background: hexToRgba(theme.working, 0.12),
+              background: 'var(--color-working-subtle)',
               color: 'var(--color-working)',
               borderRadius: '4px',
               fontWeight: '600',
@@ -555,10 +555,10 @@ const TimelineTaskCard = ({ task, theme, isLive }) => {
                   fontSize: '9px',
                   padding: '1px 6px',
                   borderRadius: '3px',
-                  background: hexToRgba(theme.text, 0.06),
+                  background: 'var(--color-inner-bg)',
                   color: 'var(--color-text-secondary)',
                   fontFamily: getFontFamily('english'),
-                  border: `1px solid ${hexToRgba(theme.text, 0.12)}`,
+                  border: '1px solid var(--color-border)',
                   fontWeight: '600',
                 }}
               >
@@ -583,8 +583,8 @@ const BreakCard = ({ breakData, theme }) => (
       padding: '6px 14px',
       marginLeft: '40px',
       borderRadius: '20px',
-      background: hexToRgba(theme.break || '#f59e0b', 0.08),
-      border: `1px dashed ${hexToRgba(theme.break || '#f59e0b', 0.3)}`,
+      background: 'var(--color-break-subtle)',
+      border: '1px dashed var(--color-break-border)',
       alignSelf: 'flex-start',
     }}
   >
@@ -983,9 +983,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
           width: '100%',
           maxWidth: isMobile ? '100%' : '700px',
           maxHeight: '90vh',
-          background: theme.type === 'dark'
-            ? 'linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06))'
-            : 'linear-gradient(155deg, rgba(255,255,255,0.98), rgba(255,255,255,0.95))',
+          background: 'var(--color-card-bg)',
           borderRadius: '12px',
           border: `1px solid var(--color-border)`,
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
@@ -1040,8 +1038,8 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 transition: 'all 0.15s',
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = theme.danger + '20';
-                e.target.style.color = theme.danger;
+                e.target.style.background = 'var(--color-danger-subtle)';
+                e.target.style.color = 'var(--color-danger)';
               }}
               onMouseLeave={(e) => {
                 e.target.style.background = 'var(--color-inner-bg)';
@@ -1217,7 +1215,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                         style={{
                           padding: '8px 12px',
                           border: `1px solid ${isSelected ? 'var(--color-accent)' : 'var(--color-border-light)'}`,
-                          background: isSelected ? hexToRgba(theme.accent, 0.08) : 'transparent',
+                          background: isSelected ? 'var(--color-accent-subtle-sm)' : 'transparent',
                           color: isSelected ? 'var(--color-accent)' : 'var(--color-text-secondary)',
                           fontSize: '11px',
                           fontWeight: '500',
@@ -1389,8 +1387,8 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 {/* Performance Score Hero Card */}
                 <div
                   style={{
-                    background: `linear-gradient(135deg, ${hexToRgba(theme.accent, 0.08)}, ${hexToRgba(theme.accent, 0.03)})`,
-                    border: `1px solid ${hexToRgba(theme.accent, 0.25)}`,
+                    background: `linear-gradient(135deg, var(--color-accent-subtle-sm), var(--color-accent-subtle-xs))`,
+                    border: '1px solid var(--color-accent-border)',
                     borderRadius: '12px',
                     padding: '16px',
                     marginBottom: '12px',
@@ -1509,7 +1507,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                       labels={sparklineLabels}
                       width={300}
                       height={60}
-                      color={theme.accent}
+                      color="var(--color-accent)"
                       theme={theme}
                       formatValue={(v) => formatHoursToHM(v)}
                     />
@@ -1626,12 +1624,12 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                       {performanceData?.totalTasks || totalTasks} tasks worked this week
                     </span>
                     {perfData.timePercent >= 90 && (
-                      <span style={{ background: hexToRgba(theme.success, 0.12), color: 'var(--color-success)', padding: '4px 8px', borderRadius: '4px', fontFamily: getFontFamily('english') }}>
+                      <span style={{ background: 'var(--color-success-subtle)', color: 'var(--color-success)', padding: '4px 8px', borderRadius: '4px', fontFamily: getFontFamily('english') }}>
                         On track! ⭐
                       </span>
                     )}
                     {perfData.timePercent < 70 && perfData.timePercent > 0 && (
-                      <span style={{ background: hexToRgba(theme.warning, 0.12), color: 'var(--color-warning)', padding: '4px 8px', borderRadius: '4px', fontFamily: getFontFamily('english') }}>
+                      <span style={{ background: 'var(--color-warning-subtle)', color: 'var(--color-warning)', padding: '4px 8px', borderRadius: '4px', fontFamily: getFontFamily('english') }}>
                         Below target
                       </span>
                     )}
@@ -1679,8 +1677,8 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 {/* Year Overview Hero Card */}
                 <div
                   style={{
-                    background: `linear-gradient(135deg, ${hexToRgba(theme.accent, 0.08)}, ${hexToRgba(theme.accent, 0.03)})`,
-                    border: `1px solid ${hexToRgba(theme.accent, 0.25)}`,
+                    background: `linear-gradient(135deg, var(--color-accent-subtle-sm), var(--color-accent-subtle-xs))`,
+                    border: '1px solid var(--color-accent-border)',
                     borderRadius: '12px',
                     padding: '16px',
                     marginBottom: '12px',
@@ -1885,13 +1883,13 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                           fontWeight: '600',
                           textTransform: 'uppercase',
                           background:
-                            item.status === 'approved' ? theme.success + '20' :
-                            item.status === 'scheduled' ? '#8b5cf6' + '20' :
-                            theme.warning + '20',
+                            item.status === 'approved' ? 'var(--color-success-subtle)' :
+                            item.status === 'scheduled' ? 'rgba(139, 92, 246, 0.12)' :
+                            'var(--color-warning-subtle)',
                           color:
-                            item.status === 'approved' ? theme.success :
+                            item.status === 'approved' ? 'var(--color-success)' :
                             item.status === 'scheduled' ? '#8b5cf6' :
-                            theme.warning,
+                            'var(--color-warning)',
                           fontFamily: getFontFamily('english'),
                         }}
                       >
@@ -1981,8 +1979,8 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
           to { opacity: 1; transform: scale(1) translateY(0); }
         }
         @keyframes softPulse {
-          0%, 100% { box-shadow: 0 0 12px ${theme.working}30; }
-          50% { box-shadow: 0 0 20px ${theme.working}50; }
+          0%, 100% { box-shadow: 0 0 12px var(--color-working-glow-sm); }
+          50% { box-shadow: 0 0 20px var(--color-working-glow); }
         }
         @keyframes spin {
           from { transform: rotate(0deg); }

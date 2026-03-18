@@ -551,7 +551,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                     {clickUpLists.map((list) => {
                       const isSelected = (settings.clickup?.projectsToTrack || []).includes(list.id);
                       return (
-                        <div key={list.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '6px', marginBottom: '4px', background: isSelected ? hexToRgba(theme.accent, 0.08) : 'transparent', cursor: 'pointer' }}
+                        <div key={list.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '6px', marginBottom: '4px', background: isSelected ? 'var(--color-accent-subtle-sm)' : 'transparent', cursor: 'pointer' }}
                           onClick={() => handleToggleProject(list.id, !isSelected)}>
                           <input type="checkbox" checked={isSelected} onChange={(e) => handleToggleProject(list.id, e.target.checked)} style={{ cursor: 'pointer' }} />
                           <div style={{ flex: 1 }}>
@@ -626,7 +626,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                           {memberAvatar ? (
                             <img src={memberAvatar} alt={memberName} style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover' }} />
                           ) : (
-                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: member.color || hexToRgba(theme.text, 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', color: member.color ? '#ffffff' : 'var(--color-text)', fontSize: '12px', fontWeight: '600', fontFamily: getAdaptiveFontFamily(memberName) }}>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: member.color || 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: member.color ? '#ffffff' : 'var(--color-text)', fontSize: '12px', fontWeight: '600', fontFamily: getAdaptiveFontFamily(memberName) }}>
                               {memberName.substring(0, 2).toUpperCase()}
                             </div>
                           )}
@@ -686,16 +686,16 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                           <span style={{ fontSize: '13px', color: 'var(--color-text)', fontFamily: getAdaptiveFontFamily(memberName) }}>{memberName}</span>
                           <input type="number" min="0" max="365" value={leaveQuota}
                             onChange={(e) => handleUpdateLeaveQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || 'var(--color-card-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                            style={{ width: '72px', padding: '6px 8px', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
                           <input type="number" min="0" max="365" value={sickQuota}
                             onChange={(e) => handleUpdateSickQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || 'var(--color-card-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                            style={{ width: '72px', padding: '6px 8px', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
                           <input type="number" min="0" max="365" value={bonusQuota}
                             onChange={(e) => handleUpdateBonusQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || 'var(--color-card-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                            style={{ width: '72px', padding: '6px 8px', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
                           <input type="number" min="0" max="31" value={wfhQuota}
                             onChange={(e) => handleUpdateWfhQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || 'var(--color-card-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                            style={{ width: '72px', padding: '6px 8px', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
                         </div>
                       );
                     })}
@@ -819,7 +819,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                 <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '12px' }}>How Status Detection Works</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0', fontSize: '12px', overflowX: 'auto' }}>
                   <div style={{ padding: '6px 12px', background: 'rgba(16,185,129,0.15)', borderRadius: '6px 0 0 6px', color: '#10B981', fontWeight: '600', whiteSpace: 'nowrap' }}>Working</div>
-                  <div style={{ padding: '6px 8px', background: theme.subtleBg || 'var(--color-card-bg)', color: 'var(--color-text-muted)', borderTop: `1px dashed var(--color-border)`, borderBottom: `1px dashed var(--color-border)`, whiteSpace: 'nowrap', textAlign: 'center', minWidth: '60px' }}>
+                  <div style={{ padding: '6px 8px', background: 'var(--color-inner-bg)', color: 'var(--color-text-muted)', borderTop: `1px dashed var(--color-border)`, borderBottom: `1px dashed var(--color-border)`, whiteSpace: 'nowrap', textAlign: 'center', minWidth: '60px' }}>
                     &lt;{settings.thresholds.breakGapMinutes}m<div style={{ fontSize: '10px' }}>ignored</div>
                   </div>
                   <div style={{ padding: '6px 12px', background: 'rgba(16,185,129,0.15)', color: '#10B981', fontWeight: '600', whiteSpace: 'nowrap' }}>Working</div>
