@@ -56,30 +56,30 @@ const EGYPTIAN_HOLIDAYS_2026 = [
 
 // Section header component
 const SectionHeader = ({ title, description, theme }) => (
-  <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: `1px solid ${theme.border}` }}>
-    <div style={{ fontSize: '13px', fontWeight: '600', color: theme.text, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</div>
-    {description && <div style={{ fontSize: '12px', color: theme.textMuted, marginTop: '2px' }}>{description}</div>}
+  <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: `1px solid var(--color-border)` }}>
+    <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</div>
+    {description && <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px' }}>{description}</div>}
   </div>
 );
 
 // Reusable UI components
 const FieldLabel = ({ children, theme }) => (
-  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: theme.text }}>
+  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: 'var(--color-text)' }}>
     {children}
   </label>
 );
 
 const FieldHint = ({ children, theme }) => (
-  <p style={{ margin: '6px 0 0', fontSize: '12px', color: theme.textSecondary }}>{children}</p>
+  <p style={{ margin: '6px 0 0', fontSize: '12px', color: 'var(--color-text-secondary)' }}>{children}</p>
 );
 
 const inputStyle = (theme, width = '100%') => ({
   width,
   padding: '10px 12px',
-  background: theme.innerBg,
-  border: `1px solid ${theme.border}`,
+  background: 'var(--color-inner-bg)',
+  border: `1px solid var(--color-border)`,
   borderRadius: '8px',
-  color: theme.text,
+  color: 'var(--color-text)',
   fontSize: '14px',
 });
 
@@ -92,7 +92,7 @@ const ToggleSwitch = ({ value, onChange, theme }) => (
     style={{
       width: '48px',
       height: '28px',
-      background: value ? '#10B981' : theme.border,
+      background: value ? '#10B981' : 'var(--color-border)',
       border: 'none',
       borderRadius: '14px',
       position: 'relative',
@@ -443,8 +443,8 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
     >
       <div
         style={{
-          background: theme.cardBg,
-          border: isMobile ? 'none' : `1px solid ${theme.border}`,
+          background: 'var(--color-card-bg)',
+          border: isMobile ? 'none' : `1px solid var(--color-border)`,
           borderRadius: isMobile ? '0' : '16px',
           maxWidth: isMobile ? '100%' : '800px',
           width: '100%',
@@ -457,9 +457,9 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ padding: isMobile ? '16px' : '24px', borderBottom: `1px solid ${theme.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, fontSize: isMobile ? '20px' : '24px', fontWeight: '600', color: theme.text }}>Settings</h2>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: theme.textSecondary, fontSize: '24px', cursor: 'pointer', padding: '4px 8px' }}>✕</button>
+        <div style={{ padding: isMobile ? '16px' : '24px', borderBottom: `1px solid var(--color-border)`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ margin: 0, fontSize: isMobile ? '20px' : '24px', fontWeight: '600', color: 'var(--color-text)' }}>Settings</h2>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-secondary)', fontSize: '24px', cursor: 'pointer', padding: '4px 8px' }}>✕</button>
         </div>
 
         {/* Toast */}
@@ -476,7 +476,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
         {/* Tabs */}
         <div style={{
           display: 'flex', gap: '4px', padding: `12px ${isMobile ? '12px' : '24px'} 0`,
-          borderBottom: `1px solid ${theme.border}`,
+          borderBottom: `1px solid var(--color-border)`,
           overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none',
         }}>
           {tabs.map((tab) => (
@@ -484,14 +484,14 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               style={{
-                background: activeTab === tab.id ? theme.innerBg : 'transparent',
-                borderTop: activeTab === tab.id ? `1px solid ${theme.border}` : '1px solid transparent',
-                borderLeft: activeTab === tab.id ? `1px solid ${theme.border}` : '1px solid transparent',
-                borderRight: activeTab === tab.id ? `1px solid ${theme.border}` : '1px solid transparent',
+                background: activeTab === tab.id ? 'var(--color-inner-bg)' : 'transparent',
+                borderTop: activeTab === tab.id ? `1px solid var(--color-border)` : '1px solid transparent',
+                borderLeft: activeTab === tab.id ? `1px solid var(--color-border)` : '1px solid transparent',
+                borderRight: activeTab === tab.id ? `1px solid var(--color-border)` : '1px solid transparent',
                 borderBottom: 'none',
                 borderRadius: '8px 8px 0 0',
                 padding: isMobile ? '10px 12px' : '12px 20px',
-                color: activeTab === tab.id ? theme.text : theme.textSecondary,
+                color: activeTab === tab.id ? 'var(--color-text)' : 'var(--color-text-secondary)',
                 fontSize: isMobile ? '12px' : '14px',
                 fontWeight: activeTab === tab.id ? '600' : '400',
                 cursor: 'pointer', whiteSpace: 'nowrap',
@@ -523,8 +523,8 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                 {apiValidation.status !== 'idle' && (
                   <div style={{
                     marginTop: '8px', padding: '8px 12px', borderRadius: '6px', fontSize: '13px',
-                    background: apiValidation.status === 'success' ? 'rgba(16,185,129,0.1)' : apiValidation.status === 'error' ? 'rgba(239,68,68,0.1)' : theme.innerBg,
-                    color: apiValidation.status === 'success' ? '#10B981' : apiValidation.status === 'error' ? '#EF4444' : theme.textSecondary,
+                    background: apiValidation.status === 'success' ? 'rgba(16,185,129,0.1)' : apiValidation.status === 'error' ? 'rgba(239,68,68,0.1)' : 'var(--color-inner-bg)',
+                    color: apiValidation.status === 'success' ? '#10B981' : apiValidation.status === 'error' ? '#EF4444' : 'var(--color-text-secondary)',
                   }}>{apiValidation.message}</div>
                 )}
               </div>
@@ -547,7 +547,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                 </div>
                 {listsError && <div style={{ padding: '8px 12px', borderRadius: '6px', fontSize: '13px', background: 'rgba(239,68,68,0.1)', color: '#EF4444', marginTop: '12px' }}>{listsError}</div>}
                 {clickUpLists.length > 0 && (
-                  <div style={{ background: theme.innerBg, border: `1px solid ${theme.border}`, borderRadius: '8px', padding: '12px', maxHeight: 'min(280px, 40vh)', overflowY: 'auto', marginTop: '12px' }}>
+                  <div style={{ background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '8px', padding: '12px', maxHeight: 'min(280px, 40vh)', overflowY: 'auto', marginTop: '12px' }}>
                     {clickUpLists.map((list) => {
                       const isSelected = (settings.clickup?.projectsToTrack || []).includes(list.id);
                       return (
@@ -555,10 +555,10 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                           onClick={() => handleToggleProject(list.id, !isSelected)}>
                           <input type="checkbox" checked={isSelected} onChange={(e) => handleToggleProject(list.id, e.target.checked)} style={{ cursor: 'pointer' }} />
                           <div style={{ flex: 1 }}>
-                            <span style={{ fontSize: '14px', color: theme.text }}>{list.name}</span>
-                            {list.folder && <span style={{ fontSize: '12px', color: theme.textSecondary, marginLeft: '8px' }}>({list.folder})</span>}
+                            <span style={{ fontSize: '14px', color: 'var(--color-text)' }}>{list.name}</span>
+                            {list.folder && <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginLeft: '8px' }}>({list.folder})</span>}
                           </div>
-                          <span style={{ fontSize: '12px', color: theme.textMuted }}>{list.task_count} tasks</span>
+                          <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{list.task_count} tasks</span>
                         </div>
                       );
                     })}
@@ -595,9 +595,9 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                   </PrimaryButton>
                   {totalCount > 0 && (
                     <>
-                      <button onClick={handleSelectAllMembers} style={{ padding: '8px 12px', background: 'transparent', border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.textSecondary, fontSize: '12px', cursor: 'pointer' }}>Select All</button>
-                      <button onClick={handleDeselectAllMembers} style={{ padding: '8px 12px', background: 'transparent', border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.textSecondary, fontSize: '12px', cursor: 'pointer' }}>Deselect All</button>
-                      <span style={{ fontSize: '12px', color: theme.textMuted, marginLeft: 'auto' }}>{selectedCount} of {totalCount} selected</span>
+                      <button onClick={handleSelectAllMembers} style={{ padding: '8px 12px', background: 'transparent', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text-secondary)', fontSize: '12px', cursor: 'pointer' }}>Select All</button>
+                      <button onClick={handleDeselectAllMembers} style={{ padding: '8px 12px', background: 'transparent', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text-secondary)', fontSize: '12px', cursor: 'pointer' }}>Deselect All</button>
+                      <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: 'auto' }}>{selectedCount} of {totalCount} selected</span>
                     </>
                   )}
                 </div>
@@ -614,8 +614,8 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                       return (
                         <div key={memberId} style={{
                           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '8px 6px', borderRadius: '8px',
-                          background: isSelected ? hexToRgba('#10B981', 0.08) : theme.innerBg,
-                          border: isSelected ? '1px solid rgba(16,185,129,0.3)' : `1px solid ${theme.border}`,
+                          background: isSelected ? hexToRgba('#10B981', 0.08) : 'var(--color-inner-bg)',
+                          border: isSelected ? '1px solid rgba(16,185,129,0.3)' : `1px solid var(--color-border)`,
                           cursor: 'pointer', transition: 'all 0.15s', position: 'relative',
                         }} onClick={() => handleToggleMember(memberId, !isSelected)}>
                           {isSelected && (
@@ -626,18 +626,18 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                           {memberAvatar ? (
                             <img src={memberAvatar} alt={memberName} style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover' }} />
                           ) : (
-                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: member.color || hexToRgba(theme.text, 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', color: member.color ? '#ffffff' : theme.text, fontSize: '12px', fontWeight: '600', fontFamily: getAdaptiveFontFamily(memberName) }}>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: member.color || hexToRgba(theme.text, 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', color: member.color ? '#ffffff' : 'var(--color-text)', fontSize: '12px', fontWeight: '600', fontFamily: getAdaptiveFontFamily(memberName) }}>
                               {memberName.substring(0, 2).toUpperCase()}
                             </div>
                           )}
-                          <span style={{ fontSize: '11px', color: theme.text, fontFamily: getAdaptiveFontFamily(memberName), textAlign: 'center', lineHeight: '1.2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{memberName}</span>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text)', fontFamily: getAdaptiveFontFamily(memberName), textAlign: 'center', lineHeight: '1.2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{memberName}</span>
                         </div>
                       );
                     })}
                   </div>
                 )}
                 {totalCount === 0 && !isLoadingMembers && (
-                  <p style={{ fontSize: '13px', color: theme.textMuted, fontStyle: 'italic' }}>Click "Load Members" to fetch team members from ClickUp</p>
+                  <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Click "Load Members" to fetch team members from ClickUp</p>
                 )}
               </div>
 
@@ -646,31 +646,31 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                 <div>
                   <SectionHeader title="Leave & WFH Quotas" description="Set annual, sick, bonus, and WFH allowances per member" theme={theme} />
                   <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                    <div style={{ padding: '10px 16px', background: theme.innerBg, borderRadius: '8px', border: `1px solid ${theme.border}`, flex: 1, minWidth: '120px' }}>
-                      <div style={{ fontSize: '11px', color: theme.textMuted, textTransform: 'uppercase' }}>Default Annual</div>
-                      <div style={{ fontSize: '18px', fontWeight: '600', color: theme.text }}>{DEFAULT_MEMBER_QUOTAS.annualLeave} days/yr</div>
+                    <div style={{ padding: '10px 16px', background: 'var(--color-inner-bg)', borderRadius: '8px', border: `1px solid var(--color-border)`, flex: 1, minWidth: '120px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Default Annual</div>
+                      <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-text)' }}>{DEFAULT_MEMBER_QUOTAS.annualLeave} days/yr</div>
                     </div>
-                    <div style={{ padding: '10px 16px', background: theme.innerBg, borderRadius: '8px', border: `1px solid ${theme.border}`, flex: 1, minWidth: '120px' }}>
-                      <div style={{ fontSize: '11px', color: theme.textMuted, textTransform: 'uppercase' }}>Default Sick</div>
-                      <div style={{ fontSize: '18px', fontWeight: '600', color: theme.text }}>{DEFAULT_MEMBER_QUOTAS.sickLeaveQuota} days/yr</div>
+                    <div style={{ padding: '10px 16px', background: 'var(--color-inner-bg)', borderRadius: '8px', border: `1px solid var(--color-border)`, flex: 1, minWidth: '120px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Default Sick</div>
+                      <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-text)' }}>{DEFAULT_MEMBER_QUOTAS.sickLeaveQuota} days/yr</div>
                     </div>
-                    <div style={{ padding: '10px 16px', background: theme.innerBg, borderRadius: '8px', border: `1px solid ${theme.border}`, flex: 1, minWidth: '120px' }}>
-                      <div style={{ fontSize: '11px', color: theme.textMuted, textTransform: 'uppercase' }}>Default Bonus</div>
-                      <div style={{ fontSize: '18px', fontWeight: '600', color: theme.text }}>{DEFAULT_MEMBER_QUOTAS.bonusLeaveQuota} days/yr</div>
+                    <div style={{ padding: '10px 16px', background: 'var(--color-inner-bg)', borderRadius: '8px', border: `1px solid var(--color-border)`, flex: 1, minWidth: '120px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Default Bonus</div>
+                      <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-text)' }}>{DEFAULT_MEMBER_QUOTAS.bonusLeaveQuota} days/yr</div>
                     </div>
-                    <div style={{ padding: '10px 16px', background: theme.innerBg, borderRadius: '8px', border: `1px solid ${theme.border}`, flex: 1, minWidth: '120px' }}>
-                      <div style={{ fontSize: '11px', color: theme.textMuted, textTransform: 'uppercase' }}>Default WFH</div>
-                      <div style={{ fontSize: '18px', fontWeight: '600', color: theme.text }}>{DEFAULT_MEMBER_QUOTAS.wfhDays} days/mo</div>
+                    <div style={{ padding: '10px 16px', background: 'var(--color-inner-bg)', borderRadius: '8px', border: `1px solid var(--color-border)`, flex: 1, minWidth: '120px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Default WFH</div>
+                      <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-text)' }}>{DEFAULT_MEMBER_QUOTAS.wfhDays} days/mo</div>
                     </div>
                   </div>
 
-                  <div style={{ background: theme.innerBg, border: `1px solid ${theme.border}`, borderRadius: '8px', overflow: 'hidden' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 90px 90px', gap: '8px', padding: '10px 16px', borderBottom: `1px solid ${theme.border}` }}>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase' }}>Member</span>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>Annual/yr</span>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>Sick/yr</span>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>Bonus/yr</span>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>WFH/mo</span>
+                  <div style={{ background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '8px', overflow: 'hidden' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 90px 90px', gap: '8px', padding: '10px 16px', borderBottom: `1px solid var(--color-border)` }}>
+                      <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Member</span>
+                      <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>Annual/yr</span>
+                      <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>Sick/yr</span>
+                      <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>Bonus/yr</span>
+                      <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>WFH/mo</span>
                     </div>
                     {(settings.team?.membersToMonitor || []).map((memberId) => {
                       const member = clickUpMembers.find(m => String(m.id) === String(memberId));
@@ -682,20 +682,20 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                       const bonusQuota = settings.team?.bonusQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.bonusLeaveQuota;
                       const wfhQuota = settings.team?.wfhQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.wfhDays;
                       return (
-                        <div key={memberId} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 90px 90px', gap: '8px', padding: '10px 16px', borderBottom: `1px solid ${theme.border}`, alignItems: 'center' }}>
-                          <span style={{ fontSize: '13px', color: theme.text, fontFamily: getAdaptiveFontFamily(memberName) }}>{memberName}</span>
+                        <div key={memberId} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 90px 90px', gap: '8px', padding: '10px 16px', borderBottom: `1px solid var(--color-border)`, alignItems: 'center' }}>
+                          <span style={{ fontSize: '13px', color: 'var(--color-text)', fontFamily: getAdaptiveFontFamily(memberName) }}>{memberName}</span>
                           <input type="number" min="0" max="365" value={leaveQuota}
                             onChange={(e) => handleUpdateLeaveQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.text, fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || 'var(--color-card-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
                           <input type="number" min="0" max="365" value={sickQuota}
                             onChange={(e) => handleUpdateSickQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.text, fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || 'var(--color-card-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
                           <input type="number" min="0" max="365" value={bonusQuota}
                             onChange={(e) => handleUpdateBonusQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.text, fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || 'var(--color-card-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
                           <input type="number" min="0" max="31" value={wfhQuota}
                             onChange={(e) => handleUpdateWfhQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '6px', color: theme.text, fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                            style={{ width: '72px', padding: '6px 8px', background: theme.subtleBg || 'var(--color-card-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
                         </div>
                       );
                     })}
@@ -709,17 +709,17 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
           {activeTab === 'score' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {/* Formula preview */}
-              <div style={{ padding: '16px', background: theme.innerBg, borderRadius: '10px', border: `1px solid ${theme.border}` }}>
-                <div style={{ fontSize: '11px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', marginBottom: '10px' }}>Score Formula</div>
+              <div style={{ padding: '16px', background: 'var(--color-inner-bg)', borderRadius: '10px', border: `1px solid var(--color-border)` }}>
+                <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '10px' }}>Score Formula</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', fontSize: '13px' }}>
                   {weightConfig.map((w, i) => (
                     <React.Fragment key={w.key}>
-                      {i > 0 && <span style={{ color: theme.textMuted }}>+</span>}
+                      {i > 0 && <span style={{ color: 'var(--color-text-muted)' }}>+</span>}
                       <span style={{ color: w.color, fontWeight: '600' }}>{w.label} {Math.round(settings.score.weights[w.key] * 100)}%</span>
                     </React.Fragment>
                   ))}
-                  <span style={{ color: theme.textMuted }}>=</span>
-                  <span style={{ fontWeight: '700', color: theme.text }}>Score</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}>=</span>
+                  <span style={{ fontWeight: '700', color: 'var(--color-text)' }}>Score</span>
                 </div>
               </div>
 
@@ -748,15 +748,15 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                   return (
                     <div style={{ padding: '10px 14px', background: 'rgba(16,185,129,0.08)', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.25)', display: 'flex', gap: '10px', alignItems: 'center' }}>
                       <span style={{ fontSize: '16px' }}>✓</span>
-                      <p style={{ margin: 0, fontSize: '11px', color: theme.textSecondary }}>Weights sum to 100% — scoring is fully calibrated.</p>
+                      <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-text-secondary)' }}>Weights sum to 100% — scoring is fully calibrated.</p>
                     </div>
                   );
                 }
                 return (
                   <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.08)', borderRadius: '8px', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
                     <span style={{ fontSize: '16px' }}>⚠</span>
-                    <p style={{ margin: 0, fontSize: '11px', color: theme.textSecondary, lineHeight: 1.5 }}>
-                      Weights total <strong style={{ color: theme.text }}>{totalPct}%</strong> — {totalPct > 100 ? 'scores will be capped at 100 even if metrics are perfect.' : 'max achievable score is ' + totalPct + '.'}
+                    <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+                      Weights total <strong style={{ color: 'var(--color-text)' }}>{totalPct}%</strong> — {totalPct > 100 ? 'scores will be capped at 100 even if metrics are perfect.' : 'max achievable score is ' + totalPct + '.'}
                     </p>
                   </div>
                 );
@@ -766,18 +766,18 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
               {weightConfig.map((w) => {
                 const value = Math.round(settings.score.weights[w.key] * 100);
                 return (
-                  <div key={w.key} style={{ padding: '16px', background: theme.innerBg, borderRadius: '10px', border: `1px solid ${theme.border}`, borderLeft: `3px solid ${w.color}` }}>
+                  <div key={w.key} style={{ padding: '16px', background: 'var(--color-inner-bg)', borderRadius: '10px', border: `1px solid var(--color-border)`, borderLeft: `3px solid ${w.color}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                       <div>
-                        <div style={{ fontSize: '14px', fontWeight: '600', color: theme.text }}>{w.label}</div>
-                        <div style={{ fontSize: '12px', color: theme.textSecondary, marginTop: '2px' }}>{w.desc}</div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)' }}>{w.label}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>{w.desc}</div>
                       </div>
                       <div style={{ fontSize: '20px', fontWeight: '700', color: w.color, minWidth: '50px', textAlign: 'right' }}>{value}%</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
                       <button
                         onClick={() => handleIndependentWeightChange(w.key, Math.max(0, value - 5))}
-                        style={{ width: '32px', height: '32px', borderRadius: '8px', border: `1px solid ${theme.border}`, background: theme.innerBg, color: theme.text, fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}
+                        style={{ width: '32px', height: '32px', borderRadius: '8px', border: `1px solid var(--color-border)`, background: 'var(--color-inner-bg)', color: 'var(--color-text)', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}
                       >−</button>
                       <input
                         type="number"
@@ -788,20 +788,20 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                           const v = parseInt(e.target.value, 10);
                           if (!isNaN(v)) handleIndependentWeightChange(w.key, Math.max(0, Math.min(200, v)));
                         }}
-                        style={{ width: '64px', textAlign: 'center', background: theme.innerBg, border: `1px solid ${theme.border}`, borderRadius: '8px', color: w.color, fontSize: '18px', fontWeight: '700', padding: '6px', fontFamily: 'JetBrains Mono, monospace' }}
+                        style={{ width: '64px', textAlign: 'center', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '8px', color: w.color, fontSize: '18px', fontWeight: '700', padding: '6px', fontFamily: 'JetBrains Mono, monospace' }}
                       />
                       <button
                         onClick={() => handleIndependentWeightChange(w.key, Math.min(200, value + 5))}
-                        style={{ width: '32px', height: '32px', borderRadius: '8px', border: `1px solid ${theme.border}`, background: theme.innerBg, color: theme.text, fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}
+                        style={{ width: '32px', height: '32px', borderRadius: '8px', border: `1px solid var(--color-border)`, background: 'var(--color-inner-bg)', color: 'var(--color-text)', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}
                       >+</button>
-                      <span style={{ fontSize: '12px', color: theme.textMuted, marginLeft: '4px' }}>%</span>
+                      <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: '4px' }}>%</span>
                     </div>
                   </div>
                 );
               })}
 
               {/* Task Baseline */}
-              <div style={{ padding: '16px', background: theme.innerBg, borderRadius: '10px', border: `1px solid ${theme.border}` }}>
+              <div style={{ padding: '16px', background: 'var(--color-inner-bg)', borderRadius: '10px', border: `1px solid var(--color-border)` }}>
                 <FieldLabel theme={theme}>Task Baseline</FieldLabel>
                 <FieldHint theme={theme}>Members working on this many tasks/day get full marks for "Tasks Worked". The app also auto-calculates a 3-month average from your team's history — this setting overrides it.</FieldHint>
                 <input type="number" min="1" max="20" value={settings.score.taskBaseline}
@@ -815,11 +815,11 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
           {activeTab === 'thresholds' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {/* Visual timeline */}
-              <div style={{ padding: '16px', background: theme.innerBg, borderRadius: '10px', border: `1px solid ${theme.border}` }}>
-                <div style={{ fontSize: '11px', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', marginBottom: '12px' }}>How Status Detection Works</div>
+              <div style={{ padding: '16px', background: 'var(--color-inner-bg)', borderRadius: '10px', border: `1px solid var(--color-border)` }}>
+                <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '12px' }}>How Status Detection Works</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0', fontSize: '12px', overflowX: 'auto' }}>
                   <div style={{ padding: '6px 12px', background: 'rgba(16,185,129,0.15)', borderRadius: '6px 0 0 6px', color: '#10B981', fontWeight: '600', whiteSpace: 'nowrap' }}>Working</div>
-                  <div style={{ padding: '6px 8px', background: theme.subtleBg || theme.cardBg, color: theme.textMuted, borderTop: `1px dashed ${theme.border}`, borderBottom: `1px dashed ${theme.border}`, whiteSpace: 'nowrap', textAlign: 'center', minWidth: '60px' }}>
+                  <div style={{ padding: '6px 8px', background: theme.subtleBg || 'var(--color-card-bg)', color: 'var(--color-text-muted)', borderTop: `1px dashed var(--color-border)`, borderBottom: `1px dashed var(--color-border)`, whiteSpace: 'nowrap', textAlign: 'center', minWidth: '60px' }}>
                     &lt;{settings.thresholds.breakGapMinutes}m<div style={{ fontSize: '10px' }}>ignored</div>
                   </div>
                   <div style={{ padding: '6px 12px', background: 'rgba(16,185,129,0.15)', color: '#10B981', fontWeight: '600', whiteSpace: 'nowrap' }}>Working</div>
@@ -845,7 +845,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                       updateSettings({ thresholds: { ...settings.thresholds, ...updates } });
                     }}
                     style={inputStyle(theme, '100px')} />
-                  <span style={{ fontSize: '12px', color: theme.textSecondary }}>0 = immediately when timer stops</span>
+                  <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>0 = immediately when timer stops</span>
                 </div>
                 <FieldHint theme={theme}>How long without an active timer before marking as "on break"</FieldHint>
               </div>
@@ -856,7 +856,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                   <input type="number" min={Math.max(1, settings.thresholds.breakMinutes + 1)} max="480" value={settings.thresholds.offlineMinutes}
                     onChange={(e) => updateSettings({ thresholds: { ...settings.thresholds, offlineMinutes: parseInt(e.target.value) || 60 } })}
                     style={inputStyle(theme, '100px')} />
-                  <span style={{ fontSize: '12px', color: theme.textSecondary }}>must be &gt; break threshold</span>
+                  <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>must be &gt; break threshold</span>
                 </div>
                 <FieldHint theme={theme}>How long on break before marking as "offline"</FieldHint>
                 {settings.thresholds.offlineMinutes <= settings.thresholds.breakMinutes && (
@@ -924,7 +924,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                     <input type="number" min="7" max="365" value={settings.sync.dataRetentionDays}
                       onChange={(e) => updateSettings({ sync: { ...settings.sync, dataRetentionDays: parseInt(e.target.value) || 30 } })}
                       style={inputStyle(theme, '80px')} />
-                    <span style={{ fontSize: '13px', color: theme.textSecondary }}>days</span>
+                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>days</span>
                   </div>
                 </div>
               </div>
@@ -966,7 +966,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                     <input type="number" min="1" max="24" step="0.5" value={settings.schedule.dailyTargetHours}
                       onChange={(e) => updateSettings({ schedule: { ...settings.schedule, dailyTargetHours: parseFloat(e.target.value) || 6.5 } })}
                       style={inputStyle(theme, '80px')} />
-                    <span style={{ fontSize: '13px', color: theme.textSecondary }}>hours</span>
+                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>hours</span>
                   </div>
                 </div>
               </div>
@@ -979,7 +979,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                     <button key={day.value} onClick={() => {
                       const newDays = isSelected ? settings.schedule.workDays.filter(d => d !== day.value) : [...settings.schedule.workDays, day.value];
                       updateSettings({ schedule: { ...settings.schedule, workDays: newDays } });
-                    }} style={{ padding: '8px 16px', background: isSelected ? '#ffffff' : theme.innerBg, border: `1px solid ${isSelected ? '#ffffff' : theme.border}`, borderRadius: '6px', color: isSelected ? '#000000' : theme.text, fontSize: '13px', fontWeight: isSelected ? '500' : '400', cursor: 'pointer' }}>
+                    }} style={{ padding: '8px 16px', background: isSelected ? '#ffffff' : 'var(--color-inner-bg)', border: `1px solid ${isSelected ? '#ffffff' : 'var(--color-border)'}`, borderRadius: '6px', color: isSelected ? '#000000' : 'var(--color-text)', fontSize: '13px', fontWeight: isSelected ? '500' : '400', cursor: 'pointer' }}>
                       {day.label}
                     </button>
                   );
@@ -998,11 +998,11 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
               </div>
 
               {(settings.schedule?.publicHolidays || []).length > 0 && (
-                <div style={{ background: theme.innerBg, border: `1px solid ${theme.border}`, borderRadius: '8px', padding: '8px', maxHeight: 'min(300px, 40vh)', overflowY: 'auto' }}>
+                <div style={{ background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '8px', padding: '8px', maxHeight: 'min(300px, 40vh)', overflowY: 'auto' }}>
                   {[...(settings.schedule?.publicHolidays || [])].sort((a, b) => (a.date || '').localeCompare(b.date || '')).map((holiday, index) => {
                     const origIndex = (settings.schedule?.publicHolidays || []).findIndex(h => h === holiday);
                     return (
-                      <div key={index} style={{ display: 'flex', gap: '8px', padding: '8px', alignItems: 'center', borderBottom: index < (settings.schedule?.publicHolidays || []).length - 1 ? `1px solid ${theme.border}` : 'none' }}>
+                      <div key={index} style={{ display: 'flex', gap: '8px', padding: '8px', alignItems: 'center', borderBottom: index < (settings.schedule?.publicHolidays || []).length - 1 ? `1px solid var(--color-border)` : 'none' }}>
                         <input type="date" value={holiday.date}
                           onChange={(e) => handleUpdateHoliday(origIndex, 'date', e.target.value)}
                           style={{ ...inputStyle(theme, 'auto'), flex: isMobile ? 1 : '0 0 150px', padding: '6px 10px', fontSize: '13px' }} />
@@ -1035,16 +1035,16 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                   <option value="list">List View</option>
                 </select>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: theme.innerBg, borderRadius: '8px' }}>
-                <label style={{ fontSize: '14px', fontWeight: '500', color: theme.text }}>Show Profile Pictures</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'var(--color-inner-bg)', borderRadius: '8px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '500', color: 'var(--color-text)' }}>Show Profile Pictures</label>
                 <ToggleSwitch value={settings.display.showProfilePictures} onChange={() => updateSettings({ display: { ...settings.display, showProfilePictures: !settings.display.showProfilePictures } })} theme={theme} />
               </div>
 
               <SectionHeader title="Developer" description="Advanced options for debugging and diagnostics" theme={theme} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: theme.innerBg, borderRadius: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'var(--color-inner-bg)', borderRadius: '8px' }}>
                 <div>
-                  <label style={{ fontSize: '14px', fontWeight: '500', color: theme.text }}>Developer Mode</label>
-                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: theme.textMuted }}>Show sync timing, request counts, and cache stats</p>
+                  <label style={{ fontSize: '14px', fontWeight: '500', color: 'var(--color-text)' }}>Developer Mode</label>
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--color-text-muted)' }}>Show sync timing, request counts, and cache stats</p>
                 </div>
                 <ToggleSwitch value={settings.display.developerMode} onChange={() => updateSettings({ display: { ...settings.display, developerMode: !settings.display.developerMode } })} theme={theme} />
               </div>
@@ -1054,7 +1054,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
           {/* ===== AUDIT TAB (Admin Only) ===== */}
           {activeTab === 'audit' && isAdmin && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ fontSize: '13px', color: theme.textMuted, marginBottom: '4px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
                 Login sessions for all users. Active sessions are highlighted.
               </div>
 
@@ -1062,12 +1062,12 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                   <thead>
-                    <tr style={{ borderBottom: `1px solid ${theme.border}` }}>
+                    <tr style={{ borderBottom: `1px solid var(--color-border)` }}>
                       {['User', 'Role', 'Login', 'Logout', 'Duration'].map((h) => (
                         <th key={h} style={{
                           textAlign: 'left',
                           padding: '8px 10px',
-                          color: theme.textMuted,
+                          color: 'var(--color-text-muted)',
                           fontWeight: '500',
                           fontSize: '11px',
                           letterSpacing: '0.5px',
@@ -1094,10 +1094,10 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
 
                       return (
                         <tr key={log.id} style={{
-                          borderBottom: `1px solid ${theme.borderLight}`,
+                          borderBottom: `1px solid var(--color-border-light)`,
                           background: isActive ? 'rgba(16, 185, 129, 0.05)' : 'transparent',
                         }}>
-                          <td style={{ padding: '10px', color: theme.text, fontWeight: '500' }}>
+                          <td style={{ padding: '10px', color: 'var(--color-text)', fontWeight: '500' }}>
                             {log.user_name}
                           </td>
                           <td style={{ padding: '10px' }}>
@@ -1108,28 +1108,28 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                               fontSize: '11px',
                               fontWeight: '500',
                               background: log.role === 'admin' ? 'rgba(139, 92, 246, 0.15)' : 'rgba(107, 114, 128, 0.15)',
-                              color: log.role === 'admin' ? '#A78BFA' : theme.textSecondary,
+                              color: log.role === 'admin' ? '#A78BFA' : 'var(--color-text-secondary)',
                             }}>
                               {log.role}
                             </span>
                           </td>
-                          <td style={{ padding: '10px', color: theme.textSecondary, fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>
+                          <td style={{ padding: '10px', color: 'var(--color-text-secondary)', fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>
                             {formatTime(log.login_time)}
                           </td>
-                          <td style={{ padding: '10px', color: theme.textSecondary, fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>
+                          <td style={{ padding: '10px', color: 'var(--color-text-secondary)', fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>
                             {isActive ? (
-                              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: theme.working }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-working)' }}>
                                 <span style={{
                                   width: '6px', height: '6px',
                                   borderRadius: '50%',
-                                  background: theme.working,
+                                  background: 'var(--color-working)',
                                   animation: 'statusPulse 2s ease-in-out infinite',
                                 }} />
                                 Active
                               </span>
                             ) : formatTime(log.logout_time)}
                           </td>
-                          <td style={{ padding: '10px', color: theme.textSecondary, fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>
+                          <td style={{ padding: '10px', color: 'var(--color-text-secondary)', fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>
                             {isActive
                               ? formatDuration(Date.now() - log.login_time)
                               : formatDuration(log.session_duration)}
@@ -1139,7 +1139,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                     })}
                     {(auditLogs || []).length === 0 && (
                       <tr>
-                        <td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: theme.textMuted, fontSize: '13px' }}>
+                        <td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '13px' }}>
                           No login sessions recorded yet.
                         </td>
                       </tr>
@@ -1152,8 +1152,8 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
         </div>
 
         {/* Footer */}
-        <div style={{ padding: isMobile ? '16px' : '20px 24px', borderTop: `1px solid ${theme.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-          <button onClick={handleReset} style={{ padding: '10px 20px', background: 'transparent', border: `1px solid ${theme.border}`, borderRadius: '8px', color: theme.textSecondary, fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
+        <div style={{ padding: isMobile ? '16px' : '20px 24px', borderTop: `1px solid var(--color-border)`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+          <button onClick={handleReset} style={{ padding: '10px 20px', background: 'transparent', border: `1px solid var(--color-border)`, borderRadius: '8px', color: 'var(--color-text-secondary)', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
             Reset
           </button>
           <button onClick={onClose} style={{ padding: '10px 24px', background: '#ffffff', border: 'none', borderRadius: '8px', color: '#000000', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
