@@ -16,6 +16,10 @@ const formatTimeElapsed = (minutes) => {
   return `${hours}h ${mins}m ago`;
 };
 
+// Hardcoded hex constants for offline gradient (avoids theme.offlineLight/theme.offline hex suffix pattern)
+const OFFLINE_LIGHT = '#9CA3AF';
+const OFFLINE = '#6B7280';
+
 /**
  * OfflineCard - Member card for "offline" status
  * Features: gray border, 70% opacity, last seen info
@@ -44,22 +48,15 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
 
   const progressPercent = (tracked / target) * 100;
 
-  // Get timer gradient for offline status
+  // Hardcoded hex constants — avoids theme.offlineLight/offline hex suffix pattern
   const timerStyle = {
-    background: `linear-gradient(135deg, ${theme.offlineLight} 0%, ${theme.offline} 100%)`,
+    background: `linear-gradient(135deg, ${OFFLINE_LIGHT} 0%, ${OFFLINE} 100%)`,
     backgroundClip: 'text',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
     MozBackgroundClip: 'text',
     MozTextFillColor: 'transparent',
     display: 'inline-block',
-  };
-
-  // Get score color based on percentage
-  const getScoreColor = (percent) => {
-    if (percent >= 80) return theme.success;
-    if (percent >= 60) return theme.warning;
-    return theme.danger;
   };
 
   return (
@@ -73,11 +70,11 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
       workingDays={workingDays}
     >
       {/* Inner Content Area - Glass morphism nested card */}
-      <div className="m-4 p-4 rounded-xl border border-white/[0.08]" style={{ background: theme.innerBg }}>
+      <div className="m-4 p-4 rounded-xl border border-white/[0.08]" style={{ background: 'var(--color-inner-bg)' }}>
         {/* Session Header + Timer */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
-            <div className="text-[10px] font-semibold mb-1 uppercase tracking-wider" style={{ color: theme.textMuted }}>
+            <div className="text-[10px] font-semibold mb-1 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
               Last Activity
             </div>
             <div className="text-xl font-bold leading-tight min-h-[24px]" style={timerStyle}>
@@ -85,7 +82,7 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
             </div>
             {/* Previous tracked time */}
             {member.previousTimer && (
-              <div className="text-[11px] font-medium mt-1" style={{ color: theme.textMuted }}>
+              <div className="text-[11px] font-medium mt-1" style={{ color: 'var(--color-text-muted)' }}>
                 Previous: {member.previousTimer}
               </div>
             )}
@@ -93,7 +90,7 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
         </div>
 
         {/* Task Info Box - Last task */}
-        <div className="p-3 rounded-lg border" style={{ background: theme.subtleBg, borderColor: theme.borderLight }}>
+        <div className="p-3 rounded-lg border" style={{ background: 'var(--color-subtle-bg)', borderColor: 'var(--color-border-light)' }}>
           {/* Location + Status Badge — same line */}
           {((location || project) || taskStatus) && (
             <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -101,7 +98,7 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
                 <div
                   className="text-[10px] font-bold truncate"
                   style={{
-                    color: theme.textMuted,
+                    color: 'var(--color-text-muted)',
                     ...getTextFontStyle(location || project),
                     direction: isRTL(location || project) ? 'rtl' : 'ltr',
                   }}
@@ -127,7 +124,7 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
           <div
             className="text-[13px] font-semibold leading-snug"
             style={{
-              color: theme.text,
+              color: 'var(--color-text)',
               ...getTextFontStyle(task || ''),
               direction: isRTL(task || '') ? 'rtl' : 'ltr',
             }}
@@ -146,16 +143,17 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
               <div
                 className="flex-1 p-3 rounded-lg border"
                 style={{
+                  // theme.type check — no CSS var equivalent, keep inline
                   background: theme.type === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-                  borderColor: theme.borderLight,
+                  borderColor: 'var(--color-border-light)',
                 }}
               >
-                <div className="text-[8px] font-bold mb-1 uppercase tracking-wide" style={{ color: theme.textMuted }}>
+                <div className="text-[8px] font-bold mb-1 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
                   Publisher
                 </div>
                 <div
                   className="text-[11px] font-semibold"
-                  style={{ color: theme.text, ...getTextFontStyle(publisher) }}
+                  style={{ color: 'var(--color-text)', ...getTextFontStyle(publisher) }}
                 >
                   {publisher}
                 </div>
@@ -166,15 +164,15 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
                 className="flex-1 p-3 rounded-lg border"
                 style={{
                   background: theme.type === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-                  borderColor: theme.borderLight,
+                  borderColor: 'var(--color-border-light)',
                 }}
               >
-                <div className="text-[8px] font-bold mb-1 uppercase tracking-wide" style={{ color: theme.textMuted }}>
+                <div className="text-[8px] font-bold mb-1 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
                   Genre
                 </div>
                 <div
                   className="text-[11px] font-semibold"
-                  style={{ color: theme.text, ...getTextFontStyle(genre) }}
+                  style={{ color: 'var(--color-text)', ...getTextFontStyle(genre) }}
                 >
                   {genre}
                 </div>
@@ -189,7 +187,7 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
             <div
               className="h-px my-3"
               style={{
-                background: `linear-gradient(90deg, transparent 0%, ${theme.borderLight} 50%, transparent 100%)`,
+                background: `linear-gradient(90deg, transparent 0%, var(--color-border-light) 50%, transparent 100%)`,
               }}
             />
             <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -204,6 +202,7 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
                           ? `url(${assignee.profilePicture}) center/cover no-repeat`
                           : assignee.color || '#6B7280',
                         color: '#fff',
+                        // theme.cardBg as gradient border — keep inline (avatarRing pattern)
                         borderColor: theme.cardBg,
                       }}
                       title={assignee.name}
@@ -215,8 +214,8 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
                     <div
                       className="w-[22px] h-[22px] rounded-full flex items-center justify-center text-[9px] font-bold"
                       style={{
-                        background: theme.borderLight,
-                        color: theme.textMuted,
+                        background: 'var(--color-border-light)',
+                        color: 'var(--color-text-muted)',
                       }}
                     >
                       +{assignees.length - 2}
@@ -231,9 +230,10 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
                       key={i}
                       className="px-1.5 py-0.5 rounded text-[9px] font-semibold border"
                       style={{
-                        background: tag.color ? `${tag.color}20` : theme.subtleBg,
-                        color: tag.color || theme.textSecondary,
-                        borderColor: tag.color ? `${tag.color}40` : theme.borderLight,
+                        // Dynamic tag colors with hex suffix — keep inline
+                        background: tag.color ? `${tag.color}20` : 'var(--color-subtle-bg)',
+                        color: tag.color || 'var(--color-text-secondary)',
+                        borderColor: tag.color ? `${tag.color}40` : 'var(--color-border-light)',
                       }}
                     >
                       #{tag.name || tag}
