@@ -16,11 +16,11 @@ const FilterSortControls = ({ theme, activeView, setActiveView }) => {
 
   const filters = [
     { id: 'all', label: 'All', icon: '👥' },
-    { id: 'working', label: 'Working', icon: '●', color: theme.working },
-    { id: 'break', label: 'Break', icon: '◐', color: theme.break },
-    { id: 'offline', label: 'Offline', icon: '○', color: theme.offline },
-    { id: 'leave', label: 'Leave', icon: '📅', color: theme.leave },
-    { id: 'noActivity', label: 'No Activity', icon: '⚠', color: theme.noActivity },
+    { id: 'working', label: 'Working', icon: '●', colorVar: 'var(--color-working)' },
+    { id: 'break', label: 'Break', icon: '◐', colorVar: 'var(--color-break)' },
+    { id: 'offline', label: 'Offline', icon: '○', colorVar: 'var(--color-offline)' },
+    { id: 'leave', label: 'Leave', icon: '📅', colorVar: 'var(--color-leave)' },
+    { id: 'noActivity', label: 'No Activity', icon: '⚠', colorVar: 'var(--color-no-activity)' },
   ];
 
   const sortOptions = [
@@ -49,28 +49,22 @@ const FilterSortControls = ({ theme, activeView, setActiveView }) => {
   const memberFilterObj = filters.find(f => f.id === memberFilter);
   const memberSortObj = sortOptions.find(s => s.id === memberSort);
 
+  // Dropdown background depends on theme type — keep inline (no CSS var equivalent)
+  const dropdownBg = theme.type === 'dark' ? 'rgba(24, 24, 24, 0.98)' : 'rgba(255, 255, 255, 0.98)';
+
   return (
     <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: isMobile ? 'flex-end' : 'space-between',
-        gap: isMobile ? '8px' : '16px',
-        marginBottom: isMobile ? '12px' : '16px',
-        flexWrap: 'wrap',
-      }}
+      className={`flex items-center flex-wrap ${isMobile ? 'justify-end' : 'justify-between'}`}
+      style={{ gap: isMobile ? '8px' : '16px', marginBottom: isMobile ? '12px' : '16px' }}
     >
       {/* Left: View Toggle Icons — desktop only */}
       {!isMobile && (
         <div
+          className="flex overflow-hidden rounded-[10px] border border-th-border"
           style={{
-            display: 'flex',
-            background: theme.cardBg,
-            backdropFilter: theme.backdropBlur,
-            WebkitBackdropFilter: theme.backdropBlur,
-            borderRadius: '10px',
-            border: `1px solid ${theme.border}`,
-            overflow: 'hidden',
+            background: 'var(--color-card-bg)',
+            backdropFilter: 'var(--effect-backdrop-blur)',
+            WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
           }}
         >
           {viewIcons.map((view) => (
@@ -80,22 +74,15 @@ const FilterSortControls = ({ theme, activeView, setActiveView }) => {
               onClick={() => {
                 setActiveView(view.id);
               }}
+              className="flex items-center gap-1.5 text-[13px] font-semibold cursor-pointer transition-all duration-200 border-none"
               style={{
                 padding: '8px 14px',
                 background: activeView === view.id ? '#ffffff' : 'rgba(255, 255, 255, 0.03)',
-                border: 'none',
-                color: activeView === view.id ? '#000000' : theme.text,
-                fontSize: '13px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
+                color: activeView === view.id ? '#000000' : 'var(--color-text)',
               }}
               onMouseEnter={(e) => {
                 if (activeView !== view.id) {
-                  e.currentTarget.style.background = theme.secondaryBg || theme.innerBg;
+                  e.currentTarget.style.background = 'var(--color-inner-bg)';
                 }
               }}
               onMouseLeave={(e) => {
@@ -105,38 +92,29 @@ const FilterSortControls = ({ theme, activeView, setActiveView }) => {
               }}
               title={view.label}
             >
-              <span style={{ fontSize: '14px' }}>{view.icon}</span>
+              <span className="text-sm">{view.icon}</span>
             </button>
           ))}
         </div>
       )}
 
       {/* Right: Sort and Filter Dropdowns */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '12px' }}>
+      <div className="flex items-center" style={{ gap: isMobile ? '6px' : '12px' }}>
         {/* Sort Dropdown */}
-        <div style={{ position: 'relative' }}>
+        <div className="relative">
           <button
             onClick={() => setIsSortOpen(!isSortOpen)}
+            className="flex items-center gap-1.5 rounded-[10px] border border-th-border text-th-text text-[13px] font-medium cursor-pointer transition-all duration-200"
             style={{
               padding: isMobile ? '6px 10px' : '8px 14px',
-              borderRadius: '10px',
-              border: `1px solid ${theme.border}`,
-              background: theme.cardBg,
-              backdropFilter: theme.backdropBlur,
-              WebkitBackdropFilter: theme.backdropBlur,
-              color: theme.text,
-              fontSize: isMobile ? '13px' : '13px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s ease',
+              background: 'var(--color-card-bg)',
+              backdropFilter: 'var(--effect-backdrop-blur)',
+              WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
             }}
           >
-            <span style={{ fontSize: '12px' }}>☰</span>
+            <span className="text-[12px]">☰</span>
             {!isMobile && <span>Sort: {memberSortObj.label}</span>}
-            <span style={{ fontSize: '10px', opacity: 0.6 }}>▼</span>
+            <span className="text-[10px] opacity-60">▼</span>
           </button>
 
           {/* Sort Dropdown Menu */}
@@ -145,54 +123,32 @@ const FilterSortControls = ({ theme, activeView, setActiveView }) => {
               {/* Backdrop */}
               <div
                 onClick={() => setIsSortOpen(false)}
-                style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  zIndex: 1098,
-                }}
+                className="fixed inset-0 z-[1098]"
               />
               {/* Menu */}
               <div
+                className="absolute top-[calc(100%+4px)] right-0 z-[1099] rounded-xl border border-th-border overflow-hidden"
                 style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 4px)',
-                  right: 0,
-                  zIndex: 1099,
-                  background: theme.type === 'dark' ? 'rgba(24, 24, 24, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+                  background: dropdownBg,
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
-                  borderRadius: '12px',
-                  border: `1px solid ${theme.border}`,
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
                   minWidth: '160px',
-                  overflow: 'hidden',
                 }}
               >
                 {sortOptions.map((sort) => (
                   <button
                     key={sort.id}
                     onClick={() => handleSortClick(sort.id)}
+                    className="flex items-center gap-2.5 w-full border-none text-th-text text-[13px] cursor-pointer transition-all duration-200 text-left"
                     style={{
-                      width: '100%',
                       padding: '10px 14px',
-                      background: memberSort === sort.id ? theme.secondaryBg : 'transparent',
-                      border: 'none',
-                      color: theme.text,
-                      fontSize: '13px',
+                      background: memberSort === sort.id ? 'var(--color-inner-bg)' : 'transparent',
                       fontWeight: memberSort === sort.id ? '600' : '500',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      transition: 'all 0.2s ease',
-                      textAlign: 'left',
                     }}
                     onMouseEnter={(e) => {
                       if (memberSort !== sort.id) {
-                        e.currentTarget.style.background = theme.secondaryBg;
+                        e.currentTarget.style.background = 'var(--color-inner-bg)';
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -201,10 +157,10 @@ const FilterSortControls = ({ theme, activeView, setActiveView }) => {
                       }
                     }}
                   >
-                    <span style={{ fontSize: '12px' }}>{sort.icon}</span>
+                    <span className="text-[12px]">{sort.icon}</span>
                     <span>{sort.label}</span>
                     {memberSort === sort.id && (
-                      <span style={{ marginLeft: 'auto', color: theme.accent }}>✓</span>
+                      <span className="ml-auto text-th-accent">✓</span>
                     )}
                   </button>
                 ))}
@@ -214,29 +170,20 @@ const FilterSortControls = ({ theme, activeView, setActiveView }) => {
         </div>
 
         {/* Filter Dropdown */}
-        <div style={{ position: 'relative' }}>
+        <div className="relative">
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="flex items-center gap-1.5 rounded-[10px] border border-th-border text-th-text text-[13px] font-medium cursor-pointer transition-all duration-200"
             style={{
               padding: isMobile ? '6px 10px' : '8px 14px',
-              borderRadius: '10px',
-              border: `1px solid ${theme.border}`,
-              background: theme.cardBg,
-              backdropFilter: theme.backdropBlur,
-              WebkitBackdropFilter: theme.backdropBlur,
-              color: theme.text,
-              fontSize: isMobile ? '13px' : '13px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s ease',
+              background: 'var(--color-card-bg)',
+              backdropFilter: 'var(--effect-backdrop-blur)',
+              WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
             }}
           >
-            <span style={{ fontSize: '12px' }}>▽</span>
+            <span className="text-[12px]">▽</span>
             {!isMobile && <span>Filter: {memberFilterObj.label}</span>}
-            <span style={{ fontSize: '10px', opacity: 0.6 }}>▼</span>
+            <span className="text-[10px] opacity-60">▼</span>
           </button>
 
           {/* Filter Dropdown Menu */}
@@ -245,54 +192,32 @@ const FilterSortControls = ({ theme, activeView, setActiveView }) => {
               {/* Backdrop */}
               <div
                 onClick={() => setIsFilterOpen(false)}
-                style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  zIndex: 1098,
-                }}
+                className="fixed inset-0 z-[1098]"
               />
               {/* Menu */}
               <div
+                className="absolute top-[calc(100%+4px)] right-0 z-[1099] rounded-xl border border-th-border overflow-hidden"
                 style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 4px)',
-                  right: 0,
-                  zIndex: 1099,
-                  background: theme.type === 'dark' ? 'rgba(24, 24, 24, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+                  background: dropdownBg,
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
-                  borderRadius: '12px',
-                  border: `1px solid ${theme.border}`,
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
                   minWidth: '160px',
-                  overflow: 'hidden',
                 }}
               >
                 {filters.map((filter) => (
                   <button
                     key={filter.id}
                     onClick={() => handleFilterClick(filter.id)}
+                    className="flex items-center gap-2.5 w-full border-none text-th-text text-[13px] cursor-pointer transition-all duration-200 text-left"
                     style={{
-                      width: '100%',
                       padding: '10px 14px',
-                      background: memberFilter === filter.id ? theme.secondaryBg : 'transparent',
-                      border: 'none',
-                      color: theme.text,
-                      fontSize: '13px',
+                      background: memberFilter === filter.id ? 'var(--color-inner-bg)' : 'transparent',
                       fontWeight: memberFilter === filter.id ? '600' : '500',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      transition: 'all 0.2s ease',
-                      textAlign: 'left',
                     }}
                     onMouseEnter={(e) => {
                       if (memberFilter !== filter.id) {
-                        e.currentTarget.style.background = theme.secondaryBg;
+                        e.currentTarget.style.background = 'var(--color-inner-bg)';
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -301,10 +226,10 @@ const FilterSortControls = ({ theme, activeView, setActiveView }) => {
                       }
                     }}
                   >
-                    <span style={{ color: filter.color || theme.text }}>{filter.icon}</span>
+                    <span style={{ color: filter.colorVar || 'var(--color-text)' }}>{filter.icon}</span>
                     <span>{filter.label}</span>
                     {memberFilter === filter.id && (
-                      <span style={{ marginLeft: 'auto', color: theme.accent }}>✓</span>
+                      <span className="ml-auto text-th-accent">✓</span>
                     )}
                   </button>
                 ))}
