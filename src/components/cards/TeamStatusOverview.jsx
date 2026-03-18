@@ -14,23 +14,20 @@ const TeamStatusOverview = ({ members, theme }) => {
 
   return (
     <div
+      className="rounded-[16px] p-5 border"
       style={{
-        background: theme.cardBg,
-        backdropFilter: theme.backdropBlur,
-        WebkitBackdropFilter: theme.backdropBlur,
-        borderRadius: '16px',
-        padding: '20px',
-        border: `1px solid ${theme.border}`,
-        boxShadow: theme.cardShadow || 'none',
+        background: 'var(--color-card-bg)',
+        backdropFilter: 'var(--effect-backdrop-blur)',
+        WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
+        borderColor: 'var(--color-border)',
+        boxShadow: 'var(--effect-card-shadow)',
       }}
     >
       {/* Header */}
       <div
+        className="text-sm font-semibold mb-3.5"
         style={{
-          fontSize: '14px',
-          fontWeight: '600',
-          color: theme.text,
-          marginBottom: '14px',
+          color: 'var(--color-text)',
           fontFamily: getFontFamily('english'),
         }}
       >
@@ -39,22 +36,16 @@ const TeamStatusOverview = ({ members, theme }) => {
 
       {/* Status Groups */}
       {Object.entries(grouped).map(([status, list]) => (
-        <div key={status} style={{ marginBottom: '12px' }}>
+        <div key={status} className="mb-3">
           {/* Status Header */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '6px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-1.5">
+              {/* Status dot color is dynamic per status — keep inline */}
               <span style={{ color: theme[status], fontSize: '8px' }}>●</span>
               <span
+                className="text-xs"
                 style={{
-                  fontSize: '12px',
-                  color: theme.textSecondary,
+                  color: 'var(--color-text-secondary)',
                   fontFamily: getFontFamily('english'),
                 }}
               >
@@ -62,10 +53,9 @@ const TeamStatusOverview = ({ members, theme }) => {
               </span>
             </div>
             <span
+              className="text-[13px] font-semibold"
               style={{
-                fontSize: '13px',
-                fontWeight: '600',
-                color: theme.text,
+                color: 'var(--color-text)',
                 ...tabularNumberStyle,
               }}
             >
@@ -74,14 +64,7 @@ const TeamStatusOverview = ({ members, theme }) => {
           </div>
 
           {/* Avatar Pills */}
-          <div
-            style={{
-              display: 'flex',
-              gap: '4px',
-              flexWrap: 'wrap',
-              minHeight: '28px',
-            }}
-          >
+          <div className="flex gap-1 flex-wrap min-h-[28px]">
             {list.length > 0 ? (
               list.map((m) => (
                 <div
@@ -94,6 +77,7 @@ const TeamStatusOverview = ({ members, theme }) => {
                       ? `url(${m.profilePicture}) center/cover no-repeat`
                       : m.clickUpColor
                       ? m.clickUpColor
+                      // Dynamic gradient using theme.accent — keep inline
                       : `linear-gradient(135deg, ${theme.accent}, ${theme.accent}80)`,
                     display: 'flex',
                     alignItems: 'center',
@@ -101,6 +85,7 @@ const TeamStatusOverview = ({ members, theme }) => {
                     fontSize: '10px',
                     fontWeight: '600',
                     color: '#fff',
+                    // Dynamic status-specific border — keep inline
                     border: `2px solid ${theme[status]}`,
                     fontFamily: getFontFamily('english'),
                     position: 'relative',
@@ -111,7 +96,7 @@ const TeamStatusOverview = ({ members, theme }) => {
                 </div>
               ))
             ) : (
-              <span style={{ fontSize: '11px', color: theme.textMuted }}>—</span>
+              <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>—</span>
             )}
           </div>
         </div>
