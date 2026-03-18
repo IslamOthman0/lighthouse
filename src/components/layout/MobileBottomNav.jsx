@@ -55,6 +55,7 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
     { id: 'leaves', label: 'Leaves', Icon: LeavesIcon },
   ];
 
+  // isDark drives all theme-specific nav styling — keep inline (no single CSS var covers these)
   const isDark = theme.type === 'dark';
 
   // Colors: active always high-contrast; inactive uses real muted color
@@ -70,23 +71,25 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
     ? '0 8px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06)'
     : '0 8px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06)';
 
+  const avatarPlaceholderBg = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
+  const avatarBorderActive = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.25)';
+  const dropdownBg = isDark ? 'rgba(18,18,18,0.97)' : 'rgba(255,255,255,0.98)';
+  const dropdownShadow = isDark ? '0 -8px 32px rgba(0,0,0,0.5)' : '0 -8px 32px rgba(0,0,0,0.15)';
+
   return (
     <div
+      className="fixed z-[100]"
       style={{
-        position: 'fixed',
         bottom: '16px',
         left: '50%',
         transform: 'translateX(-50%)',
-        zIndex: 100,
         width: 'calc(100% - 32px)',
         maxWidth: '420px',
       }}
     >
       <div
+        className="flex items-center justify-around"
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-around',
           background: navBg,
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
@@ -104,18 +107,12 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
+              className="flex flex-col items-center justify-center border-none cursor-pointer transition-all duration-[250ms]"
               style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
                 gap: '3px',
                 padding: isActive ? '10px 16px' : '10px 12px',
                 background: isActive ? activeTabBg : 'transparent',
-                border: 'none',
                 borderRadius: '16px',
-                cursor: 'pointer',
-                transition: 'all 0.25s ease',
                 minWidth: '48px',
               }}
             >
@@ -135,21 +132,15 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
         })}
 
         {/* Avatar tab with dropdown */}
-        <div ref={avatarMenuRef} style={{ position: 'relative' }}>
+        <div ref={avatarMenuRef} className="relative">
           <button
             onClick={() => setIsAvatarMenuOpen(prev => !prev)}
+            className="flex flex-col items-center justify-center border-none cursor-pointer transition-all duration-[250ms]"
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
               gap: '3px',
               padding: '10px 12px',
               background: isAvatarMenuOpen ? activeTabBg : 'transparent',
-              border: 'none',
               borderRadius: '16px',
-              cursor: 'pointer',
-              transition: 'all 0.25s ease',
               minWidth: '48px',
             }}
           >
@@ -159,13 +150,13 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
               height: '26px',
               borderRadius: '50%',
               overflow: 'hidden',
-              background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)',
+              background: avatarPlaceholderBg,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
               border: isAvatarMenuOpen
-                ? `1.5px solid ${isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.25)'}`
+                ? `1.5px solid ${avatarBorderActive}`
                 : '1.5px solid transparent',
               transition: 'border-color 0.2s',
             }}>
@@ -194,34 +185,31 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
 
           {/* Dropdown — opens upward */}
           {isAvatarMenuOpen && (
-            <div style={{
-              position: 'absolute',
-              bottom: 'calc(100% + 10px)',
-              right: 0,
-              minWidth: '200px',
-              background: isDark
-                ? 'rgba(18,18,18,0.97)'
-                : 'rgba(255,255,255,0.98)',
-              border: `1px solid ${theme.border}`,
-              borderRadius: '14px',
-              boxShadow: isDark
-                ? '0 -8px 32px rgba(0,0,0,0.5)'
-                : '0 -8px 32px rgba(0,0,0,0.15)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              overflow: 'hidden',
-              zIndex: 200,
-            }}>
+            <div
+              className="absolute overflow-hidden"
+              style={{
+                bottom: 'calc(100% + 10px)',
+                right: 0,
+                minWidth: '200px',
+                background: dropdownBg,
+                border: '1px solid var(--color-border)',
+                borderRadius: '14px',
+                boxShadow: dropdownShadow,
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                zIndex: 200,
+              }}
+            >
               {/* User info header */}
               <div style={{
                 padding: '12px 14px 10px',
-                borderBottom: `1px solid ${theme.border}`,
+                borderBottom: '1px solid var(--color-border)',
               }}>
-                <div style={{ fontSize: '13px', fontWeight: '600', color: theme.text }}>
+                <div className="text-[13px] font-semibold text-th-text">
                   {authUser?.username || 'User'}
                 </div>
                 {authUser?.email && (
-                  <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '2px' }}>
+                  <div className="text-[11px] text-th-text-muted" style={{ marginTop: '2px' }}>
                     {authUser.email}
                   </div>
                 )}
@@ -248,19 +236,11 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
                   setIsAvatarMenuOpen(false);
                   if (onSettingsClick) onSettingsClick();
                 }}
+                className="w-full flex items-center gap-2.5 text-th-text text-[14px] font-medium cursor-pointer text-left"
                 style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
                   padding: '11px 14px',
                   background: 'transparent',
                   border: 'none',
-                  color: theme.text,
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  textAlign: 'left',
                 }}
               >
                 <span>⚙️</span>
@@ -270,20 +250,13 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
               {/* Sign Out */}
               <button
                 onClick={() => { setIsAvatarMenuOpen(false); logout(); }}
+                className="w-full flex items-center gap-2.5 text-[14px] font-medium cursor-pointer text-left"
                 style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
                   padding: '11px 14px',
                   background: 'transparent',
                   border: 'none',
-                  borderTop: `1px solid ${theme.border}`,
-                  color: theme.danger || '#EF4444',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  textAlign: 'left',
+                  borderTop: '1px solid var(--color-border)',
+                  color: 'var(--color-danger)',
                 }}
               >
                 <span>↪</span>
