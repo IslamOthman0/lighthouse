@@ -459,7 +459,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
         {/* Header */}
         <div style={{ padding: isMobile ? '16px' : '24px', borderBottom: `1px solid var(--color-border)`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ margin: 0, fontSize: isMobile ? '20px' : '24px', fontWeight: '600', color: 'var(--color-text)' }}>Settings</h2>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-secondary)', fontSize: '24px', cursor: 'pointer', padding: '4px 8px' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-secondary)', fontSize: '24px', cursor: 'pointer', padding: '10px 8px', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
         </div>
 
         {/* Toast */}
@@ -490,7 +490,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                 borderRight: activeTab === tab.id ? `1px solid var(--color-border)` : '1px solid transparent',
                 borderBottom: 'none',
                 borderRadius: '8px 8px 0 0',
-                padding: isMobile ? '10px 12px' : '12px 20px',
+                padding: isMobile ? '15px 12px' : '15px 20px',
                 color: activeTab === tab.id ? 'var(--color-text)' : 'var(--color-text-secondary)',
                 fontSize: isMobile ? '12px' : '14px',
                 fontWeight: activeTab === tab.id ? '600' : '400',
