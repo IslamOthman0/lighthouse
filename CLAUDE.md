@@ -1,7 +1,7 @@
 # Lighthouse Dashboard - Project Guide
 
-**Version:** 2.0.0
-**Last Updated:** 2026-02-08
+**Version:** 2.1.0
+**Last Updated:** 2026-03-18
 **Status:** Production-Ready
 
 ---
@@ -156,10 +156,57 @@ Lighthouse/
 
 ## Key Design Decisions
 
-### Tailwind + Inline Styles Coexistence
-- **New/refactored components:** Tailwind classes + CSS custom properties
-- **Legacy components:** Inline styles with `theme` prop (themes.js)
-- **Bridge:** CSS custom properties in `:root` and `.theme-noir-glass`
+### Tailwind + CSS Custom Properties Bridge (Phase 7–10 Migration)
+All 32 components migrated from inline `theme.*` props to Tailwind + CSS custom properties (completed 2026-03-18).
+
+**Architecture:**
+- **Tailwind classes** for layout, spacing, typography, borders, and static values
+- **CSS custom properties** (`var(--color-*)`) for theme-sensitive colors (background, text, borders)
+- **`useTheme()` hook** still used for dynamic/computed values (border colors, status colors, SVG fills)
+- **Inline `style=`** retained only where Tailwind cannot express the value (dynamic width%, computed colors, SVG props)
+
+**CSS custom property naming convention** (defined in `index.css`):
+```css
+--color-bg-primary       /* main background */
+--color-bg-secondary     /* card/surface background */
+--color-bg-tertiary      /* subtle backgrounds, hover states */
+--color-text-primary     /* primary text */
+--color-text-secondary   /* secondary/muted text */
+--color-text-muted       /* placeholder/disabled text */
+--color-border           /* standard borders */
+--color-border-light     /* subtle dividers */
+--color-accent           /* accent (white in True Black, dark in Noir Glass) */
+```
+
+**Tailwind aliases** (defined in `tailwind.config.js`):
+```
+bg-th-bg, bg-th-surface, text-th-text, text-th-muted, border-th-border, text-th-accent
+```
+
+**Migration rules:**
+- Static colors (status emerald/amber/red/purple): use Tailwind classes directly
+- Theme-sensitive colors: `className="text-[var(--color-text-secondary)]"` or `text-th-text`
+- Dynamic computed values (% widths, conditional hex colors): keep `style={{ ... }}`
+- RTL font family: always `style={{ fontFamily: getAdaptiveFontFamily(text) }}`
+- Never use `theme.accent` as background — use `hexToRgba(theme.text, 0.15)` for subtle tints
+
+**Empty state standard** (established Phase 9):
+```jsx
+<div className="py-10 text-center text-[var(--color-text-muted)] text-[13px]">
+  <Icon className="w-8 h-8 mx-auto mb-2 opacity-30" />
+  <p>Message text</p>
+</div>
+```
+
+**Touch targets** (Phase 8): All interactive elements minimum 44×44px using `min-h-[44px] min-w-[44px]`.
+
+**Inline styles remaining (post-migration baseline):**
+- `CardShell.jsx`: 18 (dynamic border color, status-based computed values)
+- `WorkingCard/BreakCard/OfflineCard.jsx`: ~18 each (status colors, font-family for RTL)
+- `Skeleton.jsx`: 34 (animation keyframe values, dynamic widths)
+- `Sparkline.jsx`: 10 (SVG path/geometry values)
+- `ScoreBreakdownCard.jsx`: 12 (dynamic width%, computed ring colors)
+- These are acceptable — they represent genuinely dynamic values not expressible in Tailwind
 
 ### Accent Color: White (NOT Green)
 - `theme.accent`: `#ffffff` (True Black) / `#111827` (Noir Glass)
