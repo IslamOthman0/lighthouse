@@ -490,7 +490,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                 borderRight: activeTab === tab.id ? `1px solid var(--color-border)` : '1px solid transparent',
                 borderBottom: 'none',
                 borderRadius: '8px 8px 0 0',
-                padding: isMobile ? '15px 12px' : '15px 20px',
+                padding: isMobile ? '10px 12px' : '15px 20px',
                 color: activeTab === tab.id ? 'var(--color-text)' : 'var(--color-text-secondary)',
                 fontSize: isMobile ? '12px' : '14px',
                 fontWeight: activeTab === tab.id ? '600' : '400',

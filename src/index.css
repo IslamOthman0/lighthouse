@@ -161,6 +161,12 @@ input[type="number"],
   font-feature-settings: "tnum", "lnum";
 }
 
+/* Status pill hover — CSS-only so React re-renders don't leave opacity stuck */
+.status-pill-btn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
 /* Animations */
 @keyframes spin {
   from { transform: rotate(0deg); }

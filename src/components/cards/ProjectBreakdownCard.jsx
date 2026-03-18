@@ -80,7 +80,7 @@ const StatusPill = ({ statusName, statusColor, count, theme, onClick }) => {
         display: 'inline-flex',
         alignItems: 'center',
         gap: '6px',
-        padding: '11px 8px',
+        padding: '4px 8px',
         borderRadius: '6px',
         fontSize: '10px',
         fontWeight: '700',
@@ -94,14 +94,7 @@ const StatusPill = ({ statusName, statusColor, count, theme, onClick }) => {
         fontFamily: getFontFamily('english'),
         whiteSpace: 'nowrap',
       }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.opacity = '0.8';
-        e.currentTarget.style.transform = 'translateY(-1px)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.opacity = '1';
-        e.currentTarget.style.transform = 'translateY(0)';
-      }}
+      className="status-pill-btn"
     >
       <span>{capitalizedName}</span>
       <span

@@ -60,7 +60,7 @@ const FilterSortControls = ({ theme, activeView, setActiveView }) => {
       {/* Left: View Toggle Icons — desktop only */}
       {!isMobile && (
         <div
-          className="flex overflow-hidden rounded-[10px] border border-th-border"
+          className="flex overflow-hidden rounded-[10px]"
           style={{
             background: 'var(--color-card-bg)',
             backdropFilter: 'var(--effect-backdrop-blur)',
