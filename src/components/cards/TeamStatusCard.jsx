@@ -36,28 +36,23 @@ const CompactMemberRow = ({ member, theme, onClick }) => {
   return (
     <div
       onClick={() => onClick && onClick(member)}
+      className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-[10px] border transition-all duration-150"
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        padding: '10px 14px',
-        borderRadius: '10px',
-        background: theme.cardBg,
-        border: `1px solid ${theme.border}`,
+        background: 'var(--color-card-bg)',
+        borderColor: 'var(--color-border)',
         cursor: onClick ? 'pointer' : 'default',
         opacity: isLeave ? 0.8 : 0.6,
-        transition: 'all 0.15s',
       }}
       onMouseEnter={(e) => {
         if (onClick) {
           e.currentTarget.style.opacity = '1';
-          e.currentTarget.style.background = theme.cardHoverBg || theme.subtleBg || theme.cardBg;
+          e.currentTarget.style.background = 'var(--color-inner-bg)';
         }
       }}
       onMouseLeave={(e) => {
         if (onClick) {
           e.currentTarget.style.opacity = isLeave ? '0.8' : '0.6';
-          e.currentTarget.style.background = theme.cardBg;
+          e.currentTarget.style.background = 'var(--color-card-bg)';
         }
       }}
     >
@@ -74,21 +69,17 @@ const CompactMemberRow = ({ member, theme, onClick }) => {
       </div>
 
       {/* Name + subtitle */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div className="flex-1 min-w-0">
         <div
+          className="text-[13px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis"
           style={{
-            fontSize: '13px',
-            fontWeight: '600',
-            color: theme.text,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            color: 'var(--color-text)',
             ...getTextFontStyle(member.name),
           }}
         >
           {member.name}
         </div>
-        <div style={{ fontSize: '10px', color: theme.textMuted }}>
+        <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
           {isLeave
             ? `🏖️ ${member.leaveType || 'On Leave'}`
             : lastActive
@@ -111,7 +102,7 @@ const TeamStatusCard = ({ members, theme, onMemberClick, workingDays = 1 }) => {
   const compactMembers = members.filter((m) => compactStatuses.includes(m.status) || m.onLeave);
 
   return (
-    <div style={{ width: '100%' }}>
+    <div className="w-full">
       {/* Active Members Grid */}
       {activeMembers.length > 0 && (
         <div
