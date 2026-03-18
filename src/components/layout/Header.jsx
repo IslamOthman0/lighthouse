@@ -356,7 +356,7 @@ const Header = ({ theme, themes, currentTheme, setTheme, onSettingsClick }) => {
                     onClick={() => { setIsAvatarMenuOpen(false); if (onSettingsClick) onSettingsClick(); }}
                     className="w-full flex items-center gap-2.5 text-th-text text-[14px] font-medium cursor-pointer text-left"
                     style={{
-                      padding: '11px 14px', background: 'transparent', border: 'none',
+                      padding: '15px 14px', background: 'transparent', border: 'none',
                     }}
                   >
                     <span>⚙️</span>
@@ -368,7 +368,7 @@ const Header = ({ theme, themes, currentTheme, setTheme, onSettingsClick }) => {
                     onClick={() => { setIsAvatarMenuOpen(false); logout(); }}
                     className="w-full flex items-center gap-2.5 text-[14px] font-medium cursor-pointer text-left"
                     style={{
-                      padding: '11px 14px', background: 'transparent', border: 'none',
+                      padding: '15px 14px', background: 'transparent', border: 'none',
                       borderTop: '1px solid var(--color-border)',
                       color: 'var(--color-danger)',
                     }}

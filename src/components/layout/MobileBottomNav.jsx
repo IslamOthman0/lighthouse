@@ -238,7 +238,7 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
                 }}
                 className="w-full flex items-center gap-2.5 text-th-text text-[14px] font-medium cursor-pointer text-left"
                 style={{
-                  padding: '11px 14px',
+                  padding: '15px 14px',
                   background: 'transparent',
                   border: 'none',
                 }}
@@ -252,7 +252,7 @@ const MobileBottomNav = ({ theme, activeTab, onTabChange, onSettingsClick, alert
                 onClick={() => { setIsAvatarMenuOpen(false); logout(); }}
                 className="w-full flex items-center gap-2.5 text-[14px] font-medium cursor-pointer text-left"
                 style={{
-                  padding: '11px 14px',
+                  padding: '15px 14px',
                   background: 'transparent',
                   border: 'none',
                   borderTop: '1px solid var(--color-border)',
