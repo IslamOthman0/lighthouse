@@ -80,7 +80,7 @@ const StatusPill = ({ statusName, statusColor, count, theme, onClick }) => {
         display: 'inline-flex',
         alignItems: 'center',
         gap: '6px',
-        padding: '3px 8px',
+        padding: '11px 8px',
         borderRadius: '6px',
         fontSize: '10px',
         fontWeight: '700',
