@@ -9,7 +9,7 @@ import React from 'react';
  * @param {number} height - Chart height in pixels (default: 32)
  * @param {string} color - Line/fill color
  * @param {boolean} showMarkers - Whether to show peak/low markers
- * @param {Object} theme - Theme object for colors
+ * @param {Object} theme - Theme object (kept for backward compat)
  */
 const Sparkline = ({
   data = [],
@@ -22,7 +22,7 @@ const Sparkline = ({
   if (!data || data.length < 2) {
     return (
       <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: '10px', color: theme.textMuted || '#666' }}>No data</span>
+        <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>No data</span>
       </div>
     );
   }
@@ -98,7 +98,7 @@ const Sparkline = ({
             cx={points[minIndex].x}
             cy={points[minIndex].y}
             r="3"
-            fill={theme.warning || '#F59E0B'}
+            fill="var(--color-warning)"
             stroke="#fff"
             strokeWidth="1"
           />
@@ -137,10 +137,10 @@ export const SparklineWithStats = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: theme.innerBg || 'rgba(0,0,0,0.05)',
+        background: 'var(--color-inner-bg)',
         borderRadius: '8px',
       }}>
-        <span style={{ fontSize: '11px', color: theme.textMuted || '#666' }}>Not enough data</span>
+        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Not enough data</span>
       </div>
     );
   }
@@ -167,14 +167,14 @@ export const SparklineWithStats = ({
         justifyContent: 'space-between',
         marginTop: '8px',
         padding: '6px 8px',
-        background: theme.innerBg || 'rgba(0,0,0,0.03)',
+        background: 'var(--color-inner-bg)',
         borderRadius: '6px',
         fontSize: '10px',
-        color: theme.textMuted || '#666',
+        color: 'var(--color-text-muted)',
       }}>
         <span>Best: <strong style={{ color: color }}>{formatValue(max)}</strong> {labels[maxIndex] && `(${labels[maxIndex]})`}</span>
-        <span>Low: <strong style={{ color: theme.warning || '#F59E0B' }}>{formatValue(min)}</strong></span>
-        <span>Avg: <strong style={{ color: theme.text || '#333' }}>{formatValue(avg)}</strong></span>
+        <span>Low: <strong style={{ color: 'var(--color-warning)' }}>{formatValue(min)}</strong></span>
+        <span>Avg: <strong style={{ color: 'var(--color-text)' }}>{formatValue(avg)}</strong></span>
       </div>
     </div>
   );
