@@ -61,6 +61,7 @@ const LeaveCard = ({ member, theme, onClick, workingDays = 1 }) => {
       <div
         className="mx-4 mb-4 p-3 rounded-lg border"
         style={{
+          // config colors are dynamic per leave type — keep inline
           background: config.bgColor,
           borderColor: config.borderColor,
         }}
@@ -84,13 +85,13 @@ const LeaveCard = ({ member, theme, onClick, workingDays = 1 }) => {
         </div>
 
         {/* Date range */}
-        <div className="text-[12px] font-medium" style={{ color: theme.text }}>
+        <div className="text-[12px] font-medium" style={{ color: 'var(--color-text)' }}>
           {dateDisplay}
         </div>
 
         {/* Return date */}
         {returnDate && returnDate !== leaveEnd && (
-          <div className="text-[11px] mt-1.5 flex items-center gap-1" style={{ color: theme.textSecondary }}>
+          <div className="text-[11px] mt-1.5 flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
             <span>↩</span>
             <span>Returns {formatDate(returnDate)}</span>
           </div>
