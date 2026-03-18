@@ -2,16 +2,16 @@ import React from 'react';
 import ProgressRing from '../ui/ProgressRing';
 import { tabularNumberStyle, getFontFamily } from '../../utils/typography';
 
-const getScoreColor = (score, theme) => {
-  if (!score && score !== 0) return theme.textMuted;
-  if (score >= 90) return theme.success;
-  if (score >= 80) return theme.accent;
-  if (score >= 70) return theme.warning;
-  return theme.danger;
+const getScoreColor = (score) => {
+  if (!score && score !== 0) return 'var(--color-text-muted)';
+  if (score >= 90) return 'var(--color-success)';
+  if (score >= 80) return 'var(--color-accent)';
+  if (score >= 70) return 'var(--color-warning)';
+  return 'var(--color-danger)';
 };
 
 const ScoreBreakdownCard = ({ theme, teamScore, metrics, yesterdayScore, onClick }) => {
-  const scoreColor = getScoreColor(teamScore, theme);
+  const scoreColor = getScoreColor(teamScore);
 
   const dailyDelta = (yesterdayScore != null && teamScore != null)
     ? Math.round(teamScore - yesterdayScore)
@@ -21,39 +21,30 @@ const ScoreBreakdownCard = ({ theme, teamScore, metrics, yesterdayScore, onClick
     <div
       onClick={onClick}
       data-testid="overview-card-team-score"
+      className="rounded-[16px] p-5 border transition-all duration-200"
       style={{
-        background: theme.cardBg,
-        backdropFilter: theme.backdropBlur,
-        WebkitBackdropFilter: theme.backdropBlur,
-        borderRadius: '16px',
-        padding: '20px',
-        border: `1px solid ${theme.border}`,
-        boxShadow: theme.cardShadow || 'none',
+        background: 'var(--color-card-bg)',
+        backdropFilter: 'var(--effect-backdrop-blur)',
+        WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
+        borderColor: 'var(--color-border)',
+        boxShadow: 'var(--effect-card-shadow)',
         cursor: onClick ? 'pointer' : 'default',
-        transition: 'all 0.2s ease',
       }}
       onMouseEnter={(e) => {
         if (onClick) {
           e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = theme.cardShadow || `0 4px 16px ${theme.border}60`;
+          e.currentTarget.style.boxShadow = 'var(--effect-card-shadow)';
         }
       }}
       onMouseLeave={(e) => {
         if (onClick) {
           e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = theme.cardShadow || 'none';
+          e.currentTarget.style.boxShadow = 'var(--effect-card-shadow)';
         }
       }}
     >
       {/* Team Score with Ring */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          marginBottom: '16px',
-        }}
-      >
+      <div className="flex items-center gap-4 mb-4">
         <ProgressRing
           progress={teamScore}
           color={scoreColor}
@@ -63,15 +54,21 @@ const ScoreBreakdownCard = ({ theme, teamScore, metrics, yesterdayScore, onClick
         />
 
         <div>
-          <div style={{ fontSize: '14px', fontWeight: '600', color: theme.text, fontFamily: getFontFamily('english') }}>
+          <div className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)', fontFamily: getFontFamily('english') }}>
             Team Score
           </div>
           {dailyDelta !== null ? (
-            <div style={{ fontSize: '11px', color: dailyDelta > 0 ? theme.success : dailyDelta < 0 ? theme.danger : theme.textMuted, marginTop: '2px', fontFamily: getFontFamily('english') }}>
+            <div
+              className="text-[11px] mt-0.5"
+              style={{
+                color: dailyDelta > 0 ? 'var(--color-success)' : dailyDelta < 0 ? 'var(--color-danger)' : 'var(--color-text-muted)',
+                fontFamily: getFontFamily('english'),
+              }}
+            >
               {dailyDelta > 0 ? `↑ +${dailyDelta} from yesterday` : dailyDelta < 0 ? `↓ ${dailyDelta} from yesterday` : '→ No change'}
             </div>
           ) : (
-            <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '2px', fontFamily: getFontFamily('english') }}>
+            <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-muted)', fontFamily: getFontFamily('english') }}>
               {metrics && `Time ${metrics.time || 0}% · Tasks ${metrics.tasks || 0}%`}
             </div>
           )}
@@ -79,27 +76,24 @@ const ScoreBreakdownCard = ({ theme, teamScore, metrics, yesterdayScore, onClick
       </div>
 
       {/* Metrics Grid (2x2) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+      <div className="grid grid-cols-2 gap-2">
         {[
-          { label: 'Time Tracked', value: metrics?.time || 0, color: theme.working },
-          { label: 'Workload', value: metrics?.workload || 0, color: theme.accent },
-          { label: 'Completion', value: metrics?.tasks || 0, color: theme.leave },
-          { label: 'Compliance', value: metrics?.compliance || 0, color: theme.purple },
+          { label: 'Time Tracked', value: metrics?.time || 0, color: 'var(--color-working)' },
+          { label: 'Workload', value: metrics?.workload || 0, color: 'var(--color-accent)' },
+          { label: 'Completion', value: metrics?.tasks || 0, color: 'var(--color-leave)' },
+          { label: 'Compliance', value: metrics?.compliance || 0, color: 'var(--color-purple)' },
         ].map((metric, idx) => (
           <div
             key={idx}
+            className="rounded-[10px] p-3 text-center border"
             style={{
-              background: theme.secondaryBg,
-              borderRadius: '10px',
-              padding: '12px',
-              textAlign: 'center',
-              border: `1px solid ${theme.borderLight}`,
+              background: 'var(--color-inner-bg)',
+              borderColor: 'var(--color-border-light)',
             }}
           >
             <div
+              className="text-[18px] font-bold"
               style={{
-                fontSize: '18px',
-                fontWeight: '700',
                 color: metric.color,
                 ...tabularNumberStyle,
               }}
@@ -107,16 +101,15 @@ const ScoreBreakdownCard = ({ theme, teamScore, metrics, yesterdayScore, onClick
               {metric.value}%
             </div>
             <div
+              className="text-[10px] mt-0.5"
               style={{
-                fontSize: '10px',
-                color: theme.textMuted,
-                marginTop: '2px',
+                color: 'var(--color-text-muted)',
                 fontFamily: getFontFamily('english'),
               }}
             >
               {metric.label}
             </div>
-            <div style={{ marginTop: '6px', height: '3px', borderRadius: '2px', background: theme.border, overflow: 'hidden' }}>
+            <div className="mt-1.5 h-[3px] rounded-sm overflow-hidden" style={{ background: 'var(--color-border)' }}>
               <div style={{ height: '100%', width: `${Math.min(metric.value, 100)}%`, background: metric.color, borderRadius: '2px', transition: 'width 0.3s ease' }} />
             </div>
           </div>
@@ -132,11 +125,11 @@ const ScoreBreakdownCard = ({ theme, teamScore, metrics, yesterdayScore, onClick
           { label: 'Compliance', value: metrics.compliance || 0 },
         ];
         const weakest = metricList.reduce((min, m) => m.value < min.value ? m : min, metricList[0]);
-        if (weakest.value >= 80) return null; // Don't show if all metrics are good
+        if (weakest.value >= 80) return null;
         return (
-          <div style={{ marginTop: '10px', padding: '8px 12px', background: theme.secondaryBg, borderRadius: '8px', border: `1px solid ${theme.borderLight}` }}>
-            <span style={{ fontSize: '10px', color: theme.textMuted, fontFamily: getFontFamily('english') }}>
-              Focus area: <strong style={{ color: theme.warning || '#F59E0B' }}>{weakest.label}</strong> at {weakest.value}%
+          <div className="mt-2.5 px-3 py-2 rounded-lg border" style={{ background: 'var(--color-inner-bg)', borderColor: 'var(--color-border-light)' }}>
+            <span className="text-[10px]" style={{ color: 'var(--color-text-muted)', fontFamily: getFontFamily('english') }}>
+              Focus area: <strong style={{ color: 'var(--color-warning)' }}>{weakest.label}</strong> at {weakest.value}%
             </span>
           </div>
         );
