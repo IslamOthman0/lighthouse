@@ -295,6 +295,7 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
     return `${formatDate(tempRange.startDate)} — ${formatDate(tempRange.endDate)}`;
   };
 
+  // Keep theme.type conditionals inline — no CSS var equivalent
   const isDark = theme.type === 'dark';
   const accent = isDark ? '#ffffff' : '#111827';
   const accentBg = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(17,24,39,0.08)';
@@ -322,21 +323,21 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
           maxHeight: '90vh',
           overflow: 'auto',
           padding: '20px',
-          border: `1px solid ${theme.border}`,
+          border: '1px solid var(--color-border)',
           boxShadow: '0 8px 40px rgba(0, 0, 0, 0.5)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '700', color: theme.text, margin: 0 }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--color-text)', margin: 0 }}>
             Select Date Range
           </h3>
           <button
             onClick={handleCancel}
             style={{
               background: 'transparent', border: 'none', fontSize: '24px',
-              cursor: 'pointer', color: theme.textMuted, padding: '0',
+              cursor: 'pointer', color: 'var(--color-text-muted)', padding: '0',
               width: '32px', height: '32px', display: 'flex',
               alignItems: 'center', justifyContent: 'center', borderRadius: '8px',
             }}
@@ -348,23 +349,23 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
           style={{
             padding: '12px 16px', borderRadius: '10px',
             background: accentBg,
-            border: `1px solid ${theme.border}`,
+            border: '1px solid var(--color-border)',
             marginBottom: '16px', textAlign: 'center',
           }}
         >
-          <div style={{ fontSize: '11px', color: theme.textMuted, marginBottom: '4px' }}>
+          <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
             Selected Range
           </div>
-          <div style={{ fontSize: '15px', fontWeight: '600', color: theme.text }}>
+          <div style={{ fontSize: '15px', fontWeight: '600', color: 'var(--color-text)' }}>
             {formatRangeDisplay()}
           </div>
           {tempRange.preset !== 'custom' && tempRange.preset !== 'today' && (
-            <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '2px' }}>
+            <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
               {quickPresets.find(p => p.value === tempRange.preset)?.label}
             </div>
           )}
           {getLongRangeInfo() && (
-            <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+            <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
               ℹ Syncing {getLongRangeInfo().chunks} chunks — may take a moment
             </div>
           )}
@@ -372,7 +373,7 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
 
         {/* Quick Filters */}
         <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '8px' }}>
+          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
             Quick Select
           </div>
           <select
@@ -380,9 +381,9 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
             onChange={(e) => { if (e.target.value) handlePresetClick(e.target.value); }}
             style={{
               width: '100%', padding: '9px 12px', borderRadius: '8px',
-              border: `1px solid ${theme.border}`,
-              background: theme.innerBg,
-              color: theme.text,
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-inner-bg)',
+              color: 'var(--color-text)',
               fontSize: '13px', fontWeight: '500',
               cursor: 'pointer', outline: 'none',
               appearance: 'none', WebkitAppearance: 'none',
@@ -401,7 +402,7 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
 
         {/* Calendar */}
         <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontSize: '12px', fontWeight: '600', color: theme.textMuted, marginBottom: '8px' }}>
+          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
             Custom Range
           </div>
 
@@ -409,7 +410,7 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
           {tempRange.preset === 'custom' && (
             <div style={{
               fontSize: '11px', textAlign: 'center', marginBottom: '8px',
-              color: selectionMode === 'start' ? theme.textMuted : accent,
+              color: selectionMode === 'start' ? 'var(--color-text-muted)' : accent,
               fontWeight: '500',
             }}>
               {selectionMode === 'start' ? 'Click a day to set start date' : '▶ Now click end date'}
@@ -421,10 +422,10 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
             <button
               onClick={handlePrevMonth}
               style={{
-                background: theme.innerBg, border: `1px solid ${theme.border}`,
+                background: 'var(--color-inner-bg)', border: '1px solid var(--color-border)',
                 borderRadius: '8px', width: '32px', height: '32px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: theme.text, fontSize: '16px',
+                cursor: 'pointer', color: 'var(--color-text)', fontSize: '16px',
               }}
             >‹</button>
 
@@ -436,7 +437,7 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
                   background: navMode === 'month' ? accentBg : 'transparent',
                   border: `1px solid ${navMode === 'month' ? accent : 'transparent'}`,
                   borderRadius: '6px', padding: '4px 8px',
-                  fontSize: '14px', fontWeight: '600', color: theme.text,
+                  fontSize: '14px', fontWeight: '600', color: 'var(--color-text)',
                   cursor: 'pointer',
                 }}
               >
@@ -448,7 +449,7 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
                   background: navMode === 'year' ? accentBg : 'transparent',
                   border: `1px solid ${navMode === 'year' ? accent : 'transparent'}`,
                   borderRadius: '6px', padding: '4px 8px',
-                  fontSize: '14px', fontWeight: '600', color: theme.text,
+                  fontSize: '14px', fontWeight: '600', color: 'var(--color-text)',
                   cursor: 'pointer',
                 }}
               >
@@ -459,10 +460,10 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
             <button
               onClick={handleNextMonth}
               style={{
-                background: theme.innerBg, border: `1px solid ${theme.border}`,
+                background: 'var(--color-inner-bg)', border: '1px solid var(--color-border)',
                 borderRadius: '8px', width: '32px', height: '32px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: theme.text, fontSize: '16px',
+                cursor: 'pointer', color: 'var(--color-text)', fontSize: '16px',
               }}
             >›</button>
           </div>
@@ -473,7 +474,7 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
               display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px',
               marginBottom: '10px', padding: '8px', borderRadius: '8px',
               background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-              border: `1px solid ${theme.border}`,
+              border: '1px solid var(--color-border)',
               maxHeight: '120px', overflowY: 'auto',
             }}>
               {yearList.map(y => (
@@ -488,7 +489,7 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
                     fontWeight: y === currentYear ? '700' : '400',
                     border: y === currentYear ? `1px solid ${accent}` : '1px solid transparent',
                     background: y === currentYear ? accentBg : 'transparent',
-                    color: y === currentYear ? accent : theme.text,
+                    color: y === currentYear ? accent : 'var(--color-text)',
                     cursor: 'pointer',
                   }}
                 >{y}</button>
@@ -502,7 +503,7 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
               display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px',
               marginBottom: '10px', padding: '8px', borderRadius: '8px',
               background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-              border: `1px solid ${theme.border}`,
+              border: '1px solid var(--color-border)',
             }}>
               {monthShort.map((m, idx) => (
                 <button
@@ -516,7 +517,7 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
                     fontWeight: idx === currentMonth ? '700' : '400',
                     border: idx === currentMonth ? `1px solid ${accent}` : '1px solid transparent',
                     background: idx === currentMonth ? accentBg : 'transparent',
-                    color: idx === currentMonth ? accent : theme.text,
+                    color: idx === currentMonth ? accent : 'var(--color-text)',
                     cursor: 'pointer',
                   }}
                 >{m}</button>
@@ -531,7 +532,7 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
                 {dayNames.map(day => (
                   <div key={day} style={{
                     textAlign: 'center', fontSize: '10px',
-                    fontWeight: '600', color: theme.textMuted, padding: '4px 0',
+                    fontWeight: '600', color: 'var(--color-text-muted)', padding: '4px 0',
                   }}>
                     {day}
                   </div>
@@ -563,7 +564,7 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
                           : inRange ? accentBg : 'transparent',
                         color: isStart || isEnd
                           ? (isDark ? '#000000' : '#ffffff')
-                          : inRange ? accent : theme.text,
+                          : inRange ? accent : 'var(--color-text)',
                         fontSize: '12px',
                         fontWeight: isStart || isEnd || isTodayDate ? '600' : '400',
                         cursor: isFuture ? 'not-allowed' : 'pointer',
@@ -586,8 +587,8 @@ const DatePickerModal = ({ isOpen, onClose, theme }) => {
             onClick={handleCancel}
             style={{
               flex: 1, padding: '12px', borderRadius: '10px',
-              border: `1px solid ${theme.border}`, background: theme.innerBg,
-              color: theme.textSecondary, fontSize: '14px', fontWeight: '600', cursor: 'pointer',
+              border: '1px solid var(--color-border)', background: 'var(--color-inner-bg)',
+              color: 'var(--color-text-secondary)', fontSize: '14px', fontWeight: '600', cursor: 'pointer',
             }}
           >Cancel</button>
           <button
