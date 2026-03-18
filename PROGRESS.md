@@ -357,18 +357,18 @@
 - [x] 4.8 Verify UI component migration
 
 ### Phase 5: Card Migration
-- [ ] 5.1 OverviewCard.jsx (81 lines)
-- [ ] 5.2 ScoreBreakdownCard.jsx (148 lines)
-- [ ] 5.3 TeamStatusOverview.jsx (123 lines)
-- [ ] 5.4 TeamStatusCard.jsx (157 lines)
-- [ ] 5.5 NoActivityCard.jsx (62 lines)
-- [ ] 5.6 LeaveCard.jsx (103 lines)
-- [ ] 5.7 CardShell.jsx (224 lines) — complete Tailwind migration
-- [ ] 5.8 OfflineCard.jsx (252 lines)
-- [ ] 5.9 BreakCard.jsx (256 lines)
-- [ ] 5.10 WorkingCard.jsx (291 lines)
-- [ ] 5.11 ProjectBreakdownCard.jsx (463 lines)
-- [ ] 5.12 Verify card migration
+- [x] 5.1 OverviewCard.jsx (81 lines)
+- [x] 5.2 ScoreBreakdownCard.jsx (148 lines)
+- [x] 5.3 TeamStatusOverview.jsx (123 lines)
+- [x] 5.4 TeamStatusCard.jsx (157 lines)
+- [x] 5.5 NoActivityCard.jsx (62 lines)
+- [x] 5.6 LeaveCard.jsx (103 lines)
+- [x] 5.7 CardShell.jsx (224 lines) — complete Tailwind migration
+- [x] 5.8 OfflineCard.jsx (252 lines)
+- [x] 5.9 BreakCard.jsx (256 lines)
+- [x] 5.10 WorkingCard.jsx (291 lines)
+- [x] 5.11 ProjectBreakdownCard.jsx (463 lines)
+- [x] 5.12 Verify card migration
 
 ### Phase 6: Layout Migration
 - [ ] 6.1 FilterSortControls.jsx (320 lines)
@@ -688,6 +688,7 @@ Priority fixes (Phase 9):
 | 51 | 2026-03-14 | UI 4.3 | Laptop/desktop responsive 1024px+1440px: 18/18 tests passing. Created tests/visual/responsive-desktop.spec.js. GROUP 1-2 (layout ×2 viewports): overview card visible; no horizontal overflow; ≥1 member element; desktop Header confirmed (button[title="Account & Settings"] visible); MobileBottomNav confirmed absent. GROUP 3-4 (interactions ×2 viewports): member click opens modal; settings modal opens with text tabs (not emoji-only); date picker opens; grid/list toggle preserves overview cards. GROUP 5 (content both viewports): member text non-empty; overview card shows %; no JS errors throughout all desktop interactions at 1440px. Key findings: (1) Both 1024px and 1440px render identical desktop layout — no breakpoint difference observed. (2) MobileBottomNav definitively absent at both widths. (3) Settings shows text tab labels at all desktop widths. (4) 18/18 passed on first run — no adjustments needed. |
 | 57 | 2026-03-17 | 3.1+3.2 | Dead code removal: deleted MemberRow.jsx (425L), ViewTabs.jsx, useThemeStyles.js, projectColors.js, statusColors.js — 5 files, zero references confirmed before deletion. 256 tests passing, build clean. |
 | 59 | 2026-03-18 | 4.1-4.8 | Phase 4 UI migration complete (all 7 ui/ files). 4.1-4.5 done last session. 4.6 Sparkline: theme.textMuted/innerBg/warning/text→CSS vars (SVG fill accepts CSS vars). 4.7 Skeleton: theme.innerBg/cardBg/backdropBlur/border/cardShadow→CSS vars across all 7 variants. 4.8: 256 tests passing, build clean. |
+| 60 | 2026-03-18 | 5.1-5.12 | Phase 5 Card Migration complete (all 11 card files). Key patterns: theme.cardBg/backdropBlur/border/cardShadow/text/textMuted/textSecondary/innerBg/subtleBg/borderLight→CSS vars. Exceptions kept inline: theme[status] dynamic property access (TeamStatusOverview dots/borders), theme.accent hex-suffix gradient (TeamStatusOverview avatars), theme.cardBg gradient border (assignee rings in Working/Break/OfflineCard), theme.type==='dark' checks (publisher/genre boxes), dynamic tag/project colors with hex suffix opacity. Status glow constants: BREAK_LIGHT/BREAK/BREAK_DARK/BREAK_GLOW, OFFLINE_LIGHT/OFFLINE, WORKING_GLOW hardcoded to match :root CSS vars. getScoreColor() in CardShell/OfflineCard/BreakCard/WorkingCard now returns CSS var strings. 256 tests passing, build clean. |
 | 58 | 2026-03-17 | 7.1-7.5 | Phase 7 UI component migration complete. ProgressRing: border→CSS var. LiveTimer: textMuted/working/break/workingGlow→CSS vars. Avatar: status colors hardcoded hex (needed for boxShadow glow), border/text/color→CSS vars; theme.accent (hex suffix) + cardBg (gradient border) + avatarRing (Noir Glass shadow) kept inline. StatusBadge: status colors + glows → hardcoded constants, theme.badgeWorking/type kept inline for Noir Glass special case. PriorityFlag: already theme-free, no changes. 256 tests passing, build clean. |
 | 56 | 2026-03-17 | 2.7+2.8 | Console cleanup final: MemberDetailModal (7), SettingsModal (2), leaveHelpers (1), ErrorBoundary (1) = 11 calls replaced. Full src/ scan confirms 0 raw console calls remain (only logger.js internals + 2 commented-out lines in calculations.js). Phase 2 console cleanup 100% complete. 256 tests passing. |
 | 55 | 2026-03-17 | 2.6 | Console cleanup: projects.js (7), transform.js (1), baselineService.js (13), taskCache.js (5), useSettings.js (2), useTheme.js (1), clickupHelpers.js (4) = 33 calls replaced with logger. calculations.js had 2 commented-out lines (already skipped). 256 unit tests passing. Build succeeds. |
