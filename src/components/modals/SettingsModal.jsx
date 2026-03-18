@@ -457,7 +457,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ padding: isMobile ? '16px' : '24px', borderBottom: `1px solid var(--color-border)`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: isMobile ? '14px 16px' : '18px 24px', borderBottom: `1px solid var(--color-border)`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ margin: 0, fontSize: isMobile ? '20px' : '24px', fontWeight: '600', color: 'var(--color-text)' }}>Settings</h2>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-secondary)', fontSize: '24px', cursor: 'pointer', padding: '10px 8px', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
         </div>
@@ -475,7 +475,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
 
         {/* Tabs */}
         <div style={{
-          display: 'flex', gap: '4px', padding: `12px ${isMobile ? '12px' : '24px'} 0`,
+          display: 'flex', gap: '2px', padding: `10px ${isMobile ? '10px' : '16px'} 0`,
           borderBottom: `1px solid var(--color-border)`,
           overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none',
         }}>
@@ -490,12 +490,12 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                 borderRight: activeTab === tab.id ? `1px solid var(--color-border)` : '1px solid transparent',
                 borderBottom: 'none',
                 borderRadius: '8px 8px 0 0',
-                padding: isMobile ? '10px 12px' : '15px 20px',
+                padding: isMobile ? '8px 10px' : '10px 14px',
                 color: activeTab === tab.id ? 'var(--color-text)' : 'var(--color-text-secondary)',
-                fontSize: isMobile ? '12px' : '14px',
+                fontSize: '13px',
                 fontWeight: activeTab === tab.id ? '600' : '400',
                 cursor: 'pointer', whiteSpace: 'nowrap',
-                display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0,
+                display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0,
               }}
             >
               <span>{tab.icon}</span>
