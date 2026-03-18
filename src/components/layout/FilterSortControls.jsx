@@ -142,7 +142,7 @@ const FilterSortControls = ({ theme, activeView, setActiveView }) => {
                     onClick={() => handleSortClick(sort.id)}
                     className="flex items-center gap-2.5 w-full border-none text-th-text text-[13px] cursor-pointer transition-all duration-200 text-left"
                     style={{
-                      padding: '10px 14px',
+                      padding: '14px 14px',
                       background: memberSort === sort.id ? 'var(--color-inner-bg)' : 'transparent',
                       fontWeight: memberSort === sort.id ? '600' : '500',
                     }}
@@ -211,7 +211,7 @@ const FilterSortControls = ({ theme, activeView, setActiveView }) => {
                     onClick={() => handleFilterClick(filter.id)}
                     className="flex items-center gap-2.5 w-full border-none text-th-text text-[13px] cursor-pointer transition-all duration-200 text-left"
                     style={{
-                      padding: '10px 14px',
+                      padding: '14px 14px',
                       background: memberFilter === filter.id ? 'var(--color-inner-bg)' : 'transparent',
                       fontWeight: memberFilter === filter.id ? '600' : '500',
                     }}
