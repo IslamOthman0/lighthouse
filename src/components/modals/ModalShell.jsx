@@ -85,12 +85,14 @@ const ModalShell = ({
             width: '100%',
             maxWidth: maxWidth,
             maxHeight: isMobile ? '88dvh' : '85vh',
-            background: theme.type === 'dark'
+            background: theme && theme.type === 'dark'
               ? 'linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06))'
-              : 'linear-gradient(155deg, rgb(255,255,255), rgb(252,252,252))',
+              : theme && theme.type === 'light'
+                ? 'linear-gradient(155deg, rgb(255,255,255), rgb(252,252,252))'
+                : 'var(--color-card-bg)',
             borderRadius: '16px',
-            border: `1px solid ${theme.border}`,
-            boxShadow: theme.type === 'dark'
+            border: '1px solid var(--color-border)',
+            boxShadow: theme && theme.type === 'dark'
               ? '0 25px 50px -12px rgba(0,0,0,0.5)'
               : '0 25px 50px -12px rgba(0,0,0,0.15)',
             overflow: 'hidden',
@@ -105,11 +107,11 @@ const ModalShell = ({
         <div
           style={{
             padding: '16px 20px',
-            borderBottom: `1px solid ${theme.border}`,
+            borderBottom: '1px solid var(--color-border)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            background: headerColor || (theme.innerBg || theme.secondaryBg),
+            background: headerColor || 'var(--color-inner-bg)',
             ...(headerColor && { color: '#ffffff' }),
           }}
         >
@@ -120,7 +122,7 @@ const ModalShell = ({
               gap: '10px',
               fontSize: '15px',
               fontWeight: '600',
-              color: headerColor ? '#ffffff' : theme.text,
+              color: headerColor ? '#ffffff' : 'var(--color-text)',
               fontFamily: getFontFamily('english'),
             }}
           >
@@ -134,8 +136,8 @@ const ModalShell = ({
               height: '28px',
               borderRadius: '6px',
               border: 'none',
-              background: headerColor ? 'rgba(255,255,255,0.2)' : theme.subtleBg || 'rgba(0,0,0,0.05)',
-              color: headerColor ? '#ffffff' : theme.textMuted,
+              background: headerColor ? 'rgba(255,255,255,0.2)' : 'var(--color-subtle-bg)',
+              color: headerColor ? '#ffffff' : 'var(--color-text-muted)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -144,12 +146,12 @@ const ModalShell = ({
               transition: 'all 0.15s',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = headerColor ? 'rgba(255,255,255,0.3)' : (theme.border || 'rgba(0,0,0,0.1)');
-              e.currentTarget.style.color = headerColor ? '#ffffff' : theme.text;
+              e.currentTarget.style.background = headerColor ? 'rgba(255,255,255,0.3)' : 'var(--color-border)';
+              e.currentTarget.style.color = headerColor ? '#ffffff' : 'var(--color-text)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = headerColor ? 'rgba(255,255,255,0.2)' : (theme.subtleBg || 'rgba(0,0,0,0.05)');
-              e.currentTarget.style.color = headerColor ? '#ffffff' : theme.textMuted;
+              e.currentTarget.style.background = headerColor ? 'rgba(255,255,255,0.2)' : 'var(--color-subtle-bg)';
+              e.currentTarget.style.color = headerColor ? '#ffffff' : 'var(--color-text-muted)';
             }}
           >
             ×
@@ -194,16 +196,16 @@ export const ModalHero = ({
   rightContent
 }) => (
   <div style={{ marginBottom: '20px' }}>
-    <div style={{ fontSize: '11px', color: theme.textMuted, marginBottom: '6px', fontFamily: getFontFamily('english'), textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+    <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '6px', fontFamily: getFontFamily('english'), textTransform: 'uppercase', letterSpacing: '0.5px' }}>
       {label}
     </div>
     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '10px' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-        <span style={{ fontSize: '32px', fontWeight: '700', color: theme.text, fontVariantNumeric: 'tabular-nums' }}>
+        <span style={{ fontSize: '32px', fontWeight: '700', color: 'var(--color-text)', fontVariantNumeric: 'tabular-nums' }}>
           {value}
         </span>
         {subValue && (
-          <span style={{ fontSize: '14px', color: theme.textSecondary, fontFamily: getFontFamily('english') }}>
+          <span style={{ fontSize: '14px', color: 'var(--color-text-secondary)', fontFamily: getFontFamily('english') }}>
             {subValue}
           </span>
         )}
@@ -211,12 +213,12 @@ export const ModalHero = ({
       {rightContent}
     </div>
     {progress !== undefined && (
-      <div style={{ width: '100%', height: '8px', background: theme.subtleBg || theme.border, borderRadius: '4px', overflow: 'hidden' }}>
+      <div style={{ width: '100%', height: '8px', background: 'var(--color-subtle-bg)', borderRadius: '4px', overflow: 'hidden' }}>
         <div
           style={{
             width: `${Math.min(Math.max(progress, 0), 100)}%`,
             height: '100%',
-            background: `linear-gradient(90deg, ${progressColor || theme.accent}, ${progressColor || theme.accent}cc)`,
+            background: progressColor ? `linear-gradient(90deg, ${progressColor}, ${progressColor}cc)` : 'linear-gradient(90deg, var(--color-accent), var(--color-accent))',
             borderRadius: '4px',
             transition: 'width 0.3s ease',
           }}
@@ -232,11 +234,11 @@ export const ModalHero = ({
 export const ModalSection = ({ theme, title, icon, children, noPadding }) => (
   <div
     style={{
-      background: theme.innerBg || theme.secondaryBg,
+      background: 'var(--color-inner-bg)',
       borderRadius: '12px',
       padding: noPadding ? '0' : '16px',
       marginBottom: '16px',
-      border: `1px solid ${theme.borderLight || theme.border}`,
+      border: '1px solid var(--color-border-light)',
     }}
   >
     {title && (
@@ -244,7 +246,7 @@ export const ModalSection = ({ theme, title, icon, children, noPadding }) => (
         style={{
           fontSize: '12px',
           fontWeight: '600',
-          color: theme.text,
+          color: 'var(--color-text)',
           marginBottom: '12px',
           fontFamily: getFontFamily('english'),
           display: 'flex',
@@ -266,11 +268,11 @@ export const ModalSection = ({ theme, title, icon, children, noPadding }) => (
  */
 export const StatRow = ({ theme, label, value, valueColor, icon }) => (
   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
-    <span style={{ fontSize: '11px', color: theme.textSecondary, fontFamily: getFontFamily('english') }}>
+    <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontFamily: getFontFamily('english') }}>
       {icon && <span style={{ marginRight: '4px' }}>{icon}</span>}
       {label}
     </span>
-    <span style={{ fontSize: '12px', fontWeight: '600', color: valueColor || theme.text, fontVariantNumeric: 'tabular-nums' }}>
+    <span style={{ fontSize: '12px', fontWeight: '600', color: valueColor || 'var(--color-text)', fontVariantNumeric: 'tabular-nums' }}>
       {value}
     </span>
   </div>
@@ -283,19 +285,19 @@ export const ProgressBar = ({ theme, value, max, color, height = 6, showLabel })
   const percent = max > 0 ? (value / max) * 100 : 0;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <div style={{ flex: 1, height: `${height}px`, background: theme.subtleBg || theme.border, borderRadius: `${height / 2}px`, overflow: 'hidden' }}>
+      <div style={{ flex: 1, height: `${height}px`, background: 'var(--color-subtle-bg)', borderRadius: `${height / 2}px`, overflow: 'hidden' }}>
         <div
           style={{
             width: `${Math.min(percent, 100)}%`,
             height: '100%',
-            background: color || theme.accent,
+            background: color || 'var(--color-accent)',
             borderRadius: `${height / 2}px`,
             transition: 'width 0.3s ease',
           }}
         />
       </div>
       {showLabel && (
-        <span style={{ fontSize: '10px', fontWeight: '600', color: theme.textSecondary, fontVariantNumeric: 'tabular-nums', minWidth: '32px', textAlign: 'right' }}>
+        <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--color-text-secondary)', fontVariantNumeric: 'tabular-nums', minWidth: '32px', textAlign: 'right' }}>
           {Math.round(percent)}%
         </span>
       )}
@@ -307,7 +309,7 @@ export const ProgressBar = ({ theme, value, max, color, height = 6, showLabel })
  * Empty State Component
  */
 export const EmptyState = ({ theme, icon, title, subtitle }) => (
-  <div style={{ textAlign: 'center', padding: '40px 20px', color: theme.textMuted }}>
+  <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--color-text-muted)' }}>
     <div style={{ fontSize: '48px', marginBottom: '12px', opacity: 0.3 }}>{icon || '📊'}</div>
     <div style={{ fontSize: '14px', fontFamily: getFontFamily('english'), marginBottom: '4px' }}>{title || 'No data available'}</div>
     {subtitle && <div style={{ fontSize: '12px', opacity: 0.7 }}>{subtitle}</div>}
