@@ -29,9 +29,9 @@ const CardShell = ({
 
   // Get score color based on percentage
   const getScoreColor = (percent) => {
-    if (percent >= 80) return theme.success;
-    if (percent >= 60) return theme.warning;
-    return theme.danger;
+    if (percent >= 80) return 'var(--color-success)';
+    if (percent >= 60) return 'var(--color-warning)';
+    return 'var(--color-danger)';
   };
 
   return (
@@ -40,24 +40,25 @@ const CardShell = ({
       data-testid="member-card"
       className="relative rounded-card border cursor-pointer transition-all duration-200 overflow-hidden flex flex-col w-full"
       style={{
-        background: theme.cardBg,
-        backdropFilter: theme.backdropBlur,
-        WebkitBackdropFilter: theme.backdropBlur,
-        borderColor: theme.border,
-        boxShadow: theme.cardShadow || 'none',
+        background: 'var(--color-card-bg)',
+        backdropFilter: 'var(--effect-backdrop-blur)',
+        WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
+        borderColor: 'var(--color-border)',
+        boxShadow: 'var(--effect-card-shadow)',
         opacity,
         height: '100%',
       }}
       onMouseEnter={(e) => {
         if (onClick) {
           e.currentTarget.style.transform = 'translateY(-2px)';
+          // hex opacity suffix — keep inline
           e.currentTarget.style.boxShadow = `0 4px 16px ${theme.border}60`;
         }
       }}
       onMouseLeave={(e) => {
         if (onClick) {
           e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = theme.cardShadow || 'none';
+          e.currentTarget.style.boxShadow = 'var(--effect-card-shadow)';
         }
       }}
     >
@@ -78,7 +79,7 @@ const CardShell = ({
           <div
             className="text-sm font-bold mb-0.5"
             style={{
-              color: theme.text,
+              color: 'var(--color-text)',
               ...getTextFontStyle(name),
             }}
           >
@@ -86,7 +87,7 @@ const CardShell = ({
           </div>
           <div
             className="text-[10px] font-medium"
-            style={{ color: theme.textMuted }}
+            style={{ color: 'var(--color-text-muted)' }}
           >
             {statusTime}
           </div>
@@ -99,7 +100,7 @@ const CardShell = ({
       <div
         className="h-px mx-4"
         style={{
-          background: theme.divider || `linear-gradient(90deg, transparent 0%, ${theme.borderLight} 50%, transparent 100%)`,
+          background: `linear-gradient(90deg, transparent 0%, var(--color-border-light) 50%, transparent 100%)`,
         }}
       />
 
@@ -114,21 +115,21 @@ const CardShell = ({
           {/* Progress Bar - Goal (Daily or Multi-Day) */}
           <div className="px-4 pb-4">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] font-semibold" style={{ color: theme.textMuted }}>
+              <span className="text-[10px] font-semibold" style={{ color: 'var(--color-text-muted)' }}>
                 {memberWorkingDays > 1 ? `${memberWorkingDays}-Day Goal` : 'Daily Goal'}
               </span>
               <span className="text-[11px] font-bold" style={tabularNumberStyle}>
-                <span style={{ color: theme.text }}>{formatHoursToHM(tracked)}</span>{' '}
-                <span style={{ color: theme.textMuted }}>/ {formatHoursToHM(effectiveTarget)}</span>{' '}
+                <span style={{ color: 'var(--color-text)' }}>{formatHoursToHM(tracked)}</span>{' '}
+                <span style={{ color: 'var(--color-text-muted)' }}>/ {formatHoursToHM(effectiveTarget)}</span>{' '}
                 <span
                   style={{
                     color: progressPercent >= 100
-                      ? theme.success
+                      ? 'var(--color-success)'
                       : progressPercent >= 80
-                        ? theme.working
+                        ? 'var(--color-working)'
                         : progressPercent >= 50
-                          ? theme.warning
-                          : theme.danger
+                          ? 'var(--color-warning)'
+                          : 'var(--color-danger)'
                   }}
                 >
                   {Math.round(progressPercent)}%
@@ -140,6 +141,7 @@ const CardShell = ({
             <div
               className="w-full h-1.5 rounded overflow-hidden relative"
               style={{
+                // theme.type check — no CSS var equivalent, keep inline
                 background: theme.type === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)',
               }}
             >
@@ -147,31 +149,31 @@ const CardShell = ({
                 className="h-full rounded transition-all duration-500"
                 style={{
                   width: `${Math.min(progressPercent, 100)}%`,
-                  background: progressPercent >= 100 ? theme.success : progressPercent >= 80 ? theme.working : progressPercent >= 50 ? theme.warning : theme.textMuted,
+                  background: progressPercent >= 100 ? 'var(--color-success)' : progressPercent >= 80 ? 'var(--color-working)' : progressPercent >= 50 ? 'var(--color-warning)' : 'var(--color-text-muted)',
                 }}
               />
             </div>
 
             {/* Target Time */}
             <div className="mt-1">
-              <span className="text-[9px] font-medium" style={{ color: theme.textMuted }}>
+              <span className="text-[9px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
                 Target: 8:00 AM – 6:00 PM
               </span>
             </div>
           </div>
 
           {/* Bottom Metrics (4 columns) */}
-          <div className="grid grid-cols-4 border-t" style={{ borderColor: theme.borderLight }}>
+          <div className="grid grid-cols-4 border-t" style={{ borderColor: 'var(--color-border-light)' }}>
             {[
               {
                 label: 'SPAN',
                 value: formatMinutesToHM(Math.round(tracked * 60 + (breaks?.total || 0))),
-                color: theme.text,
+                color: 'var(--color-text)',
               },
               {
                 label: 'BREAKS',
                 value: formatMinutesToHM(breaks?.total || 0),
-                color: theme.break,
+                color: 'var(--color-break)',
               },
               {
                 label: 'TASKS',
@@ -186,9 +188,9 @@ const CardShell = ({
               <div
                 key={i}
                 className="py-3 px-2 text-center border-r last:border-r-0"
-                style={{ borderColor: theme.metricDivider || theme.borderLight }}
+                style={{ borderColor: 'var(--color-border-light)' }}
               >
-                <div className="text-[9px] font-bold mb-1 uppercase tracking-wide" style={{ color: theme.textMuted }}>
+                <div className="text-[9px] font-bold mb-1 uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
                   {metric.label}
                 </div>
                 <div
@@ -196,14 +198,14 @@ const CardShell = ({
                   style={{
                     color: metric.label === 'SCORE' && metric.scorePercent !== undefined
                       ? getScoreColor(metric.scorePercent)
-                      : metric.color || theme.text,
+                      : metric.color || 'var(--color-text)',
                     ...tabularNumberStyle,
                   }}
                 >
                   {metric.label === 'TASKS' && metric.doneCount !== undefined && metric.totalCount !== undefined ? (
                     <>
-                      <span style={{ color: theme.success }}>{metric.doneCount}</span>
-                      <span style={{ color: theme.textMuted }}>/</span>
+                      <span style={{ color: 'var(--color-success)' }}>{metric.doneCount}</span>
+                      <span style={{ color: 'var(--color-text-muted)' }}>/</span>
                       <span>{metric.totalCount}</span>
                     </>
                   ) : metric.label === 'SCORE' && metric.scorePercent !== undefined ? (
