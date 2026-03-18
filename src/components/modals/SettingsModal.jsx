@@ -502,6 +502,8 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
               {!isMobile && <span>{tab.label}</span>}
             </button>
           ))}
+          {/* Spacer so last tab gets right padding even when overflowing */}
+          <div style={{ flexShrink: 0, width: isMobile ? '10px' : '16px' }} />
         </div>
 
         {/* Content */}
