@@ -396,13 +396,13 @@
 - [x] 7.17 App.jsx (563 lines) — scrollbar style switched to CSS vars; skeleton loading + main layout fully Tailwind; theme.working/cardBg/border/text all replaced; theme prop retained for child components not yet migrated
 - [x] 7.18 Verify large component migration — 256 tests passing, production build clean
 
-### Phase 8: Touch Target Fixes (44×44px minimum)
-- [ ] 8.1 ModalShell close button (28px → 44px)
-- [ ] 8.2 ProjectBreakdownCard StatusPill (verify clickable → fix, or display-only → skip)
-- [ ] 8.3 FilterSortControls dropdown items
-- [ ] 8.4 Header + MobileBottomNav menu items
-- [ ] 8.5 SettingsModal form controls (tabs, toggles)
-- [ ] 8.6 LeavesTab tab buttons
+### Phase 8: Touch Target Fixes (44×44px minimum) ✅ COMPLETE (2026-03-18)
+- [x] 8.1 ModalShell close button (28px → 44px) — w-7→w-11, h-7→h-11
+- [x] 8.2 ProjectBreakdownCard StatusPill — IS clickable, padding 3px→11px vertical
+- [x] 8.3 FilterSortControls dropdown items — padding 10px→14px vertical
+- [x] 8.4 Header + MobileBottomNav menu items — padding 11px→15px vertical; nav tabs already ≥44px
+- [x] 8.5 SettingsModal form controls — close button minHeight 44px; tabs padding 10-12px→15px
+- [x] 8.6 LeavesTab tab buttons — py-[6px]→py-[15px]
 
 ### Phase 9: Empty States
 - [ ] 9.1 Grid View (App.jsx) — no members empty state
