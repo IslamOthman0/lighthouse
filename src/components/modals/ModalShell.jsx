@@ -96,7 +96,7 @@ const ModalShell = ({
             </div>
             <button
               onClick={onClose}
-              className="w-7 h-7 rounded-badge border-none cursor-pointer flex items-center justify-center text-base transition-all duration-150"
+              className="w-11 h-11 rounded-badge border-none cursor-pointer flex items-center justify-center text-base transition-all duration-150"
               style={{
                 background: headerColor ? 'rgba(255,255,255,0.2)' : 'var(--color-subtle-bg)',
                 color: headerColor ? '#ffffff' : 'var(--color-text-muted)',
