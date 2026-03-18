@@ -4,7 +4,7 @@ import QuotaBar from './QuotaBar';
 import { TYPE_ICONS, TYPE_COLORS, TYPE_LABELS, STATUS_COLORS_MAP, formatDateShort, formatDateRange, getMember, toLocalDateStr } from './constants';
 import { db } from '../../../db';
 import { getMemberLeaveBalance, calculateLeaveDays } from '../../../utils/leaveHelpers';
-import { tabularNumberStyle } from '../../../utils/typography';
+import { tabularNumberStyle, getAdaptiveFontFamily } from '../../../utils/typography';
 
 /**
  * Team Overview Panel - compact member quota cards + today's status + upcoming leaves
@@ -145,7 +145,7 @@ const TeamOverviewPanel = ({ leaves, members, theme, settings, isMobile, onSelec
                     <Avatar name={member.name} status={member.status} theme={theme} size={20}
                       profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
                   )}
-                  <span className="text-[var(--color-text)] flex-1">
+                  <span className="text-[var(--color-text)] flex-1" style={{ fontFamily: getAdaptiveFontFamily(member?.name || l.memberName || '') }}>
                     {member?.name || l.memberName}
                   </span>
                   <span
@@ -234,7 +234,7 @@ const PendingRequestsSection = ({ leaves, members, theme }) => {
                 <Avatar name={member.name} status={member.status} theme={theme} size={22}
                   profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
               )}
-              <span className="text-[var(--color-text)] flex-1 font-medium">
+              <span className="text-[var(--color-text)] flex-1 font-medium" style={{ fontFamily: getAdaptiveFontFamily(member?.name || l.memberName || '') }}>
                 {member?.name || l.memberName}
               </span>
               <span
@@ -304,7 +304,7 @@ const MemberQuotaCard = ({ member, balance, leaveToday, nextLeave, theme, isMobi
         <Avatar name={member.name} status={member.status} theme={theme} size={40}
           profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
         <div className="flex-1 min-w-0">
-          <div className="text-[15px] font-semibold text-[var(--color-text)] whitespace-nowrap overflow-hidden text-ellipsis">
+          <div className="text-[15px] font-semibold text-[var(--color-text)] whitespace-nowrap overflow-hidden text-ellipsis" style={{ fontFamily: getAdaptiveFontFamily(member.name) }}>
             {member.name}
           </div>
           {isOnLeave && (

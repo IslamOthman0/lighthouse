@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import Avatar from '../../ui/Avatar';
 import { TYPE_ICONS, TYPE_COLORS, TYPE_LABELS, getMember, toLocalDateStr } from './constants';
-import { tabularNumberStyle } from '../../../utils/typography';
+import { tabularNumberStyle, getAdaptiveFontFamily } from '../../../utils/typography';
 
 /**
  * Full calendar view with member avatars on leave days.
@@ -205,7 +205,7 @@ const LeaveCalendar = ({ leaves, members, theme, isMobile, typeFilter, onTypeFil
                         <Avatar name={member.name} status={member.status} theme={theme} size={20}
                           profilePicture={member.profilePicture} clickUpColor={member.clickUpColor}
                           ringColor={typeColor} />
-                        <span className="text-[var(--color-text)] flex-1">{member.name}</span>
+                        <span className="text-[var(--color-text)] flex-1" style={{ fontFamily: getAdaptiveFontFamily(member.name) }}>{member.name}</span>
                         <span
                           className="text-[10px] px-[5px] py-[1px] rounded"
                           style={{

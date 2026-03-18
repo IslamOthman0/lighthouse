@@ -3,7 +3,7 @@ import Avatar from '../../ui/Avatar';
 import QuotaBar from './QuotaBar';
 import { TYPE_ICONS, TYPE_COLORS, TYPE_LABELS, STATUS_COLORS_MAP, formatDateRange, formatDateShort, toLocalDateStr } from './constants';
 import { getMemberLeaveBalance, calculateLeaveDays } from '../../../utils/leaveHelpers';
-import { tabularNumberStyle } from '../../../utils/typography';
+import { tabularNumberStyle, getAdaptiveFontFamily } from '../../../utils/typography';
 
 /**
  * Per-member leave detail panel (drills down from TeamOverview)
@@ -78,7 +78,7 @@ const MemberLeaveDetail = ({ member, leaves, theme, settings, isMobile, onBack }
         <Avatar name={member.name} status={member.status} theme={theme} size={48}
           profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
         <div>
-          <div className="text-lg font-bold text-[var(--color-text)]">{member.name}</div>
+          <div className="text-lg font-bold text-[var(--color-text)]" style={{ fontFamily: getAdaptiveFontFamily(member.name) }}>{member.name}</div>
           <div className="text-[13px] mt-[2px]">
             {isOnLeave && (
               <span className="font-medium" style={{ color: TYPE_COLORS[leaveToday.type] || TYPE_COLORS.annual }}>
