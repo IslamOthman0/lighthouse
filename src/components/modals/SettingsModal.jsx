@@ -666,42 +666,81 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
                     </div>
                   </div>
 
-                  <div style={{ background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '8px', overflow: 'hidden' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 90px 90px', gap: '8px', padding: '10px 16px', borderBottom: `1px solid var(--color-border)` }}>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Member</span>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>Annual/yr</span>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>Sick/yr</span>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>Bonus/yr</span>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>WFH/mo</span>
+                  {isMobile ? (
+                    /* Mobile: card per member */
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {(settings.team?.membersToMonitor || []).map((memberId) => {
+                        const member = clickUpMembers.find(m => String(m.id) === String(memberId));
+                        const storeMember = !member ? storeMembers.find(m => String(m.clickUpId) === String(memberId) || String(m.id) === String(memberId)) : null;
+                        const memberName = member?.username || storeMember?.name || `Member ${memberId}`;
+                        const leaveQuota = settings.team?.leaveQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.annualLeave;
+                        const sickQuota = settings.team?.sickQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.sickLeaveQuota;
+                        const bonusQuota = settings.team?.bonusQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.bonusLeaveQuota;
+                        const wfhQuota = settings.team?.wfhQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.wfhDays;
+                        const inputStyle = { width: '100%', padding: '8px', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '14px', textAlign: 'center' };
+                        return (
+                          <div key={memberId} style={{ background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '8px', padding: '12px' }}>
+                            <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text)', marginBottom: '10px', fontFamily: getAdaptiveFontFamily(memberName) }}>{memberName}</div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                              <div>
+                                <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Annual/yr</div>
+                                <input type="number" min="0" max="365" value={leaveQuota} onChange={(e) => handleUpdateLeaveQuota(memberId, parseInt(e.target.value) || 0)} style={inputStyle} />
+                              </div>
+                              <div>
+                                <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Sick/yr</div>
+                                <input type="number" min="0" max="365" value={sickQuota} onChange={(e) => handleUpdateSickQuota(memberId, parseInt(e.target.value) || 0)} style={inputStyle} />
+                              </div>
+                              <div>
+                                <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Bonus/yr</div>
+                                <input type="number" min="0" max="365" value={bonusQuota} onChange={(e) => handleUpdateBonusQuota(memberId, parseInt(e.target.value) || 0)} style={inputStyle} />
+                              </div>
+                              <div>
+                                <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>WFH/mo</div>
+                                <input type="number" min="0" max="31" value={wfhQuota} onChange={(e) => handleUpdateWfhQuota(memberId, parseInt(e.target.value) || 0)} style={inputStyle} />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                    {(settings.team?.membersToMonitor || []).map((memberId) => {
-                      const member = clickUpMembers.find(m => String(m.id) === String(memberId));
-                      // Fallback: try store members if not found in clickUpMembers
-                      const storeMember = !member ? storeMembers.find(m => String(m.clickUpId) === String(memberId) || String(m.id) === String(memberId)) : null;
-                      const memberName = member?.username || storeMember?.name || `Member ${memberId}`;
-                      const leaveQuota = settings.team?.leaveQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.annualLeave;
-                      const sickQuota = settings.team?.sickQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.sickLeaveQuota;
-                      const bonusQuota = settings.team?.bonusQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.bonusLeaveQuota;
-                      const wfhQuota = settings.team?.wfhQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.wfhDays;
-                      return (
-                        <div key={memberId} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 90px 90px', gap: '8px', padding: '10px 16px', borderBottom: `1px solid var(--color-border)`, alignItems: 'center' }}>
-                          <span style={{ fontSize: '13px', color: 'var(--color-text)', fontFamily: getAdaptiveFontFamily(memberName) }}>{memberName}</span>
-                          <input type="number" min="0" max="365" value={leaveQuota}
-                            onChange={(e) => handleUpdateLeaveQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '72px', padding: '6px 8px', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
-                          <input type="number" min="0" max="365" value={sickQuota}
-                            onChange={(e) => handleUpdateSickQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '72px', padding: '6px 8px', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
-                          <input type="number" min="0" max="365" value={bonusQuota}
-                            onChange={(e) => handleUpdateBonusQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '72px', padding: '6px 8px', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
-                          <input type="number" min="0" max="31" value={wfhQuota}
-                            onChange={(e) => handleUpdateWfhQuota(memberId, parseInt(e.target.value) || 0)}
-                            style={{ width: '72px', padding: '6px 8px', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
-                        </div>
-                      );
-                    })}
-                  </div>
+                  ) : (
+                    /* Desktop: table */
+                    <div style={{ background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '8px', overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 90px 90px', gap: '8px', padding: '10px 16px', borderBottom: `1px solid var(--color-border)` }}>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Member</span>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>Annual/yr</span>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>Sick/yr</span>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>Bonus/yr</span>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', textAlign: 'center' }}>WFH/mo</span>
+                      </div>
+                      {(settings.team?.membersToMonitor || []).map((memberId) => {
+                        const member = clickUpMembers.find(m => String(m.id) === String(memberId));
+                        const storeMember = !member ? storeMembers.find(m => String(m.clickUpId) === String(memberId) || String(m.id) === String(memberId)) : null;
+                        const memberName = member?.username || storeMember?.name || `Member ${memberId}`;
+                        const leaveQuota = settings.team?.leaveQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.annualLeave;
+                        const sickQuota = settings.team?.sickQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.sickLeaveQuota;
+                        const bonusQuota = settings.team?.bonusQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.bonusLeaveQuota;
+                        const wfhQuota = settings.team?.wfhQuotas?.[memberId] ?? DEFAULT_MEMBER_QUOTAS.wfhDays;
+                        return (
+                          <div key={memberId} style={{ display: 'grid', gridTemplateColumns: '1fr 90px 90px 90px 90px', gap: '8px', padding: '10px 16px', borderBottom: `1px solid var(--color-border)`, alignItems: 'center' }}>
+                            <span style={{ fontSize: '13px', color: 'var(--color-text)', fontFamily: getAdaptiveFontFamily(memberName) }}>{memberName}</span>
+                            <input type="number" min="0" max="365" value={leaveQuota}
+                              onChange={(e) => handleUpdateLeaveQuota(memberId, parseInt(e.target.value) || 0)}
+                              style={{ width: '72px', padding: '6px 8px', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                            <input type="number" min="0" max="365" value={sickQuota}
+                              onChange={(e) => handleUpdateSickQuota(memberId, parseInt(e.target.value) || 0)}
+                              style={{ width: '72px', padding: '6px 8px', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                            <input type="number" min="0" max="365" value={bonusQuota}
+                              onChange={(e) => handleUpdateBonusQuota(memberId, parseInt(e.target.value) || 0)}
+                              style={{ width: '72px', padding: '6px 8px', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                            <input type="number" min="0" max="31" value={wfhQuota}
+                              onChange={(e) => handleUpdateWfhQuota(memberId, parseInt(e.target.value) || 0)}
+                              style={{ width: '72px', padding: '6px 8px', background: 'var(--color-inner-bg)', border: `1px solid var(--color-border)`, borderRadius: '6px', color: 'var(--color-text)', fontSize: '13px', textAlign: 'center', justifySelf: 'center' }} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
