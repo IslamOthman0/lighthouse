@@ -192,26 +192,26 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
               gap: isMobile ? '8px' : '16px',
               padding: '12px 16px',
               marginBottom: '16px',
-              background: theme.innerBg || theme.secondaryBg,
+              background: 'var(--color-inner-bg)',
               borderRadius: '10px',
-              border: `1px solid ${theme.borderLight || theme.border}`,
+              border: '1px solid var(--color-border-light)',
               flexWrap: 'wrap',
             }}
           >
-            <span style={{ fontSize: '14px', fontWeight: '700', color: theme.text, fontFamily: getFontFamily('english'), ...tabularNumberStyle }}>
+            <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-text)', fontFamily: getFontFamily('english'), ...tabularNumberStyle }}>
               {summaryStats.totalTasks} Task{summaryStats.totalTasks !== 1 ? 's' : ''}
             </span>
-            <span style={{ color: theme.textMuted, fontSize: '12px' }}>·</span>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: theme.textSecondary, fontFamily: getFontFamily('english'), ...tabularNumberStyle }}>
+            <span style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>·</span>
+            <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-secondary)', fontFamily: getFontFamily('english'), ...tabularNumberStyle }}>
               {formatMinutesToHM(summaryStats.totalTrackedMinutes)} Total
             </span>
-            <span style={{ color: theme.textMuted, fontSize: '12px' }}>·</span>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: theme.textSecondary, fontFamily: getFontFamily('english'), ...tabularNumberStyle }}>
+            <span style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>·</span>
+            <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-secondary)', fontFamily: getFontFamily('english'), ...tabularNumberStyle }}>
               {formatMinutesToHM(summaryStats.avgTrackedMinutes)}{isMobile ? '/task' : ' Avg/Task'}
             </span>
             {summaryStats.urgentCount > 0 && (
               <>
-                <span style={{ color: theme.textMuted, fontSize: '12px' }}>·</span>
+                <span style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>·</span>
                 <span style={{ fontSize: '12px', fontWeight: '600', color: '#ef4444', fontFamily: getFontFamily('english') }}>
                   🚩 {summaryStats.urgentCount} Urgent
                 </span>
@@ -225,7 +225,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
               {/* By Priority */}
               <ModalSection theme={theme} title="By Priority" icon="🚩">
                 {Object.entries(summaryStats.byPriority).length === 0 ? (
-                  <div style={{ fontSize: '12px', color: theme.textMuted }}>No priority data</div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>No priority data</div>
                 ) : (
                   Object.entries(summaryStats.byPriority)
                     .sort((a, b) => {
@@ -233,7 +233,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                       return order.indexOf(a[0]) - order.indexOf(b[0]);
                     })
                     .map(([priority, count]) => {
-                      const config = priorityConfig[priority] || { color: theme.textMuted, label: priority };
+                      const config = priorityConfig[priority] || { color: 'var(--color-text-muted)', label: priority };
                       return (
                         <div key={priority} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
                           <PriorityFlag priority={priority} size={13} fontSize="12px" />
@@ -247,7 +247,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
               {/* By Assignee */}
               <ModalSection theme={theme} title="By Assignee" icon="👥">
                 {Object.entries(summaryStats.byAssignee).length === 0 ? (
-                  <div style={{ fontSize: '12px', color: theme.textMuted }}>No assignee data</div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>No assignee data</div>
                 ) : (
                   Object.entries(summaryStats.byAssignee)
                     .sort((a, b) => b[1].count - a[1].count)
@@ -260,7 +260,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                               width: '20px',
                               height: '20px',
                               borderRadius: '50%',
-                              background: data.avatar ? `url(${data.avatar})` : theme.accent,
+                              background: data.avatar ? `url(${data.avatar})` : 'var(--color-accent)',
                               backgroundSize: 'cover',
                               backgroundPosition: 'center',
                               color: '#fff',
@@ -273,15 +273,15 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                           >
                             {!data.avatar && (data.initials || name.slice(0, 2).toUpperCase())}
                           </div>
-                          <span style={{ fontSize: '11px', color: theme.textSecondary, fontFamily: getAdaptiveFontFamily(name) }}>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontFamily: getAdaptiveFontFamily(name) }}>
                             {name}
                           </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '11px', color: theme.textMuted, ...tabularNumberStyle }}>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', ...tabularNumberStyle }}>
                             {formatMinutesToHM(data.tracked)}
                           </span>
-                          <span style={{ fontSize: '12px', fontWeight: '600', color: theme.text, ...tabularNumberStyle }}>
+                          <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text)', ...tabularNumberStyle }}>
                             {data.count}
                           </span>
                         </div>
@@ -300,9 +300,9 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                 alignItems: 'center',
                 gap: '10px',
                 padding: '10px 14px',
-                background: theme.innerBg || theme.secondaryBg,
+                background: 'var(--color-inner-bg)',
                 borderRadius: '10px',
-                border: `1px solid ${theme.border}`,
+                border: '1px solid var(--color-border)',
               }}
             >
               <span style={{ fontSize: '14px', opacity: 0.6 }}>🔍</span>
@@ -317,7 +317,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                   border: 'none',
                   outline: 'none',
                   fontSize: '13px',
-                  color: theme.text,
+                  color: 'var(--color-text)',
                   fontFamily: getFontFamily('english'),
                 }}
               />
@@ -329,7 +329,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                     border: 'none',
                     cursor: 'pointer',
                     fontSize: '12px',
-                    color: theme.textMuted,
+                    color: 'var(--color-text-muted)',
                     padding: '2px 6px',
                   }}
                 >
@@ -338,7 +338,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
               )}
             </div>
             {searchQuery && (
-              <div style={{ marginTop: '8px', fontSize: '11px', color: theme.textMuted }}>
+              <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
                 Found {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''} matching "{searchQuery}"
               </div>
             )}
@@ -354,10 +354,10 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                   gridTemplateColumns: 'minmax(200px, 1fr) 70px 70px 80px minmax(100px, 140px) minmax(100px, 140px) 85px 85px 85px',
                   gap: '10px',
                   padding: '12px 16px',
-                  borderBottom: `1px solid ${theme.borderLight || theme.border}`,
+                  borderBottom: '1px solid var(--color-border-light)',
                   fontSize: '11px',
                   fontWeight: '600',
-                  color: theme.textMuted,
+                  color: 'var(--color-text-muted)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
                   fontFamily: getFontFamily('english'),
@@ -393,11 +393,11 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                   <div
                     key={task.id || index}
                     style={{
-                      borderBottom: `1px solid ${theme.borderLight || theme.border}`,
+                      borderBottom: '1px solid var(--color-border-light)',
                       transition: 'all 0.15s',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = theme.subtleBg || 'rgba(255,255,255,0.03)';
+                      e.currentTarget.style.background = 'var(--color-subtle-bg)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'transparent';
@@ -424,7 +424,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                             style={{
                               fontSize: '12px',
                               fontWeight: '500',
-                              color: theme.accent,
+                              color: 'var(--color-accent)',
                               fontFamily: getAdaptiveFontFamily(task.name),
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
@@ -451,7 +451,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                                 width: '24px',
                                 height: '24px',
                                 borderRadius: '50%',
-                                background: task.assignee.avatar ? `url(${task.assignee.avatar})` : theme.accent,
+                                background: task.assignee.avatar ? `url(${task.assignee.avatar})` : 'var(--color-accent)',
                                 backgroundSize: 'cover',
                                 backgroundPosition: 'center',
                                 color: '#fff',
@@ -467,7 +467,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                               {!task.assignee.avatar && task.assignee.initials}
                             </div>
                           ) : (
-                            <span style={{ color: theme.textMuted, fontSize: '14px', opacity: 0.3 }}>—</span>
+                            <span style={{ color: 'var(--color-text-muted)', fontSize: '14px', opacity: 0.3 }}>—</span>
                           )}
                         </div>
 
@@ -475,7 +475,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                         <div
                           style={{
                             fontSize: '11px',
-                            color: task.trackedTime > 0 ? theme.text : theme.textMuted,
+                            color: task.trackedTime > 0 ? 'var(--color-text)' : 'var(--color-text-muted)',
                             fontFamily: getFontFamily('english'),
                             fontWeight: task.trackedTime > 0 ? '600' : 'normal',
                             ...tabularNumberStyle,
@@ -489,7 +489,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                           {task.priority ? (
                             <PriorityFlag priority={task.priority} size={13} fontSize="11px" />
                           ) : (
-                            <span style={{ fontSize: '11px', color: theme.textMuted, opacity: 0.5 }}>—</span>
+                            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', opacity: 0.5 }}>—</span>
                           )}
                         </div>
 
@@ -497,7 +497,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                         <div
                           style={{
                             fontSize: '11px',
-                            color: task.publisher ? theme.textSecondary : theme.textMuted,
+                            color: task.publisher ? 'var(--color-text-secondary)' : 'var(--color-text-muted)',
                             fontFamily: getAdaptiveFontFamily(task.publisher || ''),
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -513,7 +513,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                         <div
                           style={{
                             fontSize: '11px',
-                            color: task.genre ? theme.textSecondary : theme.textMuted,
+                            color: task.genre ? 'var(--color-text-secondary)' : 'var(--color-text-muted)',
                             fontFamily: getAdaptiveFontFamily(task.genre || ''),
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -529,7 +529,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                         <div
                           style={{
                             fontSize: '11px',
-                            color: theme.textSecondary,
+                            color: 'var(--color-text-secondary)',
                             fontFamily: getFontFamily('english'),
                             ...tabularNumberStyle,
                           }}
@@ -541,7 +541,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                         <div
                           style={{
                             fontSize: '11px',
-                            color: theme.textSecondary,
+                            color: 'var(--color-text-secondary)',
                             fontFamily: getFontFamily('english'),
                             ...tabularNumberStyle,
                           }}
@@ -553,7 +553,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                         <div
                           style={{
                             fontSize: '11px',
-                            color: dateClosed ? theme.text : theme.textMuted,
+                            color: dateClosed ? 'var(--color-text)' : 'var(--color-text-muted)',
                             fontWeight: dateClosed ? '600' : 'normal',
                             fontFamily: getFontFamily('english'),
                             ...tabularNumberStyle,
@@ -573,7 +573,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                               flex: 1,
                               fontSize: '13px',
                               fontWeight: '500',
-                              color: theme.text,
+                              color: 'var(--color-text)',
                               fontFamily: getAdaptiveFontFamily(task.name),
                               lineHeight: '1.4',
                             }}
@@ -589,7 +589,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                             gridTemplateColumns: '1fr 1fr',
                             gap: '12px 16px',
                             fontSize: '10px',
-                            color: theme.textSecondary,
+                            color: 'var(--color-text-secondary)',
                           }}
                         >
                           {/* Assignee */}
@@ -603,7 +603,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                                       width: '18px',
                                       height: '18px',
                                       borderRadius: '50%',
-                                      background: task.assignee.avatar ? `url(${task.assignee.avatar})` : theme.accent,
+                                      background: task.assignee.avatar ? `url(${task.assignee.avatar})` : 'var(--color-accent)',
                                       backgroundSize: 'cover',
                                       color: '#fff',
                                       display: 'flex',
@@ -638,7 +638,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <span style={{ fontSize: '10px', opacity: 0.6, textTransform: 'uppercase', fontFamily: getFontFamily('english') }}>Priority</span>
                             <div style={{ display: 'flex', alignItems: 'center' }}>
-                              {task.priority ? <PriorityFlag priority={task.priority} showLabel={false} size={13} /> : <span style={{ opacity: 0.5, color: theme.textMuted }}>—</span>}
+                              {task.priority ? <PriorityFlag priority={task.priority} showLabel={false} size={13} /> : <span style={{ opacity: 0.5, color: 'var(--color-text-muted)' }}>—</span>}
                             </div>
                           </div>
 
@@ -718,8 +718,8 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                   justifyContent: 'center',
                   gap: '12px',
                   padding: '12px 16px',
-                  borderTop: `1px solid ${theme.border}`,
-                  background: theme.innerBg || 'rgba(0,0,0,0.03)',
+                  borderTop: '1px solid var(--color-border)',
+                  background: 'var(--color-inner-bg)',
                 }}
               >
                 <button
@@ -728,9 +728,9 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                   style={{
                     padding: '6px 12px',
                     borderRadius: '6px',
-                    border: `1px solid ${theme.border}`,
-                    background: currentPage === 1 ? 'transparent' : theme.cardBg,
-                    color: currentPage === 1 ? theme.textMuted : theme.text,
+                    border: '1px solid var(--color-border)',
+                    background: currentPage === 1 ? 'transparent' : 'var(--color-card-bg)',
+                    color: currentPage === 1 ? 'var(--color-text-muted)' : 'var(--color-text)',
                     cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                     fontSize: '12px',
                     fontFamily: getFontFamily('english'),
@@ -741,7 +741,7 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                   ← Prev
                 </button>
 
-                <span style={{ fontSize: '12px', color: theme.textSecondary, fontFamily: getFontFamily('english'), ...tabularNumberStyle }}>
+                <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontFamily: getFontFamily('english'), ...tabularNumberStyle }}>
                   Page {currentPage} of {totalPages}
                 </span>
 
@@ -751,9 +751,9 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                   style={{
                     padding: '6px 12px',
                     borderRadius: '6px',
-                    border: `1px solid ${theme.border}`,
-                    background: currentPage === totalPages ? 'transparent' : theme.cardBg,
-                    color: currentPage === totalPages ? theme.textMuted : theme.text,
+                    border: '1px solid var(--color-border)',
+                    background: currentPage === totalPages ? 'transparent' : 'var(--color-card-bg)',
+                    color: currentPage === totalPages ? 'var(--color-text-muted)' : 'var(--color-text)',
                     cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
                     fontSize: '12px',
                     fontFamily: getFontFamily('english'),
