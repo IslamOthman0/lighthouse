@@ -57,17 +57,17 @@ const getStatusDisplayName = (status) => {
     .join(' ');
 };
 
+// Desktop column grid template
+const DESKTOP_COLS = 'minmax(200px, 1fr) 70px 70px 80px minmax(100px, 140px) minmax(100px, 140px) 85px 85px 85px';
+
 const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
 
-  // Search and pagination state
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Filter tasks by search query
   const filteredTasks = useMemo(() => {
     if (!searchQuery.trim()) return tasks;
-
     const query = searchQuery.toLowerCase();
     return tasks.filter(task =>
       task.name?.toLowerCase().includes(query) ||
@@ -78,91 +78,53 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
     );
   }, [tasks, searchQuery]);
 
-  // Calculate pagination
   const totalPages = Math.ceil(filteredTasks.length / TASKS_PER_PAGE);
   const paginatedTasks = useMemo(() => {
     const start = (currentPage - 1) * TASKS_PER_PAGE;
     return filteredTasks.slice(start, start + TASKS_PER_PAGE);
   }, [filteredTasks, currentPage]);
 
-  // Reset to page 1 when search changes
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
+  React.useEffect(() => { setCurrentPage(1); }, [searchQuery]);
+  React.useEffect(() => { if (!isOpen) { setSearchQuery(''); setCurrentPage(1); } }, [isOpen]);
 
-  // Reset state when modal closes
-  React.useEffect(() => {
-    if (!isOpen) {
-      setSearchQuery('');
-      setCurrentPage(1);
-    }
-  }, [isOpen]);
-
-  // Get status color from first task or default
   const statusColor = useMemo(() => {
-    if (tasks.length > 0 && tasks[0].statusColor) {
-      return tasks[0].statusColor;
-    }
+    if (tasks.length > 0 && tasks[0].statusColor) return tasks[0].statusColor;
     return '#6b7280';
   }, [tasks]);
 
-  // Calculate summary statistics
   const summaryStats = useMemo(() => {
-    if (!tasks || tasks.length === 0) {
-      return {
-        totalTasks: 0,
-        totalTrackedMinutes: 0,
-        avgTrackedMinutes: 0,
-        byPriority: {},
-        byAssignee: {},
-        urgentCount: 0,
-      };
-    }
+    if (!tasks || tasks.length === 0) return { totalTasks: 0, totalTrackedMinutes: 0, avgTrackedMinutes: 0, byPriority: {}, byAssignee: {}, urgentCount: 0 };
 
     const totalTrackedMinutes = tasks.reduce((sum, t) => sum + (t.trackedTime || 0), 0);
-
-    // Group by priority
-    const byPriority = tasks.reduce((acc, t) => {
-      const priority = t.priority || 'None';
-      acc[priority] = (acc[priority] || 0) + 1;
-      return acc;
-    }, {});
-
-    // Group by assignee
+    const byPriority = tasks.reduce((acc, t) => { const p = t.priority || 'None'; acc[p] = (acc[p] || 0) + 1; return acc; }, {});
     const byAssignee = tasks.reduce((acc, t) => {
-      const assigneeName = t.assignee?.name || 'Unassigned';
-      if (!acc[assigneeName]) {
-        acc[assigneeName] = {
-          count: 0,
-          tracked: 0,
-          avatar: t.assignee?.avatar,
-          initials: t.assignee?.initials,
-        };
-      }
-      acc[assigneeName].count += 1;
-      acc[assigneeName].tracked += (t.trackedTime || 0);
+      const n = t.assignee?.name || 'Unassigned';
+      if (!acc[n]) acc[n] = { count: 0, tracked: 0, avatar: t.assignee?.avatar, initials: t.assignee?.initials };
+      acc[n].count += 1;
+      acc[n].tracked += (t.trackedTime || 0);
       return acc;
     }, {});
-
     const urgentCount = tasks.filter(t => t.priority === 'Urgent').length;
 
-    return {
-      totalTasks: tasks.length,
-      totalTrackedMinutes,
-      avgTrackedMinutes: tasks.length > 0 ? Math.round(totalTrackedMinutes / tasks.length) : 0,
-      byPriority,
-      byAssignee,
-      urgentCount,
-    };
+    return { totalTasks: tasks.length, totalTrackedMinutes, avgTrackedMinutes: tasks.length > 0 ? Math.round(totalTrackedMinutes / tasks.length) : 0, byPriority, byAssignee, urgentCount };
   }, [tasks]);
 
-  // Determine if this is a "done" status
-  const isDoneStatus = status.toLowerCase().includes('done') ||
-                       status.toLowerCase().includes('complete') ||
-                       status.toLowerCase().includes('closed');
-
-  // Modal title with status
+  const isDoneStatus = status.toLowerCase().includes('done') || status.toLowerCase().includes('complete') || status.toLowerCase().includes('closed');
   const modalTitle = `${project} — ${getStatusDisplayName(status)}`;
+
+  // Reusable mini avatar circle
+  const AvatarCircle = ({ avatar, initials, size = 24 }) => (
+    <div
+      className="rounded-full flex items-center justify-center text-white font-semibold shrink-0"
+      style={{
+        width: size, height: size,
+        background: avatar ? `url(${avatar}) center/cover` : 'var(--color-accent)',
+        fontSize: size <= 18 ? '7px' : '9px',
+      }}
+    >
+      {!avatar && initials}
+    </div>
+  );
 
   return (
     <ModalShell
@@ -185,47 +147,35 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
       ) : (
         <>
           {/* Inline Stats Row */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: isMobile ? '8px' : '16px',
-              padding: '12px 16px',
-              marginBottom: '16px',
-              background: 'var(--color-inner-bg)',
-              borderRadius: '10px',
-              border: '1px solid var(--color-border-light)',
-              flexWrap: 'wrap',
-            }}
-          >
-            <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-text)', fontFamily: getFontFamily('english'), ...tabularNumberStyle }}>
+          <div className="flex items-center gap-2 px-4 py-3 mb-4 bg-[var(--color-inner-bg)] rounded-[10px] border border-[var(--color-border-light)] flex-wrap"
+            style={{ gap: isMobile ? '8px' : '16px' }}>
+            <span className="text-sm font-bold text-[var(--color-text)]" style={{ ...tabularNumberStyle, fontFamily: getFontFamily('english') }}>
               {summaryStats.totalTasks} Task{summaryStats.totalTasks !== 1 ? 's' : ''}
             </span>
-            <span style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>·</span>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-secondary)', fontFamily: getFontFamily('english'), ...tabularNumberStyle }}>
+            <span className="text-[var(--color-text-muted)] text-xs">·</span>
+            <span className="text-[13px] font-semibold text-[var(--color-text-secondary)]" style={{ ...tabularNumberStyle, fontFamily: getFontFamily('english') }}>
               {formatMinutesToHM(summaryStats.totalTrackedMinutes)} Total
             </span>
-            <span style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>·</span>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text-secondary)', fontFamily: getFontFamily('english'), ...tabularNumberStyle }}>
+            <span className="text-[var(--color-text-muted)] text-xs">·</span>
+            <span className="text-[13px] font-semibold text-[var(--color-text-secondary)]" style={{ ...tabularNumberStyle, fontFamily: getFontFamily('english') }}>
               {formatMinutesToHM(summaryStats.avgTrackedMinutes)}{isMobile ? '/task' : ' Avg/Task'}
             </span>
             {summaryStats.urgentCount > 0 && (
               <>
-                <span style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>·</span>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: '#ef4444', fontFamily: getFontFamily('english') }}>
+                <span className="text-[var(--color-text-muted)] text-xs">·</span>
+                <span className="text-xs font-semibold text-[#ef4444]" style={{ fontFamily: getFontFamily('english') }}>
                   🚩 {summaryStats.urgentCount} Urgent
                 </span>
               </>
             )}
           </div>
 
-          {/* Priority & Assignee Breakdown - Side by Side */}
+          {/* Priority & Assignee Breakdown - Desktop only */}
           {!isMobile && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-              {/* By Priority */}
+            <div className="grid grid-cols-2 gap-4 mb-5">
               <ModalSection theme={theme} title="By Priority" icon="🚩">
                 {Object.entries(summaryStats.byPriority).length === 0 ? (
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>No priority data</div>
+                  <div className="text-xs text-[var(--color-text-muted)]">No priority data</div>
                 ) : (
                   Object.entries(summaryStats.byPriority)
                     .sort((a, b) => {
@@ -235,55 +185,31 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                     .map(([priority, count]) => {
                       const config = priorityConfig[priority] || { color: 'var(--color-text-muted)', label: priority };
                       return (
-                        <div key={priority} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
+                        <div key={priority} className="flex items-center justify-between py-1">
                           <PriorityFlag priority={priority} size={13} fontSize="12px" />
-                          <span style={{ fontSize: '13px', fontWeight: '600', color: config.color, ...tabularNumberStyle }}>{count}</span>
+                          <span className="text-[13px] font-semibold" style={{ color: config.color, ...tabularNumberStyle }}>{count}</span>
                         </div>
                       );
                     })
                 )}
               </ModalSection>
 
-              {/* By Assignee */}
               <ModalSection theme={theme} title="By Assignee" icon="👥">
                 {Object.entries(summaryStats.byAssignee).length === 0 ? (
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>No assignee data</div>
+                  <div className="text-xs text-[var(--color-text-muted)]">No assignee data</div>
                 ) : (
                   Object.entries(summaryStats.byAssignee)
                     .sort((a, b) => b[1].count - a[1].count)
                     .slice(0, 5)
                     .map(([name, data]) => (
-                      <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div
-                            style={{
-                              width: '20px',
-                              height: '20px',
-                              borderRadius: '50%',
-                              background: data.avatar ? `url(${data.avatar})` : 'var(--color-accent)',
-                              backgroundSize: 'cover',
-                              backgroundPosition: 'center',
-                              color: '#fff',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '8px',
-                              fontWeight: '600',
-                            }}
-                          >
-                            {!data.avatar && (data.initials || name.slice(0, 2).toUpperCase())}
-                          </div>
-                          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontFamily: getAdaptiveFontFamily(name) }}>
-                            {name}
-                          </span>
+                      <div key={name} className="flex justify-between items-center py-[6px]">
+                        <div className="flex items-center gap-2">
+                          <AvatarCircle avatar={data.avatar} initials={data.initials || name.slice(0, 2).toUpperCase()} size={20} />
+                          <span className="text-[11px] text-[var(--color-text-secondary)]" style={{ fontFamily: getAdaptiveFontFamily(name) }}>{name}</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', ...tabularNumberStyle }}>
-                            {formatMinutesToHM(data.tracked)}
-                          </span>
-                          <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-text)', ...tabularNumberStyle }}>
-                            {data.count}
-                          </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] text-[var(--color-text-muted)]" style={tabularNumberStyle}>{formatMinutesToHM(data.tracked)}</span>
+                          <span className="text-xs font-semibold text-[var(--color-text)]" style={tabularNumberStyle}>{data.count}</span>
                         </div>
                       </div>
                     ))
@@ -293,52 +219,28 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
           )}
 
           {/* Search Input */}
-          <div style={{ marginBottom: '16px' }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '10px 14px',
-                background: 'var(--color-inner-bg)',
-                borderRadius: '10px',
-                border: '1px solid var(--color-border)',
-              }}
-            >
-              <span style={{ fontSize: '14px', opacity: 0.6 }}>🔍</span>
+          <div className="mb-4">
+            <div className="flex items-center gap-[10px] px-[14px] py-[10px] bg-[var(--color-inner-bg)] rounded-[10px] border border-[var(--color-border)]">
+              <span className="text-sm opacity-60">🔍</span>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search tasks by name, assignee, publisher..."
-                style={{
-                  flex: 1,
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  fontSize: '13px',
-                  color: 'var(--color-text)',
-                  fontFamily: getFontFamily('english'),
-                }}
+                className="flex-1 bg-transparent border-none outline-none text-[13px] text-[var(--color-text)]"
+                style={{ fontFamily: getFontFamily('english') }}
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    color: 'var(--color-text-muted)',
-                    padding: '2px 6px',
-                  }}
+                  className="bg-transparent border-none cursor-pointer text-xs text-[var(--color-text-muted)] px-[6px] py-[2px]"
                 >
                   ✕
                 </button>
               )}
             </div>
             {searchQuery && (
-              <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+              <div className="mt-2 text-[11px] text-[var(--color-text-muted)]">
                 Found {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''} matching "{searchQuery}"
               </div>
             )}
@@ -349,19 +251,8 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
             {/* Column Headers - Desktop only */}
             {!isMobile && (
               <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'minmax(200px, 1fr) 70px 70px 80px minmax(100px, 140px) minmax(100px, 140px) 85px 85px 85px',
-                  gap: '10px',
-                  padding: '12px 16px',
-                  borderBottom: '1px solid var(--color-border-light)',
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  color: 'var(--color-text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  fontFamily: getFontFamily('english'),
-                }}
+                className="grid gap-[10px] px-4 py-3 border-b border-[var(--color-border-light)] text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-[0.5px]"
+                style={{ gridTemplateColumns: DESKTOP_COLS, fontFamily: getFontFamily('english') }}
               >
                 <span>Task Name</span>
                 <span>Assignee</span>
@@ -376,132 +267,70 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
             )}
 
             {/* Task Rows */}
-            <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+            <div className="max-h-[350px] overflow-y-auto">
               {paginatedTasks.map((task, index) => {
-                const closedDate = task.dateClosed || task.closedDate;
-                const dueDate = task.dueDate;
-                const displayDate = isDoneStatus ? closedDate : dueDate;
-                const priorityStyle = priorityConfig[task.priority] || priorityConfig.Low;
+                const dateClosed = task.dateClosed || task.closedDate || task.date_closed;
                 const taskStatusColor = task.statusColor || statusColor;
-
-                // Format dates for display
                 const dateCreated = task.date_created;
                 const dateUpdated = task.date_updated;
-                const dateClosed = task.dateClosed || task.closedDate || task.date_closed;
 
                 return (
                   <div
                     key={task.id || index}
-                    style={{
-                      borderBottom: '1px solid var(--color-border-light)',
-                      transition: 'all 0.15s',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'var(--color-subtle-bg)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'transparent';
-                    }}
+                    className="border-b border-[var(--color-border-light)] transition-[background] duration-150"
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-subtle-bg)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                   >
                     {/* Desktop Layout */}
                     {!isMobile ? (
-                      <div
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'minmax(200px, 1fr) 70px 70px 80px minmax(100px, 140px) minmax(100px, 140px) 85px 85px 85px',
-                          gap: '10px',
-                          padding: '12px 16px',
-                          alignItems: 'center',
-                        }}
-                      >
-                        {/* Task Name (clickable link) */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                      <div className="grid gap-[10px] px-4 py-3 items-center" style={{ gridTemplateColumns: DESKTOP_COLS }}>
+                        {/* Task Name */}
+                        <div className="flex items-center gap-[6px] min-w-0">
                           <a
                             href={task.clickUpUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            style={{
-                              fontSize: '12px',
-                              fontWeight: '500',
-                              color: 'var(--color-accent)',
-                              fontFamily: getAdaptiveFontFamily(task.name),
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              flex: 1,
-                              minWidth: 0,
-                              textDecoration: 'none',
-                              cursor: 'pointer',
-                              transition: 'opacity 0.15s',
-                            }}
+                            className="text-xs font-medium text-[var(--color-accent)] overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0 no-underline cursor-pointer transition-opacity duration-150"
+                            style={{ fontFamily: getAdaptiveFontFamily(task.name) }}
                             title={task.name}
-                            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                            onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
                           >
                             {task.name}
                           </a>
                         </div>
 
                         {/* Assignee */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {task.assignee ? (
-                            <div
-                              style={{
-                                width: '24px',
-                                height: '24px',
-                                borderRadius: '50%',
-                                background: task.assignee.avatar ? `url(${task.assignee.avatar})` : 'var(--color-accent)',
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                color: '#fff',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '9px',
-                                fontWeight: '600',
-                                fontFamily: getFontFamily('english'),
-                              }}
-                              title={task.assignee.name}
-                            >
-                              {!task.assignee.avatar && task.assignee.initials}
-                            </div>
-                          ) : (
-                            <span style={{ color: 'var(--color-text-muted)', fontSize: '14px', opacity: 0.3 }}>—</span>
-                          )}
+                        <div className="flex items-center justify-center">
+                          {task.assignee
+                            ? <AvatarCircle avatar={task.assignee.avatar} initials={task.assignee.initials} size={24} />
+                            : <span className="text-[var(--color-text-muted)] text-sm opacity-30">—</span>
+                          }
                         </div>
 
                         {/* Tracked Time */}
                         <div
-                          style={{
-                            fontSize: '11px',
-                            color: task.trackedTime > 0 ? 'var(--color-text)' : 'var(--color-text-muted)',
-                            fontFamily: getFontFamily('english'),
-                            fontWeight: task.trackedTime > 0 ? '600' : 'normal',
-                            ...tabularNumberStyle,
-                          }}
+                          className={`text-[11px] ${task.trackedTime > 0 ? 'text-[var(--color-text)] font-semibold' : 'text-[var(--color-text-muted)]'}`}
+                          style={{ ...tabularNumberStyle, fontFamily: getFontFamily('english') }}
                         >
                           {task.trackedTime > 0 ? formatMinutesToHM(task.trackedTime) : '—'}
                         </div>
 
-                        {/* Priority (Flag Icon) */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
-                          {task.priority ? (
-                            <PriorityFlag priority={task.priority} size={13} fontSize="11px" />
-                          ) : (
-                            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', opacity: 0.5 }}>—</span>
-                          )}
+                        {/* Priority */}
+                        <div className="flex items-center">
+                          {task.priority
+                            ? <PriorityFlag priority={task.priority} size={13} fontSize="11px" />
+                            : <span className="text-[11px] text-[var(--color-text-muted)] opacity-50">—</span>
+                          }
                         </div>
 
                         {/* Publisher */}
                         <div
+                          className="text-[11px] overflow-hidden text-ellipsis whitespace-nowrap"
                           style={{
-                            fontSize: '11px',
                             color: task.publisher ? 'var(--color-text-secondary)' : 'var(--color-text-muted)',
                             fontFamily: getAdaptiveFontFamily(task.publisher || ''),
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
                             opacity: task.publisher ? 1 : 0.5,
                           }}
                           title={task.publisher}
@@ -511,13 +340,10 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
 
                         {/* Genre */}
                         <div
+                          className="text-[11px] overflow-hidden text-ellipsis whitespace-nowrap"
                           style={{
-                            fontSize: '11px',
                             color: task.genre ? 'var(--color-text-secondary)' : 'var(--color-text-muted)',
                             fontFamily: getAdaptiveFontFamily(task.genre || ''),
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
                             opacity: task.genre ? 1 : 0.5,
                           }}
                           title={task.genre}
@@ -526,151 +352,90 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
                         </div>
 
                         {/* Date Created */}
-                        <div
-                          style={{
-                            fontSize: '11px',
-                            color: 'var(--color-text-secondary)',
-                            fontFamily: getFontFamily('english'),
-                            ...tabularNumberStyle,
-                          }}
-                        >
-                          {dateCreated ? formatClickUpDate(dateCreated) : <span style={{ opacity: 0.5 }}>—</span>}
+                        <div className="text-[11px] text-[var(--color-text-secondary)]" style={{ ...tabularNumberStyle, fontFamily: getFontFamily('english') }}>
+                          {dateCreated ? formatClickUpDate(dateCreated) : <span className="opacity-50">—</span>}
                         </div>
 
                         {/* Date Updated */}
-                        <div
-                          style={{
-                            fontSize: '11px',
-                            color: 'var(--color-text-secondary)',
-                            fontFamily: getFontFamily('english'),
-                            ...tabularNumberStyle,
-                          }}
-                        >
-                          {dateUpdated ? formatClickUpDate(dateUpdated) : <span style={{ opacity: 0.5 }}>—</span>}
+                        <div className="text-[11px] text-[var(--color-text-secondary)]" style={{ ...tabularNumberStyle, fontFamily: getFontFamily('english') }}>
+                          {dateUpdated ? formatClickUpDate(dateUpdated) : <span className="opacity-50">—</span>}
                         </div>
 
                         {/* Date Closed */}
                         <div
-                          style={{
-                            fontSize: '11px',
-                            color: dateClosed ? 'var(--color-text)' : 'var(--color-text-muted)',
-                            fontWeight: dateClosed ? '600' : 'normal',
-                            fontFamily: getFontFamily('english'),
-                            ...tabularNumberStyle,
-                          }}
+                          className={`text-[11px] ${dateClosed ? 'text-[var(--color-text)] font-semibold' : 'text-[var(--color-text-muted)]'}`}
+                          style={{ ...tabularNumberStyle, fontFamily: getFontFamily('english') }}
                         >
-                          {dateClosed ? formatClickUpDate(dateClosed) : <span style={{ opacity: 0.5 }}>—</span>}
+                          {dateClosed ? formatClickUpDate(dateClosed) : <span className="opacity-50">—</span>}
                         </div>
                       </div>
                     ) : (
                       /* Mobile Layout */
-                      <div style={{ padding: '14px 16px' }}>
+                      <div className="px-4 py-[14px]">
                         {/* Task name */}
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '12px' }}>
-                          <span style={{ color: taskStatusColor, fontSize: '8px', marginTop: '5px', flexShrink: 0 }}>●</span>
+                        <div className="flex items-start gap-[6px] mb-3">
+                          <span className="shrink-0 mt-[5px] text-[8px]" style={{ color: taskStatusColor }}>●</span>
                           <span
-                            style={{
-                              flex: 1,
-                              fontSize: '13px',
-                              fontWeight: '500',
-                              color: 'var(--color-text)',
-                              fontFamily: getAdaptiveFontFamily(task.name),
-                              lineHeight: '1.4',
-                            }}
+                            className="flex-1 text-[13px] font-medium text-[var(--color-text)] leading-[1.4]"
+                            style={{ fontFamily: getAdaptiveFontFamily(task.name) }}
                           >
                             {task.name}
                           </span>
                         </div>
 
-                        {/* Mobile grid — 2 columns for breathing room, Due removed */}
-                        <div
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
-                            gap: '12px 16px',
-                            fontSize: '10px',
-                            color: 'var(--color-text-secondary)',
-                          }}
-                        >
+                        {/* Mobile grid */}
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[10px] text-[var(--color-text-secondary)]">
                           {/* Assignee */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <span style={{ fontSize: '10px', opacity: 0.6, textTransform: 'uppercase', fontFamily: getFontFamily('english') }}>Assignee</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <div className="flex flex-col gap-1">
+                            <span className="opacity-60 uppercase" style={{ fontFamily: getFontFamily('english') }}>Assignee</span>
+                            <div className="flex items-center gap-[5px]">
                               {task.assignee ? (
                                 <>
-                                  <div
-                                    style={{
-                                      width: '18px',
-                                      height: '18px',
-                                      borderRadius: '50%',
-                                      background: task.assignee.avatar ? `url(${task.assignee.avatar})` : 'var(--color-accent)',
-                                      backgroundSize: 'cover',
-                                      color: '#fff',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      fontSize: '7px',
-                                      fontWeight: '600',
-                                      flexShrink: 0,
-                                    }}
-                                  >
-                                    {!task.assignee.avatar && task.assignee.initials}
-                                  </div>
-                                  <span style={{ fontSize: '11px', fontFamily: getAdaptiveFontFamily(task.assignee.name || '') }}>
+                                  <AvatarCircle avatar={task.assignee.avatar} initials={task.assignee.initials} size={18} />
+                                  <span className="text-[11px]" style={{ fontFamily: getAdaptiveFontFamily(task.assignee.name || '') }}>
                                     {task.assignee.name ? task.assignee.name.split(' ')[0] : ''}
                                   </span>
                                 </>
-                              ) : (
-                                <span style={{ opacity: 0.5 }}>—</span>
-                              )}
+                              ) : <span className="opacity-50">—</span>}
                             </div>
                           </div>
 
                           {/* Time tracked */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <span style={{ fontSize: '10px', opacity: 0.6, textTransform: 'uppercase', fontFamily: getFontFamily('english') }}>Tracked</span>
-                            <span style={{ fontSize: '11px', ...tabularNumberStyle }}>
-                              {task.trackedTime > 0 ? formatMinutesToHM(task.trackedTime) : <span style={{ opacity: 0.5 }}>0m</span>}
+                          <div className="flex flex-col gap-1">
+                            <span className="opacity-60 uppercase" style={{ fontFamily: getFontFamily('english') }}>Tracked</span>
+                            <span className="text-[11px]" style={tabularNumberStyle}>
+                              {task.trackedTime > 0 ? formatMinutesToHM(task.trackedTime) : <span className="opacity-50">0m</span>}
                             </span>
                           </div>
 
                           {/* Priority */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <span style={{ fontSize: '10px', opacity: 0.6, textTransform: 'uppercase', fontFamily: getFontFamily('english') }}>Priority</span>
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                              {task.priority ? <PriorityFlag priority={task.priority} showLabel={false} size={13} /> : <span style={{ opacity: 0.5, color: 'var(--color-text-muted)' }}>—</span>}
+                          <div className="flex flex-col gap-1">
+                            <span className="opacity-60 uppercase" style={{ fontFamily: getFontFamily('english') }}>Priority</span>
+                            <div className="flex items-center">
+                              {task.priority
+                                ? <PriorityFlag priority={task.priority} showLabel={false} size={13} />
+                                : <span className="opacity-50 text-[var(--color-text-muted)]">—</span>
+                              }
                             </div>
                           </div>
 
                           {/* Genre */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <span style={{ fontSize: '10px', opacity: 0.6, textTransform: 'uppercase', fontFamily: getFontFamily('english') }}>Genre</span>
+                          <div className="flex flex-col gap-1">
+                            <span className="opacity-60 uppercase" style={{ fontFamily: getFontFamily('english') }}>Genre</span>
                             <span
-                              style={{
-                                fontSize: '11px',
-                                fontFamily: getAdaptiveFontFamily(task.genre || ''),
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                opacity: task.genre ? 1 : 0.5,
-                              }}
+                              className="text-[11px] overflow-hidden text-ellipsis whitespace-nowrap"
+                              style={{ fontFamily: getAdaptiveFontFamily(task.genre || ''), opacity: task.genre ? 1 : 0.5 }}
                             >
                               {task.genre || '—'}
                             </span>
                           </div>
 
                           {/* Publisher */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <span style={{ fontSize: '10px', opacity: 0.6, textTransform: 'uppercase', fontFamily: getFontFamily('english') }}>Publisher</span>
+                          <div className="flex flex-col gap-1">
+                            <span className="opacity-60 uppercase" style={{ fontFamily: getFontFamily('english') }}>Publisher</span>
                             <span
-                              style={{
-                                fontSize: '11px',
-                                fontFamily: getAdaptiveFontFamily(task.publisher || ''),
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                opacity: task.publisher ? 1 : 0.5,
-                              }}
+                              className="text-[11px] overflow-hidden text-ellipsis whitespace-nowrap"
+                              style={{ fontFamily: getAdaptiveFontFamily(task.publisher || ''), opacity: task.publisher ? 1 : 0.5 }}
                             >
                               {task.publisher || '—'}
                             </span>
@@ -679,17 +444,14 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
 
                         {/* Tags */}
                         {task.tags && task.tags.length > 0 && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px', flexWrap: 'wrap' }}>
+                          <div className="flex items-center gap-1 mt-2 flex-wrap">
                             {task.tags.map((tag, i) => {
                               const tagStyle = tagColors[i % tagColors.length];
                               return (
                                 <span
                                   key={i}
+                                  className="px-[5px] py-[2px] rounded text-[9px] font-medium"
                                   style={{
-                                    padding: '2px 5px',
-                                    borderRadius: '3px',
-                                    fontSize: '9px',
-                                    fontWeight: '500',
                                     background: tagStyle.bg,
                                     color: tagStyle.text,
                                     border: `1px solid ${tagStyle.border}40`,
@@ -711,54 +473,34 @@ const TaskListModal = ({ isOpen, onClose, project, status, tasks, theme }) => {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '12px',
-                  padding: '12px 16px',
-                  borderTop: '1px solid var(--color-border)',
-                  background: 'var(--color-inner-bg)',
-                }}
-              >
+              <div className="flex items-center justify-center gap-3 px-4 py-3 border-t border-[var(--color-border)] bg-[var(--color-inner-bg)]">
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
+                  className="px-3 py-[6px] rounded-badge border border-[var(--color-border)] text-xs transition-all duration-150"
                   style={{
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--color-border)',
                     background: currentPage === 1 ? 'transparent' : 'var(--color-card-bg)',
                     color: currentPage === 1 ? 'var(--color-text-muted)' : 'var(--color-text)',
                     cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                    fontSize: '12px',
-                    fontFamily: getFontFamily('english'),
                     opacity: currentPage === 1 ? 0.5 : 1,
-                    transition: 'all 0.15s',
+                    fontFamily: getFontFamily('english'),
                   }}
                 >
                   ← Prev
                 </button>
-
-                <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontFamily: getFontFamily('english'), ...tabularNumberStyle }}>
+                <span className="text-xs text-[var(--color-text-secondary)]" style={{ ...tabularNumberStyle, fontFamily: getFontFamily('english') }}>
                   Page {currentPage} of {totalPages}
                 </span>
-
                 <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
+                  className="px-3 py-[6px] rounded-badge border border-[var(--color-border)] text-xs transition-all duration-150"
                   style={{
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--color-border)',
                     background: currentPage === totalPages ? 'transparent' : 'var(--color-card-bg)',
                     color: currentPage === totalPages ? 'var(--color-text-muted)' : 'var(--color-text)',
                     cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                    fontSize: '12px',
-                    fontFamily: getFontFamily('english'),
                     opacity: currentPage === totalPages ? 0.5 : 1,
-                    transition: 'all 0.15s',
+                    fontFamily: getFontFamily('english'),
                   }}
                 >
                   Next →

@@ -64,67 +64,42 @@ const MemberLeaveDetail = ({ member, leaves, theme, settings, isMobile, onBack }
   }, [memberLeaves, now]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex flex-col gap-4">
       {/* Back button */}
       <button
         onClick={onBack}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: theme.accent,
-          cursor: 'pointer',
-          fontSize: 13,
-          fontWeight: 500,
-          padding: 0,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
-          opacity: 0.8,
-        }}
+        className="bg-transparent border-none text-[var(--color-accent)] cursor-pointer text-[13px] font-medium p-0 flex items-center gap-1 opacity-80"
       >
         &#x2190; Back to Overview
       </button>
 
       {/* Member Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 14,
-        background: theme.cardBg,
-        border: `1px solid ${theme.border}`,
-        borderRadius: 12,
-        padding: 16,
-      }}>
+      <div className="flex items-center gap-[14px] bg-[var(--color-card-bg)] border border-[var(--color-border)] rounded-card p-4">
         <Avatar name={member.name} status={member.status} theme={theme} size={48}
           profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
         <div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: theme.text }}>{member.name}</div>
-          <div style={{ fontSize: 13, marginTop: 2 }}>
+          <div className="text-lg font-bold text-[var(--color-text)]">{member.name}</div>
+          <div className="text-[13px] mt-[2px]">
             {isOnLeave && (
-              <span style={{ color: TYPE_COLORS[leaveToday.type] || TYPE_COLORS.annual, fontWeight: 500 }}>
+              <span className="font-medium" style={{ color: TYPE_COLORS[leaveToday.type] || TYPE_COLORS.annual }}>
                 {TYPE_ICONS[leaveToday.type]} On {TYPE_LABELS[leaveToday.type] || 'Leave'}
               </span>
             )}
             {isWfh && (
-              <span style={{ color: TYPE_COLORS.wfh, fontWeight: 500 }}>
+              <span className="font-medium" style={{ color: TYPE_COLORS.wfh }}>
                 {TYPE_ICONS.wfh} Working from Home
               </span>
             )}
             {!isOnLeave && !isWfh && (
-              <span style={{ color: theme.textSecondary }}>Available</span>
+              <span className="text-[var(--color-text-secondary)]">Available</span>
             )}
           </div>
         </div>
       </div>
 
       {/* Leave Balances */}
-      <div style={{
-        background: theme.cardBg,
-        border: `1px solid ${theme.border}`,
-        borderRadius: 12,
-        padding: 16,
-      }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: theme.text, marginBottom: 14 }}>
+      <div className="bg-[var(--color-card-bg)] border border-[var(--color-border)] rounded-card p-4">
+        <div className="text-[13px] font-semibold text-[var(--color-text)] mb-[14px]">
           Leave Balances ({currentYear})
         </div>
         <QuotaBar label="Annual Leave" used={balance.annual.used} total={balance.annual.total}
@@ -138,88 +113,67 @@ const MemberLeaveDetail = ({ member, leaves, theme, settings, isMobile, onBack }
           color={TYPE_COLORS.wfh} theme={theme} />
 
         {balance.maxTransfer > 0 && (
-          <div style={{
-            marginTop: 10,
-            fontSize: 11,
-            color: theme.textSecondary,
-            padding: '6px 10px',
-            borderRadius: 6,
-            background: `${theme.text}08`,
-          }}>
+          <div className="mt-[10px] text-[11px] text-[var(--color-text-secondary)] px-[10px] py-[6px] rounded-badge bg-[rgba(255,255,255,0.05)]">
             Max carry-over to {currentYear + 1}: {balance.maxTransfer} days
           </div>
         )}
       </div>
 
       {/* Mini Calendar */}
-      <div style={{
-        background: theme.cardBg,
-        border: `1px solid ${theme.border}`,
-        borderRadius: 12,
-        padding: 16,
-      }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: theme.text, marginBottom: 12 }}>
+      <div className="bg-[var(--color-card-bg)] border border-[var(--color-border)] rounded-card p-4">
+        <div className="text-[13px] font-semibold text-[var(--color-text)] mb-3">
           {now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
         </div>
         <MiniCalendar data={calendarData} theme={theme} todayDate={now.getDate()} />
-        <div style={{ display: 'flex', gap: 12, marginTop: 10, fontSize: 11, color: theme.textSecondary }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 8, height: 8, borderRadius: 2, background: TYPE_COLORS.annual, display: 'inline-block' }} />
+        <div className="flex gap-3 mt-[10px] text-[11px] text-[var(--color-text-secondary)]">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-[2px] inline-block" style={{ background: TYPE_COLORS.annual }} />
             Leave
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 8, height: 8, borderRadius: 2, background: TYPE_COLORS.wfh, display: 'inline-block' }} />
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-[2px] inline-block" style={{ background: TYPE_COLORS.wfh }} />
             WFH
           </span>
         </div>
       </div>
 
       {/* Leave History */}
-      <div style={{
-        background: theme.cardBg,
-        border: `1px solid ${theme.border}`,
-        borderRadius: 12,
-        padding: 16,
-      }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: theme.text, marginBottom: 12 }}>
+      <div className="bg-[var(--color-card-bg)] border border-[var(--color-border)] rounded-card p-4">
+        <div className="text-[13px] font-semibold text-[var(--color-text)] mb-3">
           Leave History ({currentYear})
         </div>
         {memberLeaves.length === 0 ? (
-          <div style={{ fontSize: 13, color: theme.textSecondary, textAlign: 'center', padding: 20 }}>
+          <div className="text-[13px] text-[var(--color-text-secondary)] text-center p-5">
             No leave records this year
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div className="flex flex-col gap-[6px]">
             {memberLeaves.map(l => {
               const days = l.requestedDays || calculateLeaveDays(l.startDate, l.endDate);
+              const statusColor = STATUS_COLORS_MAP[l.status] || '#666';
               return (
-                <div key={l.id} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  padding: '8px 0',
-                  borderBottom: `1px solid ${theme.border}20`,
-                  fontSize: 13,
-                }}>
-                  <span style={{ minWidth: 90, color: theme.textSecondary, ...tabularNumberStyle, fontSize: 12 }}>
+                <div
+                  key={l.id}
+                  className="flex items-center gap-[10px] py-2 text-[13px]"
+                  style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  <span className="min-w-[90px] text-[var(--color-text-secondary)] text-xs" style={tabularNumberStyle}>
                     {formatDateRange(l.startDate, l.endDate)}
                   </span>
-                  <span style={{ fontSize: 14 }}>{TYPE_ICONS[l.type] || TYPE_ICONS.annual}</span>
-                  <span style={{ flex: 1, color: theme.text }}>
+                  <span className="text-sm">{TYPE_ICONS[l.type] || TYPE_ICONS.annual}</span>
+                  <span className="flex-1 text-[var(--color-text)]">
                     {TYPE_LABELS[l.type] || 'Leave'}
                   </span>
-                  <span style={{ ...tabularNumberStyle, color: theme.textSecondary, fontSize: 12 }}>
+                  <span className="text-[var(--color-text-secondary)] text-xs" style={tabularNumberStyle}>
                     {days}d
                   </span>
-                  <span style={{
-                    fontSize: 10,
-                    padding: '1px 6px',
-                    borderRadius: 4,
-                    background: `${STATUS_COLORS_MAP[l.status] || '#666'}20`,
-                    color: STATUS_COLORS_MAP[l.status] || '#666',
-                    fontWeight: 500,
-                    textTransform: 'capitalize',
-                  }}>
+                  <span
+                    className="text-[10px] px-[6px] py-[1px] rounded font-medium capitalize"
+                    style={{
+                      background: `${statusColor}20`,
+                      color: statusColor,
+                    }}
+                  >
                     {l.status}
                   </span>
                 </div>
@@ -246,36 +200,39 @@ const MiniCalendar = ({ data, theme, todayDate }) => {
   for (let d = 1; d <= daysInMonth; d++) {
     const type = days[d]; // 'leave' | 'wfh' | undefined
     const isToday = d === todayDate;
+    const bg = isToday
+      ? 'var(--color-text)'
+      : type === 'leave'
+        ? TYPE_COLORS.annual
+        : type === 'wfh'
+          ? TYPE_COLORS.wfh
+          : 'transparent';
+    const color = isToday
+      ? 'var(--color-card-bg)'
+      : type
+        ? '#fff'
+        : 'var(--color-text-secondary)';
+
     cells.push(
-      <div key={d} style={{
-        textAlign: 'center',
-        padding: '4px 0',
-        fontSize: 12,
-        borderRadius: 4,
-        fontWeight: isToday ? 700 : 400,
-        color: isToday ? theme.cardBg : type ? '#fff' : theme.textSecondary,
-        background: isToday
-          ? theme.text
-          : type === 'leave'
-            ? TYPE_COLORS.annual
-            : type === 'wfh'
-              ? TYPE_COLORS.wfh
-              : 'transparent',
-        ...tabularNumberStyle,
-      }}>
+      <div
+        key={d}
+        className="text-center py-1 text-xs rounded"
+        style={{
+          fontWeight: isToday ? 700 : 400,
+          color,
+          background: bg,
+          ...tabularNumberStyle,
+        }}
+      >
         {d}
       </div>
     );
   }
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(7, 1fr)',
-      gap: 2,
-    }}>
+    <div className="grid grid-cols-7 gap-[2px]">
       {dayLabels.map(l => (
-        <div key={l} style={{ textAlign: 'center', fontSize: 10, color: theme.textSecondary, padding: '2px 0', fontWeight: 600 }}>
+        <div key={l} className="text-center text-[10px] text-[var(--color-text-secondary)] py-[2px] font-semibold">
           {l}
         </div>
       ))}

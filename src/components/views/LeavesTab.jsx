@@ -47,7 +47,7 @@ const LeavesTab = ({ theme }) => {
   // When a member is selected in Overview, show detail panel
   if (selectedMember && activeTab === 'overview') {
     return (
-      <div style={{ padding: isMobile ? 12 : 16 }}>
+      <div className={isMobile ? 'p-3' : 'p-4'}>
         <MemberLeaveDetail
           member={selectedMember}
           leaves={leaves}
@@ -61,33 +61,18 @@ const LeavesTab = ({ theme }) => {
   }
 
   return (
-    <div style={{ padding: isMobile ? 12 : 16 }}>
+    <div className={isMobile ? 'p-3' : 'p-4'}>
       {/* Tab Switcher */}
-      <div style={{
-        display: 'flex',
-        gap: 4,
-        marginBottom: 16,
-        background: `${theme.text}08`,
-        borderRadius: 8,
-        padding: 3,
-        width: 'fit-content',
-      }}>
+      <div className="flex gap-1 mb-4 bg-[var(--color-inner-bg)] rounded-button p-[3px] w-fit">
         {TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => { setActiveTab(tab.id); setSelectedMember(null); }}
-            style={{
-              padding: '6px 16px',
-              borderRadius: 6,
-              fontSize: 13,
-              fontWeight: 500,
-              border: 'none',
-              cursor: 'pointer',
-              background: activeTab === tab.id ? theme.cardBg : 'transparent',
-              color: activeTab === tab.id ? theme.text : theme.textSecondary,
-              boxShadow: activeTab === tab.id ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
-              transition: 'all 0.2s',
-            }}
+            className={`px-4 py-[6px] rounded-badge text-[13px] font-medium border-none cursor-pointer transition-all duration-200 ${
+              activeTab === tab.id
+                ? 'bg-[var(--color-card-bg)] text-[var(--color-text)] shadow-[0_1px_3px_rgba(0,0,0,0.2)]'
+                : 'bg-transparent text-[var(--color-text-secondary)]'
+            }`}
           >
             {tab.label}
           </button>

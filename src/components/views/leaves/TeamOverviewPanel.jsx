@@ -76,13 +76,9 @@ const TeamOverviewPanel = ({ leaves, members, theme, settings, isMobile, onSelec
   }, [leaves, todayStr]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div className="flex flex-col gap-[14px]">
       {/* Today's Status Strip */}
-      <div style={{
-        display: 'flex',
-        gap: 8,
-        flexWrap: 'wrap',
-      }}>
+      <div className="flex gap-2 flex-wrap">
         <StatusChip
           icon={TYPE_ICONS.annual}
           count={membersOnLeave.length}
@@ -111,12 +107,11 @@ const TeamOverviewPanel = ({ leaves, members, theme, settings, isMobile, onSelec
 
       <PendingRequestsSection leaves={leaves} members={members} theme={theme} />
 
-      {/* Member Quota Cards Grid — 4 per row desktop, 2 tablet, 1 mobile */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))',
-        gap: 16,
-      }}>
+      {/* Member Quota Cards Grid — auto-fill desktop, 1 col mobile */}
+      <div
+        className="grid gap-4"
+        style={{ gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))' }}
+      >
         {memberBalances.map(({ member, balance, leaveToday, nextLeave }) => (
           <MemberQuotaCard
             key={member.id || member.clickUpId}
@@ -133,49 +128,33 @@ const TeamOverviewPanel = ({ leaves, members, theme, settings, isMobile, onSelec
 
       {/* Upcoming Leaves */}
       {upcoming.length > 0 && (
-        <div style={{
-          background: theme.cardBg,
-          border: `1px solid ${theme.border}`,
-          borderRadius: 10,
-          padding: 14,
-        }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: theme.text, marginBottom: 10 }}>
+        <div className="bg-[var(--color-card-bg)] border border-[var(--color-border)] rounded-[10px] p-[14px]">
+          <div className="text-xs font-semibold text-[var(--color-text)] mb-[10px]">
             Upcoming (next 14 days)
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div className="flex flex-col gap-1">
             {upcoming.map(l => {
               const member = getMember(l, members);
               const days = l.requestedDays || calculateLeaveDays(l.startDate, l.endDate);
               return (
-                <div key={l.id} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '6px 0',
-                  borderBottom: `1px solid ${theme.border}`,
-                  fontSize: 12,
-                }}>
-                  <span style={{ color: theme.textSecondary, ...tabularNumberStyle, minWidth: 48, fontSize: 11 }}>
+                <div key={l.id} className="flex items-center gap-2 py-[6px] border-b border-[var(--color-border)] text-xs">
+                  <span className="text-[var(--color-text-secondary)] min-w-[48px] text-[11px]" style={tabularNumberStyle}>
                     {formatDateShort(l.startDate)}
                   </span>
                   {member && (
                     <Avatar name={member.name} status={member.status} theme={theme} size={20}
                       profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
                   )}
-                  <span style={{ color: theme.text, flex: 1 }}>
+                  <span className="text-[var(--color-text)] flex-1">
                     {member?.name || l.memberName}
                   </span>
-                  <span style={{
-                    fontSize: 10,
-                    padding: '2px 6px',
-                    borderRadius: 4,
-                    background: TYPE_COLORS[l.type] || TYPE_COLORS.annual,
-                    color: '#fff',
-                    fontWeight: 600,
-                  }}>
+                  <span
+                    className="text-[10px] px-[6px] py-[2px] rounded text-white font-semibold"
+                    style={{ background: TYPE_COLORS[l.type] || TYPE_COLORS.annual }}
+                  >
                     {TYPE_LABELS[l.type] || 'Leave'}
                   </span>
-                  <span style={{ ...tabularNumberStyle, color: theme.textSecondary, fontSize: 11 }}>
+                  <span className="text-[var(--color-text-secondary)] text-[11px]" style={tabularNumberStyle}>
                     {days}d
                   </span>
                 </div>
@@ -191,23 +170,19 @@ const TeamOverviewPanel = ({ leaves, members, theme, settings, isMobile, onSelec
 // --- Sub-components ---
 
 const StatusChip = ({ icon, count, label, items, color, theme }) => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '5px 10px',
-    borderRadius: 8,
-    background: `${color}18`,
-    border: `1px solid ${color}30`,
-    fontSize: 12,
-    fontWeight: 600,
-    color,
-  }}>
-    <span style={{ fontSize: 13 }}>{icon}</span>
-    <span style={{ ...tabularNumberStyle }}>{count}</span>
-    <span style={{ fontWeight: 500 }}>{label}</span>
+  <div
+    className="flex items-center gap-[6px] px-[10px] py-[5px] rounded-button text-xs font-semibold"
+    style={{
+      background: `${color}18`,
+      border: `1px solid ${color}30`,
+      color,
+    }}
+  >
+    <span className="text-[13px]">{icon}</span>
+    <span style={tabularNumberStyle}>{count}</span>
+    <span className="font-medium">{label}</span>
     {items.length > 0 && (
-      <div style={{ display: 'flex', marginLeft: 2 }}>
+      <div className="flex ml-[2px]">
         {items.slice(0, 3).map(({ member }, i) => (
           <div key={member.id || member.clickUpId} style={{ marginLeft: i > 0 ? -6 : 0 }}>
             <Avatar name={member.name} status={member.status} theme={theme} size={18}
@@ -215,7 +190,7 @@ const StatusChip = ({ icon, count, label, items, color, theme }) => (
           </div>
         ))}
         {items.length > 3 && (
-          <span style={{ fontSize: 10, color, marginLeft: 3, alignSelf: 'center' }}>+{items.length - 3}</span>
+          <span className="text-[10px] ml-[3px] self-center" style={{ color }}>+{items.length - 3}</span>
         )}
       </div>
     )}
@@ -237,74 +212,61 @@ const PendingRequestsSection = ({ leaves, members, theme }) => {
   };
 
   return (
-    <div style={{
-      background: theme.cardBg,
-      border: `1px solid ${TYPE_COLORS.annual}40`,
-      borderRadius: 10,
-      padding: 14,
-    }}>
-      <div style={{ fontSize: 12, fontWeight: 600, color: theme.text, marginBottom: 10 }}>
+    <div
+      className="bg-[var(--color-card-bg)] rounded-[10px] p-[14px]"
+      style={{ border: `1px solid ${TYPE_COLORS.annual}40` }}
+    >
+      <div className="text-xs font-semibold text-[var(--color-text)] mb-[10px]">
         ⏳ Pending Requests ({pending.length})
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div className="flex flex-col gap-[6px]">
         {pending.map((l, index) => {
           const member = getMember(l, members);
           const days = l.requestedDays || calculateLeaveDays(l.startDate, l.endDate);
+          const typeColor = TYPE_COLORS[l.type] || TYPE_COLORS.annual;
           return (
-            <div key={l.id} style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '6px 0',
-              borderBottom: index < pending.length - 1 ? `1px solid ${theme.border}` : 'none',
-              fontSize: 12,
-            }}>
+            <div
+              key={l.id}
+              className="flex items-center gap-2 py-[6px] text-xs"
+              style={{ borderBottom: index < pending.length - 1 ? '1px solid var(--color-border)' : 'none' }}
+            >
               {member && (
                 <Avatar name={member.name} status={member.status} theme={theme} size={22}
                   profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
               )}
-              <span style={{ color: theme.text, flex: 1, fontWeight: 500 }}>
+              <span className="text-[var(--color-text)] flex-1 font-medium">
                 {member?.name || l.memberName}
               </span>
-              <span style={{
-                fontSize: 10,
-                padding: '2px 6px',
-                borderRadius: 4,
-                background: `${TYPE_COLORS[l.type] || TYPE_COLORS.annual}20`,
-                color: TYPE_COLORS[l.type] || TYPE_COLORS.annual,
-                fontWeight: 600,
-              }}>
+              <span
+                className="text-[10px] px-[6px] py-[2px] rounded font-semibold"
+                style={{
+                  background: `${typeColor}20`,
+                  color: typeColor,
+                }}
+              >
                 {TYPE_ICONS[l.type]} {TYPE_LABELS[l.type] || 'Leave'}
               </span>
-              <span style={{ color: theme.textSecondary, fontSize: 11, ...tabularNumberStyle }}>
+              <span className="text-[var(--color-text-secondary)] text-[11px]" style={tabularNumberStyle}>
                 {formatDateRange(l.startDate, l.endDate)} · {days}d
               </span>
               <button
                 onClick={(e) => { e.stopPropagation(); handleApprove(l); }}
+                className="text-[10px] px-2 py-[3px] rounded cursor-pointer font-semibold"
                 style={{
-                  fontSize: 10,
-                  padding: '3px 8px',
-                  borderRadius: 4,
                   border: `1px solid ${STATUS_COLORS_MAP.approved}60`,
                   background: `${STATUS_COLORS_MAP.approved}15`,
                   color: STATUS_COLORS_MAP.approved,
-                  cursor: 'pointer',
-                  fontWeight: 600,
                 }}
               >
                 Approve
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); handleReject(l); }}
+                className="text-[10px] px-2 py-[3px] rounded cursor-pointer font-semibold"
                 style={{
-                  fontSize: 10,
-                  padding: '3px 8px',
-                  borderRadius: 4,
                   border: `1px solid ${rejectColor}60`,
                   background: `${rejectColor}15`,
                   color: rejectColor,
-                  cursor: 'pointer',
-                  fontWeight: 600,
                 }}
               >
                 Reject
@@ -320,47 +282,49 @@ const PendingRequestsSection = ({ leaves, members, theme }) => {
 const MemberQuotaCard = ({ member, balance, leaveToday, nextLeave, theme, isMobile, onClick }) => {
   const isOnLeave = leaveToday && leaveToday.type !== 'wfh';
   const isWfh = leaveToday && leaveToday.type === 'wfh';
+  const defaultBorder = 'var(--color-border)';
+  const activeBorder = isOnLeave ? `${TYPE_COLORS.annual}50` : isWfh ? `${TYPE_COLORS.wfh}50` : defaultBorder;
 
   return (
     <div
       onClick={onClick}
-      style={{
-        background: theme.cardBg,
-        border: `1px solid ${isOnLeave ? `${TYPE_COLORS.annual}50` : isWfh ? `${TYPE_COLORS.wfh}50` : theme.border}`,
-        borderRadius: 10,
-        padding: isMobile ? 14 : 16,
-        cursor: 'pointer',
-        transition: 'border-color 0.2s, transform 0.15s',
+      className={`bg-[var(--color-card-bg)] rounded-[10px] cursor-pointer transition-[border-color,transform] duration-200 ${isMobile ? 'p-[14px]' : 'p-4'}`}
+      style={{ border: `1px solid ${activeBorder}` }}
+      onMouseEnter={e => {
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.38)';
+        e.currentTarget.style.transform = 'translateY(-1px)';
       }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = theme.accent + '60'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = isOnLeave ? `${TYPE_COLORS.annual}50` : isWfh ? `${TYPE_COLORS.wfh}50` : theme.border; e.currentTarget.style.transform = 'none'; }}
+      onMouseLeave={e => {
+        e.currentTarget.style.borderColor = activeBorder;
+        e.currentTarget.style.transform = 'none';
+      }}
     >
       {/* Header: Avatar + Name */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+      <div className="flex items-center gap-[10px] mb-[10px]">
         <Avatar name={member.name} status={member.status} theme={theme} size={40}
           profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: theme.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div className="flex-1 min-w-0">
+          <div className="text-[15px] font-semibold text-[var(--color-text)] whitespace-nowrap overflow-hidden text-ellipsis">
             {member.name}
           </div>
           {isOnLeave && (
-            <span style={{ fontSize: 11, color: TYPE_COLORS.annual, fontWeight: 600 }}>
+            <span className="text-[11px] font-semibold" style={{ color: TYPE_COLORS.annual }}>
               {TYPE_ICONS[leaveToday.type]} On Leave
             </span>
           )}
           {isWfh && (
-            <span style={{ fontSize: 11, color: TYPE_COLORS.wfh, fontWeight: 600 }}>
+            <span className="text-[11px] font-semibold" style={{ color: TYPE_COLORS.wfh }}>
               {TYPE_ICONS.wfh} WFH
             </span>
           )}
           {!isOnLeave && !isWfh && (
-            <span style={{ fontSize: 11, color: theme.textSecondary }}>Available</span>
+            <span className="text-[11px] text-[var(--color-text-secondary)]">Available</span>
           )}
         </div>
       </div>
 
       {/* Stacked Quota Bars */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 }}>
+      <div className="flex flex-col gap-1 mb-2">
         <QuotaBar label="Annual" used={balance.annual.used} total={balance.annual.total} color={TYPE_COLORS.annual} theme={theme} compact />
         <QuotaBar label="Sick" used={balance.sick.used} total={balance.sick.total} color={TYPE_COLORS.sick} theme={theme} compact />
         <QuotaBar label="Bonus" used={balance.bonus.used} total={balance.bonus.total} color={TYPE_COLORS.bonus} theme={theme} compact />
@@ -369,11 +333,7 @@ const MemberQuotaCard = ({ member, balance, leaveToday, nextLeave, theme, isMobi
 
       {/* Footer: Next leave */}
       {!isOnLeave && !isWfh && nextLeave && (
-        <div style={{
-          marginTop: 6,
-          fontSize: 10,
-          color: theme.textSecondary,
-        }}>
+        <div className="mt-[6px] text-[10px] text-[var(--color-text-secondary)]">
           Next: {formatDateShort(nextLeave.startDate)}
         </div>
       )}

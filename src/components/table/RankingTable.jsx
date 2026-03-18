@@ -5,6 +5,9 @@ import { getTextFontStyle, tabularNumberStyle, getFontFamily } from '../../utils
 import { formatHoursToHM } from '../../utils/timeFormat';
 import { getMetricColor } from '../../utils/metricColor';
 
+// Rank medal colors (fixed — not theme-dependent)
+const RANK_COLORS = ['#fbbf24', '#9ca3af', '#d97706'];
+
 const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
   const { isMobile } = useWindowSize();
   const workingDays = dateRangeInfo?.workingDays || 1;
@@ -88,8 +91,8 @@ const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
   };
 
   const SortIcon = ({ column }) => {
-    if (sortBy !== column) return <span style={{ opacity: 0.3, marginLeft: '4px' }}>⇅</span>;
-    return <span style={{ marginLeft: '4px' }}>{sortOrder === 'asc' ? '↑' : '↓'}</span>;
+    if (sortBy !== column) return <span className="ml-1 opacity-30">⇅</span>;
+    return <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>;
   };
 
   // Format compliance display: show percentage (complianceHours / (dailyTarget × workingDays) × 100%)
@@ -101,77 +104,52 @@ const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
     return { pct, label: `${pct}%` };
   };
 
+  // Score badge colors — dynamic per score value, must be inline (runtime value)
+  const getScoreBadgeStyle = (score) => {
+    const color = score >= 80
+      ? 'var(--color-success)'
+      : score >= 60
+      ? 'var(--color-warning)'
+      : 'var(--color-danger)';
+    const bg = score >= 80
+      ? 'rgba(16, 185, 129, 0.12)'
+      : score >= 60
+      ? 'rgba(245, 158, 11, 0.12)'
+      : 'rgba(239, 68, 68, 0.12)';
+    return { color, background: bg };
+  };
+
   return (
-    <div
-      style={{
-        background: theme.cardBg,
-        borderRadius: '12px',
-        border: `1px solid ${theme.border}`,
-        overflow: 'hidden',
-      }}
-    >
+    <div className="bg-[var(--color-card-bg)] rounded-card border border-[var(--color-border)] overflow-hidden">
       {/* Table Header */}
-      <div
-        style={{
-          padding: '16px',
-          borderBottom: `1px solid ${theme.borderLight}`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '12px',
-        }}
-      >
-        <div style={{ fontSize: '16px', fontWeight: '700', color: theme.text, fontFamily: getFontFamily('english') }}>
+      <div className="px-4 py-4 border-b border-[var(--color-border-light)] flex items-center justify-between gap-3">
+        <div
+          className="text-base font-bold text-[var(--color-text)]"
+          style={getFontFamily('english') ? { fontFamily: getFontFamily('english') } : undefined}
+        >
           Team Ranking
         </div>
 
         {/* Mobile: Sort dropdown button | Desktop: member count */}
         {isMobile ? (
-          <div style={{ position: 'relative' }}>
+          <div className="relative">
             <button
               onClick={() => setIsMobileSortOpen(!isMobileSortOpen)}
-              style={{
-                padding: '6px 10px',
-                borderRadius: '8px',
-                border: `1px solid ${theme.border}`,
-                background: 'transparent',
-                color: theme.textSecondary,
-                fontSize: '12px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontFamily: getFontFamily('english'),
-              }}
+              className="px-[10px] py-[6px] rounded-button border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-xs font-medium cursor-pointer flex items-center gap-[6px]"
+              style={{ fontFamily: getFontFamily('english') }}
             >
-              <span style={{ fontSize: '11px' }}>↕</span>
+              <span className="text-[11px]">↕</span>
               {sortBy === 'score' ? 'Score' : sortBy === 'tracked' ? 'Tracked' : sortBy === 'tasks' ? 'Tasks' : sortBy === 'compliance' ? 'Compliance' : 'Done'}
-              <span style={{ fontSize: '9px', opacity: 0.5 }}>▼</span>
+              <span className="text-[9px] opacity-50">▼</span>
             </button>
 
             {isMobileSortOpen && (
               <>
                 <div
                   onClick={() => setIsMobileSortOpen(false)}
-                  style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1098 }}
+                  className="fixed inset-0 z-[1098]"
                 />
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 4px)',
-                    right: 0,
-                    zIndex: 1099,
-                    background: theme.type === 'dark' ? 'rgba(24, 24, 24, 0.98)' : 'rgba(255, 255, 255, 0.98)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                    borderRadius: '12px',
-                    border: `1px solid ${theme.border}`,
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-                    minWidth: '150px',
-                    overflow: 'hidden',
-                  }}
-                >
+                <div className="absolute top-[calc(100%+4px)] right-0 z-[1099] bg-[var(--color-card-bg)] backdrop-blur-[var(--effect-backdrop-blur)] rounded-card border border-[var(--color-border)] shadow-[0_8px_32px_rgba(0,0,0,0.4)] min-w-[150px] overflow-hidden">
                   {[
                     { id: 'score', label: 'Score' },
                     { id: 'tracked', label: 'Tracked' },
@@ -185,25 +163,14 @@ const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
                         handleSort(opt.id);
                         setIsMobileSortOpen(false);
                       }}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        background: sortBy === opt.id ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
-                        border: 'none',
-                        color: theme.text,
-                        fontSize: '13px',
-                        fontWeight: sortBy === opt.id ? '600' : '400',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        textAlign: 'left',
-                        fontFamily: getFontFamily('english'),
-                      }}
+                      className={`w-full px-[14px] py-[10px] border-none text-[var(--color-text)] text-[13px] cursor-pointer flex items-center justify-between text-left ${
+                        sortBy === opt.id ? 'bg-[rgba(255,255,255,0.08)] font-semibold' : 'bg-transparent font-normal'
+                      }`}
+                      style={{ fontFamily: getFontFamily('english') }}
                     >
                       <span>{opt.label}</span>
                       {sortBy === opt.id && (
-                        <span style={{ fontSize: '11px', opacity: 0.6 }}>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                        <span className="text-[11px] opacity-60">{sortOrder === 'asc' ? '↑' : '↓'}</span>
                       )}
                     </button>
                   ))}
@@ -212,7 +179,10 @@ const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
             )}
           </div>
         ) : (
-          <div style={{ fontSize: '12px', color: theme.textMuted, fontFamily: getFontFamily('english') }}>
+          <div
+            className="text-xs text-[var(--color-text-muted)]"
+            style={{ fontFamily: getFontFamily('english') }}
+          >
             {members?.length || 0} members
           </div>
         )}
@@ -222,85 +192,67 @@ const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
       {isMobile && (
         <div>
           {sortedMembers.map((member, index) => {
-            const scoreColor = member.score >= 80 ? theme.success : member.score >= 60 ? theme.warning : theme.danger;
             const compliance = formatComplianceDisplay(member);
             const isTopThree = index < 3;
-            const rankColors = ['#fbbf24', '#9ca3af', '#d97706'];
             const hasActivity = member.tracked > 0 || member.score > 0;
+            const scoreBadgeStyle = getScoreBadgeStyle(member.score);
 
             return (
               <div
                 key={member.id}
                 onClick={() => onMemberClick && onMemberClick(member)}
-                style={{
-                  padding: '16px',
-                  borderBottom: `1px solid ${theme.borderLight}`,
-                  borderLeft: 'none',
-                  cursor: onMemberClick ? 'pointer' : 'default',
-                  opacity: hasActivity ? 1 : 0.45,
-                }}
+                className={`px-4 py-4 border-b border-[var(--color-border-light)] ${onMemberClick ? 'cursor-pointer' : 'cursor-default'} ${!hasActivity ? 'opacity-45' : ''}`}
               >
                 {/* Top row: Rank + Avatar + Name + Score */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="flex items-center gap-[10px]">
                   {/* Rank */}
-                  <div style={{
-                    fontSize: '14px',
-                    fontWeight: '700',
-                    color: isTopThree ? rankColors[index] : theme.textMuted,
-                    width: '22px',
-                    textAlign: 'center',
-                    flexShrink: 0,
-                    ...tabularNumberStyle,
-                  }}>
+                  <div
+                    className="text-sm font-bold w-[22px] text-center shrink-0"
+                    style={{
+                      color: isTopThree ? RANK_COLORS[index] : 'var(--color-text-muted)',
+                      ...tabularNumberStyle,
+                    }}
+                  >
                     {index + 1}
                   </div>
                   {/* Avatar */}
                   <Avatar name={member.name} status={member.status} theme={theme} size={32} profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
                   {/* Name */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: '14px', fontWeight: '600', color: theme.text,
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                      ...getTextFontStyle(member.name),
-                    }}>
+                  <div className="flex-1 min-w-0">
+                    <div
+                      className="text-sm font-semibold text-[var(--color-text)] whitespace-nowrap overflow-hidden text-ellipsis"
+                      style={getTextFontStyle(member.name)}
+                    >
                       {member.name}
                     </div>
                   </div>
                   {/* Score Badge */}
-                  <div style={{
-                    padding: '4px 12px', borderRadius: '8px', flexShrink: 0,
-                    background: scoreColor + '18', color: scoreColor,
-                    fontSize: '13px', fontWeight: '700', ...tabularNumberStyle,
-                  }}>
+                  <div
+                    className="px-3 py-1 rounded-button shrink-0 text-[13px] font-bold"
+                    style={{ ...scoreBadgeStyle, ...tabularNumberStyle }}
+                  >
                     {Math.round(member.score)}%
                   </div>
                 </div>
 
                 {/* Metrics Grid — only for active members */}
                 {hasActivity && (
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr 1fr',
-                    gap: '4px',
-                    marginTop: '10px',
-                    marginLeft: '32px',
-                    paddingLeft: '10px',
-                  }}>
-                    <div style={{ ...tabularNumberStyle }}>
-                      <div style={{ fontSize: '10px', color: theme.textMuted, fontWeight: '400', marginBottom: '2px', fontFamily: getFontFamily('english') }}>Tracked</div>
-                      <div style={{ fontSize: '13px', color: theme.text, fontWeight: '600' }}>{formatHoursToHM(member.tracked)}</div>
+                  <div className="grid grid-cols-3 gap-1 mt-[10px] ml-8 pl-[10px]">
+                    <div style={tabularNumberStyle}>
+                      <div className="text-[10px] text-[var(--color-text-muted)] font-normal mb-[2px]" style={{ fontFamily: getFontFamily('english') }}>Tracked</div>
+                      <div className="text-[13px] text-[var(--color-text)] font-semibold">{formatHoursToHM(member.tracked)}</div>
                     </div>
-                    <div style={{ ...tabularNumberStyle }}>
-                      <div style={{ fontSize: '10px', color: theme.textMuted, fontWeight: '400', marginBottom: '2px', fontFamily: getFontFamily('english') }}>Tasks</div>
-                      <div style={{ fontSize: '13px' }}>
-                        <span style={{ color: theme.text, fontWeight: '600' }}>{member.tasks}</span>
-                        <span style={{ color: theme.textMuted, fontWeight: '400' }}>/</span>
-                        <span style={{ color: theme.success, fontWeight: '600' }}>{member.done}</span>
+                    <div style={tabularNumberStyle}>
+                      <div className="text-[10px] text-[var(--color-text-muted)] font-normal mb-[2px]" style={{ fontFamily: getFontFamily('english') }}>Tasks</div>
+                      <div className="text-[13px]">
+                        <span className="text-[var(--color-text)] font-semibold">{member.tasks}</span>
+                        <span className="text-[var(--color-text-muted)] font-normal">/</span>
+                        <span className="text-[var(--color-success)] font-semibold">{member.done}</span>
                       </div>
                     </div>
-                    <div style={{ ...tabularNumberStyle }}>
-                      <div style={{ fontSize: '10px', color: theme.textMuted, fontWeight: '400', marginBottom: '2px', fontFamily: getFontFamily('english') }}>Compliance</div>
-                      <div style={{ fontSize: '13px', color: getMetricColor(compliance.pct, { lightMode }), fontWeight: '600' }}>{compliance.label}</div>
+                    <div style={tabularNumberStyle}>
+                      <div className="text-[10px] text-[var(--color-text-muted)] font-normal mb-[2px]" style={{ fontFamily: getFontFamily('english') }}>Compliance</div>
+                      <div className="text-[13px] font-semibold" style={{ color: getMetricColor(compliance.pct, { lightMode }) }}>{compliance.label}</div>
                     </div>
                   </div>
                 )}
@@ -312,136 +264,43 @@ const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
 
       {/* Desktop Table Layout */}
       {!isMobile && (
-        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <table
-            style={{
-              width: '100%',
-              minWidth: '800px',
-              borderCollapse: 'separate',
-              borderSpacing: 0,
-            }}
-          >
+        <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <table className="w-full min-w-[800px] border-collapse border-spacing-0" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
             <thead>
-              <tr style={{ background: theme.secondaryBg }}>
-                <th
-                  style={{
-                    padding: '14px 12px',
-                    textAlign: 'center',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: theme.textMuted,
-                    width: '50px',
-                    position: 'sticky',
-                    left: 0,
-                    background: theme.secondaryBg,
-                    zIndex: 10,
-                    borderBottom: `2px solid ${theme.border}`,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+              <tr className="bg-[var(--color-inner-bg)]">
+                <th className="px-3 py-[14px] text-center text-xs font-semibold text-[var(--color-text-muted)] w-[50px] sticky left-0 bg-[var(--color-inner-bg)] z-10 border-b-2 border-[var(--color-border)] whitespace-nowrap">
                   #
                 </th>
-                <th
-                  style={{
-                    padding: '14px 12px',
-                    textAlign: 'left',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: theme.textMuted,
-                    minWidth: '140px',
-                    width: '140px',
-                    position: 'sticky',
-                    left: '50px',
-                    background: theme.secondaryBg,
-                    zIndex: 10,
-                    borderBottom: `2px solid ${theme.border}`,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                <th className="px-3 py-[14px] text-left text-xs font-semibold text-[var(--color-text-muted)] min-w-[140px] w-[140px] sticky left-[50px] bg-[var(--color-inner-bg)] z-10 border-b-2 border-[var(--color-border)] whitespace-nowrap">
                   Member
                 </th>
                 <th
                   onClick={() => handleSort('tracked')}
-                  style={{
-                    padding: '14px 12px',
-                    textAlign: 'center',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: theme.textMuted,
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    width: '100px',
-                    borderBottom: `2px solid ${theme.border}`,
-                    whiteSpace: 'nowrap',
-                  }}
+                  className="px-3 py-[14px] text-center text-xs font-semibold text-[var(--color-text-muted)] cursor-pointer select-none w-[100px] border-b-2 border-[var(--color-border)] whitespace-nowrap"
                 >
                   Time tracked<SortIcon column="tracked" />
                 </th>
                 <th
                   onClick={() => handleSort('tasks')}
-                  style={{
-                    padding: '14px 12px',
-                    textAlign: 'center',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: theme.textMuted,
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    width: '85px',
-                    borderBottom: `2px solid ${theme.border}`,
-                    whiteSpace: 'nowrap',
-                  }}
+                  className="px-3 py-[14px] text-center text-xs font-semibold text-[var(--color-text-muted)] cursor-pointer select-none w-[85px] border-b-2 border-[var(--color-border)] whitespace-nowrap"
                 >
                   Workload<SortIcon column="tasks" />
                 </th>
                 <th
                   onClick={() => handleSort('done')}
-                  style={{
-                    padding: '14px 12px',
-                    textAlign: 'center',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: theme.textMuted,
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    width: '95px',
-                    borderBottom: `2px solid ${theme.border}`,
-                    whiteSpace: 'nowrap',
-                  }}
+                  className="px-3 py-[14px] text-center text-xs font-semibold text-[var(--color-text-muted)] cursor-pointer select-none w-[95px] border-b-2 border-[var(--color-border)] whitespace-nowrap"
                 >
                   Completion<SortIcon column="done" />
                 </th>
                 <th
                   onClick={() => handleSort('compliance')}
-                  style={{
-                    padding: '14px 12px',
-                    textAlign: 'center',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: theme.textMuted,
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    width: '200px',
-                    borderBottom: `2px solid ${theme.border}`,
-                    whiteSpace: 'nowrap',
-                  }}
+                  className="px-3 py-[14px] text-center text-xs font-semibold text-[var(--color-text-muted)] cursor-pointer select-none w-[200px] border-b-2 border-[var(--color-border)] whitespace-nowrap"
                 >
                   Compliance<SortIcon column="compliance" />
                 </th>
                 <th
                   onClick={() => handleSort('score')}
-                  style={{
-                    padding: '14px 12px',
-                    textAlign: 'center',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: theme.textMuted,
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    width: '80px',
-                    borderBottom: `2px solid ${theme.border}`,
-                    whiteSpace: 'nowrap',
-                  }}
+                  className="px-3 py-[14px] text-center text-xs font-semibold text-[var(--color-text-muted)] cursor-pointer select-none w-[80px] border-b-2 border-[var(--color-border)] whitespace-nowrap"
                 >
                   Score<SortIcon column="score" />
                 </th>
@@ -452,151 +311,81 @@ const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
               {sortedMembers.map((member, index) => {
                 const isTopThree = index < 3;
                 const compliance = formatComplianceDisplay(member);
+                const scoreBadgeStyle = getScoreBadgeStyle(member.score);
                 return (
-                <tr
-                  key={member.id}
-                  onClick={() => onMemberClick && onMemberClick(member)}
-                  style={{
-                    borderBottom: `1px solid ${theme.borderLight}`,
-                    transition: 'background 0.2s ease',
-                    background: 'transparent',
-                    cursor: onMemberClick ? 'pointer' : 'default',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = theme.secondaryBg;
-                    const cells = e.currentTarget.querySelectorAll('td');
-                    cells[0].style.background = theme.secondaryBg;
-                    cells[1].style.background = theme.secondaryBg;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                    const cells = e.currentTarget.querySelectorAll('td');
-                    cells[0].style.background = theme.cardBg;
-                    cells[1].style.background = theme.cardBg;
-                  }}
-                >
-                  <td
-                    style={{
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      fontSize: '14px',
-                      fontWeight: '700',
-                      color: isTopThree ? theme.accent : theme.textMuted,
-                      ...tabularNumberStyle,
-                      position: 'sticky',
-                      left: 0,
-                      background: theme.cardBg,
-                      zIndex: 5,
-                      transition: 'background 0.2s ease',
+                  <tr
+                    key={member.id}
+                    onClick={() => onMemberClick && onMemberClick(member)}
+                    className={`border-b border-[var(--color-border-light)] transition-[background] duration-200 bg-transparent ${onMemberClick ? 'cursor-pointer' : 'cursor-default'}`}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--color-inner-bg)';
+                      const cells = e.currentTarget.querySelectorAll('td');
+                      cells[0].style.background = 'var(--color-inner-bg)';
+                      cells[1].style.background = 'var(--color-inner-bg)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      const cells = e.currentTarget.querySelectorAll('td');
+                      cells[0].style.background = 'var(--color-card-bg)';
+                      cells[1].style.background = 'var(--color-card-bg)';
                     }}
                   >
-                    {index + 1}
-                  </td>
-                  <td style={{
-                    padding: '14px 12px',
-                    position: 'sticky',
-                    left: '50px',
-                    background: theme.cardBg,
-                    zIndex: 5,
-                    transition: 'background 0.2s ease',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <Avatar name={member.name} status={member.status} theme={theme} size={32} profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
-                      <div
-                        style={{
-                          fontSize: '13px',
-                          fontWeight: '600',
-                          color: theme.text,
-                          whiteSpace: 'nowrap',
-                          ...getTextFontStyle(member.name),
-                        }}
-                      >
-                        {member.name}
-                      </div>
-                    </div>
-                  </td>
-                  <td
-                    style={{
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      color: theme.text,
-                      ...tabularNumberStyle,
-                    }}
-                  >
-                    {formatHoursToHM(member.tracked)}
-                  </td>
-                  <td
-                    style={{
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      color: theme.text,
-                      ...tabularNumberStyle,
-                    }}
-                  >
-                    {member.tasks}
-                  </td>
-                  <td
-                    style={{
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      color: theme.success,
-                      ...tabularNumberStyle,
-                    }}
-                  >
-                    {member.done}
-                  </td>
-                  {/* Compliance - Single Column */}
-                  <td
-                    style={{
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      fontSize: '12px',
-                      color: theme.textSecondary,
-                      ...tabularNumberStyle,
-                    }}
-                  >
-                    <span style={{ color: getMetricColor(compliance.pct, { lightMode }), fontWeight: '600' }}>
-                      {compliance.label}
-                    </span>
-                  </td>
-                  <td
-                    style={{
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <div
+                    <td
+                      className="px-3 py-[14px] text-center text-sm font-bold sticky left-0 z-[5] transition-[background] duration-200 bg-[var(--color-card-bg)]"
                       style={{
-                        display: 'inline-block',
-                        padding: '4px 12px',
-                        borderRadius: '8px',
-                        background:
-                          member.score >= 80
-                            ? theme.success + '20'
-                            : member.score >= 60
-                            ? theme.warning + '20'
-                            : theme.danger + '20',
-                        color:
-                          member.score >= 80
-                            ? theme.success
-                            : member.score >= 60
-                            ? theme.warning
-                            : theme.danger,
-                        fontSize: '14px',
-                        fontWeight: '700',
+                        color: isTopThree ? RANK_COLORS[index] : 'var(--color-text-muted)',
                         ...tabularNumberStyle,
                       }}
                     >
-                      {Math.round(member.score)}%
-                    </div>
-                  </td>
-                </tr>
+                      {index + 1}
+                    </td>
+                    <td className="px-3 py-[14px] sticky left-[50px] bg-[var(--color-card-bg)] z-[5] transition-[background] duration-200">
+                      <div className="flex items-center gap-[10px]">
+                        <Avatar name={member.name} status={member.status} theme={theme} size={32} profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
+                        <div
+                          className="text-[13px] font-semibold text-[var(--color-text)] whitespace-nowrap"
+                          style={getTextFontStyle(member.name)}
+                        >
+                          {member.name}
+                        </div>
+                      </div>
+                    </td>
+                    <td
+                      className="px-3 py-[14px] text-center text-[13px] font-semibold text-[var(--color-text)]"
+                      style={tabularNumberStyle}
+                    >
+                      {formatHoursToHM(member.tracked)}
+                    </td>
+                    <td
+                      className="px-3 py-[14px] text-center text-[13px] font-semibold text-[var(--color-text)]"
+                      style={tabularNumberStyle}
+                    >
+                      {member.tasks}
+                    </td>
+                    <td
+                      className="px-3 py-[14px] text-center text-[13px] font-semibold text-[var(--color-success)]"
+                      style={tabularNumberStyle}
+                    >
+                      {member.done}
+                    </td>
+                    {/* Compliance */}
+                    <td
+                      className="px-3 py-[14px] text-center text-xs text-[var(--color-text-secondary)]"
+                      style={tabularNumberStyle}
+                    >
+                      <span className="font-semibold" style={{ color: getMetricColor(compliance.pct, { lightMode }) }}>
+                        {compliance.label}
+                      </span>
+                    </td>
+                    <td className="px-3 py-[14px] text-center">
+                      <div
+                        className="inline-block px-3 py-1 rounded-button text-sm font-bold"
+                        style={{ ...scoreBadgeStyle, ...tabularNumberStyle }}
+                      >
+                        {Math.round(member.score)}%
+                      </div>
+                    </td>
+                  </tr>
                 );
               })}
             </tbody>

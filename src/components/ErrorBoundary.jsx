@@ -19,23 +19,16 @@ class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI
     return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log error details
     logger.error('ErrorBoundary caught an error:', error, errorInfo);
-
-    // Update state with error details
     this.setState(prevState => ({
       error,
       errorInfo,
       errorCount: prevState.errorCount + 1
     }));
-
-    // Optional: Send error to error reporting service
-    // logErrorToService(error, errorInfo);
   }
 
   handleReset = () => {
@@ -53,112 +46,33 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       const { error, errorInfo, errorCount } = this.state;
-      const isDarkMode = document.body.style.background === '#0A0A0A' ||
-                         window.matchMedia('(prefers-color-scheme: dark)').matches;
 
       return (
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
-            background: isDarkMode ? '#0A0A0A' : '#F9F9F7',
-          }}
-        >
-          <div
-            style={{
-              maxWidth: '600px',
-              width: '100%',
-              padding: '32px',
-              borderRadius: '16px',
-              background: isDarkMode
-                ? 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))'
-                : 'linear-gradient(155deg, rgba(255,255,255,0.95), rgba(255,255,255,0.88))',
-              border: isDarkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)',
-              boxShadow: isDarkMode
-                ? '0 8px 32px rgba(0,0,0,0.4)'
-                : '0 0 0 1px rgba(0,0,0,0.06), 0 16px 32px rgba(0,0,0,0.05)',
-            }}
-          >
+        <div className="min-h-screen flex items-center justify-center p-5 bg-[var(--color-bg)]">
+          <div className="max-w-[600px] w-full p-8 rounded-[16px] bg-[var(--color-card-bg)] border border-[var(--color-border)] shadow-[var(--effect-card-shadow)]">
+
             {/* Error Icon */}
-            <div
-              style={{
-                fontSize: '48px',
-                textAlign: 'center',
-                marginBottom: '20px',
-              }}
-            >
-              ⚠️
-            </div>
+            <div className="text-5xl text-center mb-5">⚠️</div>
 
             {/* Title */}
-            <h1
-              style={{
-                fontSize: '24px',
-                fontWeight: '700',
-                color: isDarkMode ? '#ffffff' : '#111827',
-                textAlign: 'center',
-                marginBottom: '12px',
-                margin: 0,
-              }}
-            >
+            <h1 className="text-2xl font-bold text-[var(--color-text)] text-center mb-3 m-0">
               Oops! Something went wrong
             </h1>
 
             {/* Subtitle */}
-            <p
-              style={{
-                fontSize: '14px',
-                color: isDarkMode ? '#a0a0a0' : '#6B7280',
-                textAlign: 'center',
-                marginBottom: '24px',
-                lineHeight: '1.5',
-              }}
-            >
+            <p className="text-sm text-[var(--color-text-secondary)] text-center mb-6 leading-relaxed">
               We apologize for the inconvenience. The application encountered an unexpected error.
               {errorCount > 1 && ` (${errorCount} errors occurred)`}
             </p>
 
             {/* Error Details (Collapsible) */}
             {error && (
-              <details
-                style={{
-                  marginBottom: '24px',
-                  padding: '16px',
-                  borderRadius: '12px',
-                  background: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                  border: isDarkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)',
-                  cursor: 'pointer',
-                }}
-              >
-                <summary
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    color: isDarkMode ? '#ffffff' : '#111827',
-                    marginBottom: '12px',
-                    cursor: 'pointer',
-                  }}
-                >
+              <details className="mb-6 p-4 rounded-card bg-[var(--color-inner-bg)] border border-[var(--color-border)] cursor-pointer">
+                <summary className="text-[13px] font-semibold text-[var(--color-text)] mb-3 cursor-pointer">
                   Error Details
                 </summary>
-                <div
-                  style={{
-                    fontSize: '12px',
-                    fontFamily: 'monospace',
-                    color: isDarkMode ? '#a0a0a0' : '#6B7280',
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
-                    maxHeight: '200px',
-                    overflowY: 'auto',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    background: isDarkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.03)',
-                  }}
-                >
-                  <div style={{ marginBottom: '12px' }}>
+                <div className="text-xs font-mono text-[var(--color-text-secondary)] whitespace-pre-wrap break-words max-h-[200px] overflow-y-auto p-3 rounded-button bg-[var(--color-subtle-bg)]">
+                  <div className="mb-3">
                     <strong>Error:</strong> {error.toString()}
                   </div>
                   {errorInfo && errorInfo.componentStack && (
@@ -172,33 +86,13 @@ class ErrorBoundary extends React.Component {
             )}
 
             {/* Action Buttons */}
-            <div
-              style={{
-                display: 'flex',
-                gap: '12px',
-                justifyContent: 'center',
-              }}
-            >
+            <div className="flex gap-3 justify-center">
               <button
                 onClick={this.handleReset}
-                style={{
-                  padding: '12px 24px',
-                  borderRadius: '10px',
-                  border: isDarkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)',
-                  background: isDarkMode
-                    ? 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))'
-                    : 'linear-gradient(155deg, rgba(255,255,255,0.95), rgba(255,255,255,0.88))',
-                  color: isDarkMode ? '#ffffff' : '#111827',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
+                className="px-6 py-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-card-bg)] text-[var(--color-text)] text-sm font-semibold cursor-pointer transition-all duration-200"
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = isDarkMode
-                    ? '0 4px 12px rgba(255,255,255,0.1)'
-                    : '0 4px 12px rgba(0,0,0,0.1)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(255,255,255,0.1)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
@@ -210,22 +104,10 @@ class ErrorBoundary extends React.Component {
 
               <button
                 onClick={this.handleReload}
-                style={{
-                  padding: '12px 24px',
-                  borderRadius: '10px',
-                  border: 'none',
-                  background: isDarkMode ? '#10B981' : '#047857',
-                  color: '#ffffff',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
+                className="px-6 py-3 rounded-[10px] border-none bg-[var(--color-success)] text-white text-sm font-semibold cursor-pointer transition-all duration-200"
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = isDarkMode
-                    ? '0 4px 12px rgba(16, 185, 129, 0.4)'
-                    : '0 4px 12px rgba(6, 95, 70, 0.25)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(16,185,129,0.35)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
@@ -237,15 +119,7 @@ class ErrorBoundary extends React.Component {
             </div>
 
             {/* Help Text */}
-            <p
-              style={{
-                fontSize: '12px',
-                color: isDarkMode ? '#606060' : '#9CA3AF',
-                textAlign: 'center',
-                marginTop: '24px',
-                marginBottom: 0,
-              }}
-            >
+            <p className="text-xs text-[var(--color-text-muted)] text-center mt-6 mb-0">
               If the problem persists, please contact support or check the browser console for more details.
             </p>
           </div>

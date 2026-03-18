@@ -44,124 +44,83 @@ const ModalShell = ({
       {/* Backdrop - Full Coverage */}
       <div
         onClick={onClose}
+        className="fixed inset-0 z-[1000] overflow-hidden"
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
           background: 'rgba(0, 0, 0, 0.75)',
           backdropFilter: 'blur(32px)',
           WebkitBackdropFilter: 'blur(32px)',
-          zIndex: 1000,
           animation: 'modalFadeIn 0.2s ease-out',
-          overflow: 'hidden',
         }}
       />
 
       {/* Modal - Centered Container */}
       <div
+        className="fixed inset-0 z-[1001] flex items-start justify-center overflow-y-auto pointer-events-none"
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 1001,
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'center',
           padding: isMobile ? '10px' : '20px',
           paddingTop: isMobile ? '10px' : '40px',
-          pointerEvents: 'none',
-          overflowY: 'auto',
         }}
       >
         {/* Actual Modal Content */}
         <div
           data-testid={testId}
+          className="relative w-full rounded-[16px] border border-[var(--color-border)] overflow-hidden flex flex-col pointer-events-auto direction-ltr"
           style={{
-            position: 'relative',
-            width: '100%',
-            maxWidth: maxWidth,
+            maxWidth,
             maxHeight: isMobile ? '88dvh' : '85vh',
-            background: theme && theme.type === 'dark'
-              ? 'linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06))'
-              : theme && theme.type === 'light'
-                ? 'linear-gradient(155deg, rgb(255,255,255), rgb(252,252,252))'
-                : 'var(--color-card-bg)',
-            borderRadius: '16px',
-            border: '1px solid var(--color-border)',
-            boxShadow: theme && theme.type === 'dark'
+            background: 'var(--color-card-bg)',
+            boxShadow: theme?.type === 'dark'
               ? '0 25px 50px -12px rgba(0,0,0,0.5)'
               : '0 25px 50px -12px rgba(0,0,0,0.15)',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
             animation: 'modalSlideIn 0.25s ease-out',
-            pointerEvents: 'auto',
-            direction: 'ltr', // Force LTR for modal structure
+            direction: 'ltr',
           }}
         >
-        {/* Header */}
-        <div
-          style={{
-            padding: '16px 20px',
-            borderBottom: '1px solid var(--color-border)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            background: headerColor || 'var(--color-inner-bg)',
-            ...(headerColor && { color: '#ffffff' }),
-          }}
-        >
+          {/* Header */}
           <div
+            className="px-5 py-4 border-b border-[var(--color-border)] flex justify-between items-center"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              fontSize: '15px',
-              fontWeight: '600',
-              color: headerColor ? '#ffffff' : 'var(--color-text)',
-              fontFamily: getFontFamily('english'),
+              background: headerColor || 'var(--color-inner-bg)',
+              ...(headerColor && { color: '#ffffff' }),
             }}
           >
-            {icon && <span style={{ fontSize: '16px' }}>{icon}</span>}
-            {title}
+            <div
+              className="flex items-center gap-[10px] text-[15px] font-semibold"
+              style={{
+                color: headerColor ? '#ffffff' : 'var(--color-text)',
+                fontFamily: getFontFamily('english'),
+              }}
+            >
+              {icon && <span className="text-base">{icon}</span>}
+              {title}
+            </div>
+            <button
+              onClick={onClose}
+              className="w-7 h-7 rounded-badge border-none cursor-pointer flex items-center justify-center text-base transition-all duration-150"
+              style={{
+                background: headerColor ? 'rgba(255,255,255,0.2)' : 'var(--color-subtle-bg)',
+                color: headerColor ? '#ffffff' : 'var(--color-text-muted)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = headerColor ? 'rgba(255,255,255,0.3)' : 'var(--color-border)';
+                e.currentTarget.style.color = headerColor ? '#ffffff' : 'var(--color-text)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = headerColor ? 'rgba(255,255,255,0.2)' : 'var(--color-subtle-bg)';
+                e.currentTarget.style.color = headerColor ? '#ffffff' : 'var(--color-text-muted)';
+              }}
+            >
+              ×
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '6px',
-              border: 'none',
-              background: headerColor ? 'rgba(255,255,255,0.2)' : 'var(--color-subtle-bg)',
-              color: headerColor ? '#ffffff' : 'var(--color-text-muted)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '16px',
-              transition: 'all 0.15s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = headerColor ? 'rgba(255,255,255,0.3)' : 'var(--color-border)';
-              e.currentTarget.style.color = headerColor ? '#ffffff' : 'var(--color-text)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = headerColor ? 'rgba(255,255,255,0.2)' : 'var(--color-subtle-bg)';
-              e.currentTarget.style.color = headerColor ? '#ffffff' : 'var(--color-text-muted)';
-            }}
-          >
-            ×
-          </button>
-        </div>
 
-        {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '14px' : '20px' }}>
-          {children}
-        </div>
+          {/* Content */}
+          <div
+            className="flex-1 overflow-y-auto"
+            style={{ padding: isMobile ? '14px' : '20px' }}
+          >
+            {children}
+          </div>
         </div>
       </div>
 
@@ -195,17 +154,23 @@ export const ModalHero = ({
   progressColor,
   rightContent
 }) => (
-  <div style={{ marginBottom: '20px' }}>
-    <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '6px', fontFamily: getFontFamily('english'), textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+  <div className="mb-5">
+    <div
+      className="text-[11px] text-[var(--color-text-muted)] mb-[6px] uppercase tracking-[0.5px]"
+      style={{ fontFamily: getFontFamily('english') }}
+    >
       {label}
     </div>
-    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '10px' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-        <span style={{ fontSize: '32px', fontWeight: '700', color: 'var(--color-text)', fontVariantNumeric: 'tabular-nums' }}>
+    <div className="flex items-baseline justify-between mb-[10px]">
+      <div className="flex items-baseline gap-2">
+        <span className="text-[32px] font-bold text-[var(--color-text)] tabular-nums">
           {value}
         </span>
         {subValue && (
-          <span style={{ fontSize: '14px', color: 'var(--color-text-secondary)', fontFamily: getFontFamily('english') }}>
+          <span
+            className="text-sm text-[var(--color-text-secondary)]"
+            style={{ fontFamily: getFontFamily('english') }}
+          >
             {subValue}
           </span>
         )}
@@ -213,14 +178,14 @@ export const ModalHero = ({
       {rightContent}
     </div>
     {progress !== undefined && (
-      <div style={{ width: '100%', height: '8px', background: 'var(--color-subtle-bg)', borderRadius: '4px', overflow: 'hidden' }}>
+      <div className="w-full h-2 bg-[var(--color-subtle-bg)] rounded overflow-hidden">
         <div
+          className="h-full rounded transition-[width] duration-300 ease-out"
           style={{
             width: `${Math.min(Math.max(progress, 0), 100)}%`,
-            height: '100%',
-            background: progressColor ? `linear-gradient(90deg, ${progressColor}, ${progressColor}cc)` : 'linear-gradient(90deg, var(--color-accent), var(--color-accent))',
-            borderRadius: '4px',
-            transition: 'width 0.3s ease',
+            background: progressColor
+              ? `linear-gradient(90deg, ${progressColor}, ${progressColor}cc)`
+              : 'linear-gradient(90deg, var(--color-accent), var(--color-accent))',
           }}
         />
       </div>
@@ -233,25 +198,14 @@ export const ModalHero = ({
  */
 export const ModalSection = ({ theme, title, icon, children, noPadding }) => (
   <div
-    style={{
-      background: 'var(--color-inner-bg)',
-      borderRadius: '12px',
-      padding: noPadding ? '0' : '16px',
-      marginBottom: '16px',
-      border: '1px solid var(--color-border-light)',
-    }}
+    className="bg-[var(--color-inner-bg)] rounded-card border border-[var(--color-border-light)] mb-4"
+    style={{ padding: noPadding ? '0' : '16px' }}
   >
     {title && (
       <div
+        className="text-xs font-semibold text-[var(--color-text)] mb-3 flex items-center gap-[6px]"
         style={{
-          fontSize: '12px',
-          fontWeight: '600',
-          color: 'var(--color-text)',
-          marginBottom: '12px',
           fontFamily: getFontFamily('english'),
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
           padding: noPadding ? '12px 16px 0' : '0',
         }}
       >
@@ -267,12 +221,18 @@ export const ModalSection = ({ theme, title, icon, children, noPadding }) => (
  * Stat Row Component - Label/Value pair
  */
 export const StatRow = ({ theme, label, value, valueColor, icon }) => (
-  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
-    <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontFamily: getFontFamily('english') }}>
-      {icon && <span style={{ marginRight: '4px' }}>{icon}</span>}
+  <div className="flex justify-between items-center py-[6px]">
+    <span
+      className="text-[11px] text-[var(--color-text-secondary)]"
+      style={{ fontFamily: getFontFamily('english') }}
+    >
+      {icon && <span className="mr-1">{icon}</span>}
       {label}
     </span>
-    <span style={{ fontSize: '12px', fontWeight: '600', color: valueColor || 'var(--color-text)', fontVariantNumeric: 'tabular-nums' }}>
+    <span
+      className="text-xs font-semibold tabular-nums"
+      style={{ color: valueColor || 'var(--color-text)' }}
+    >
       {value}
     </span>
   </div>
@@ -284,20 +244,22 @@ export const StatRow = ({ theme, label, value, valueColor, icon }) => (
 export const ProgressBar = ({ theme, value, max, color, height = 6, showLabel }) => {
   const percent = max > 0 ? (value / max) * 100 : 0;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <div style={{ flex: 1, height: `${height}px`, background: 'var(--color-subtle-bg)', borderRadius: `${height / 2}px`, overflow: 'hidden' }}>
+    <div className="flex items-center gap-2">
+      <div
+        className="flex-1 bg-[var(--color-subtle-bg)] overflow-hidden"
+        style={{ height: `${height}px`, borderRadius: `${height / 2}px` }}
+      >
         <div
+          className="h-full transition-[width] duration-300 ease-out"
           style={{
             width: `${Math.min(percent, 100)}%`,
-            height: '100%',
             background: color || 'var(--color-accent)',
             borderRadius: `${height / 2}px`,
-            transition: 'width 0.3s ease',
           }}
         />
       </div>
       {showLabel && (
-        <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--color-text-secondary)', fontVariantNumeric: 'tabular-nums', minWidth: '32px', textAlign: 'right' }}>
+        <span className="text-[10px] font-semibold text-[var(--color-text-secondary)] tabular-nums min-w-8 text-right">
           {Math.round(percent)}%
         </span>
       )}
@@ -309,10 +271,15 @@ export const ProgressBar = ({ theme, value, max, color, height = 6, showLabel })
  * Empty State Component
  */
 export const EmptyState = ({ theme, icon, title, subtitle }) => (
-  <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--color-text-muted)' }}>
-    <div style={{ fontSize: '48px', marginBottom: '12px', opacity: 0.3 }}>{icon || '📊'}</div>
-    <div style={{ fontSize: '14px', fontFamily: getFontFamily('english'), marginBottom: '4px' }}>{title || 'No data available'}</div>
-    {subtitle && <div style={{ fontSize: '12px', opacity: 0.7 }}>{subtitle}</div>}
+  <div className="text-center py-10 px-5 text-[var(--color-text-muted)]">
+    <div className="text-5xl mb-3 opacity-30">{icon || '📊'}</div>
+    <div
+      className="text-sm mb-1"
+      style={{ fontFamily: getFontFamily('english') }}
+    >
+      {title || 'No data available'}
+    </div>
+    {subtitle && <div className="text-xs opacity-70">{subtitle}</div>}
   </div>
 );
 

@@ -249,72 +249,25 @@ function App() {
 
   // Show skeleton loading state while database initializes
   const isInitialLoad = !members || members.length === 0;
-  const showSkeletons = isInitialLoad || (syncStatus.isSyncing && !syncStatus.lastSync);
 
   if (isInitialLoad) {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          background: theme.bg,
-          color: theme.text,
-          fontFamily: "'Inter', sans-serif",
-          padding: isMobile ? '12px' : '20px',
-        }}
-      >
+      <div className={`min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] font-sans ${isMobile ? 'p-3' : 'p-5'}`}>
         <SkeletonStyles />
 
         {/* Header Skeleton */}
-        <div style={{ marginBottom: isMobile ? '12px' : '20px' }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '20px',
-            }}
-          >
-            <div
-              style={{
-                width: '150px',
-                height: '36px',
-                borderRadius: '8px',
-                background: theme.innerBg,
-                animation: 'pulse 1.5s ease-in-out infinite',
-              }}
-            />
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <div
-                style={{
-                  width: '100px',
-                  height: '32px',
-                  borderRadius: '10px',
-                  background: theme.innerBg,
-                  animation: 'pulse 1.5s ease-in-out infinite',
-                }}
-              />
-              <div
-                style={{
-                  width: '80px',
-                  height: '32px',
-                  borderRadius: '10px',
-                  background: theme.innerBg,
-                  animation: 'pulse 1.5s ease-in-out infinite',
-                }}
-              />
+        <div className={isMobile ? 'mb-3' : 'mb-5'}>
+          <div className="flex items-center justify-between mb-5">
+            <div className="w-[150px] h-9 rounded-button bg-[var(--color-inner-bg)] animate-pulse" />
+            <div className="flex gap-[10px]">
+              <div className="w-[100px] h-8 rounded-[10px] bg-[var(--color-inner-bg)] animate-pulse" />
+              <div className="w-20 h-8 rounded-[10px] bg-[var(--color-inner-bg)] animate-pulse" />
             </div>
           </div>
         </div>
 
         {/* Overview Cards Row */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
-            gap: '16px',
-            marginBottom: '16px',
-          }}
-        >
+        <div className={`grid gap-4 mb-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-4'}`}>
           <SkeletonOverviewCard theme={theme} />
           <SkeletonOverviewCard theme={theme} />
           <SkeletonScoreCard theme={theme} />
@@ -322,16 +275,7 @@ function App() {
         </div>
 
         {/* Member Cards Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile
-              ? '1fr'
-              : 'repeat(auto-fill, minmax(320px, 1fr))',
-            gap: '16px',
-            marginBottom: '16px',
-          }}
-        >
+        <div className={`grid gap-4 mb-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-[repeat(auto-fill,minmax(320px,1fr))]'}`}>
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <SkeletonMemberCard key={i} theme={theme} />
           ))}
@@ -343,218 +287,186 @@ function App() {
   return (
     <>
       <SkeletonStyles />
-      <div
-        style={{
-        minHeight: '100vh',
-        background: theme.bg,
-        color: theme.text,
-        fontFamily: "'Inter', sans-serif",
-      }}
-    >
-      {/* Scrollbar styling */}
-      <style>{`
-        ::-webkit-scrollbar-track {
-          background: ${theme.secondaryBg};
-        }
-        ::-webkit-scrollbar-thumb {
-          background: ${theme.border};
-        }
-      `}</style>
+      <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] font-sans">
+        {/* Scrollbar styling */}
+        <style>{`
+          ::-webkit-scrollbar-track { background: var(--color-inner-bg); }
+          ::-webkit-scrollbar-thumb { background: var(--color-border); }
+        `}</style>
 
-      {/* Main Container */}
-      <div
-        style={{
-          maxWidth: '1800px',
-          margin: '0 auto',
-          padding: isMobile ? '16px' : '24px 40px',
-          paddingBottom: isMobile ? '72px' : '24px', // Space for compact bottom nav on mobile (56px + 16px buffer)
-        }}
-      >
-        {/* Header with Logo and Theme Switcher */}
-        <Header
-          theme={theme}
-          themes={themes}
-          currentTheme={currentTheme}
-          setTheme={setTheme}
-          onSettingsClick={() => setIsSettingsOpen(true)}
-        />
-
-        {/* Main Tabs - Dashboard / Leaves & WFH (Desktop only) */}
-        {!isMobile && (
-          <MainTabs
+        {/* Main Container */}
+        <div
+          className="max-w-[1800px] mx-auto"
+          style={{
+            padding: isMobile ? '16px' : '24px 40px',
+            paddingBottom: isMobile ? '72px' : '24px',
+          }}
+        >
+          {/* Header with Logo and Theme Switcher */}
+          <Header
             theme={theme}
-            activeMainTab={activeMainTab}
-            setActiveMainTab={setActiveMainTab}
+            themes={themes}
+            currentTheme={currentTheme}
+            setTheme={setTheme}
+            onSettingsClick={() => setIsSettingsOpen(true)}
           />
-        )}
 
-        {/* Dashboard Content */}
-        {activeMainTab === 'dashboard' && (
-          <>
-            {/* Grid View Content */}
-            {activeView === 'grid' && (
-              <>
-                {/* Overview Row - 3 columns */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                    gap: '16px',
-                    marginBottom: '16px',
-                  }}
-                >
-                  {/* Stacked Overview Cards (Column 1) */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
-                    <OverviewCard
-                      theme={theme}
-                      value={displayTeamStats?.tracked.value || '0h'}
-                      subValue={displayTeamStats?.tracked.sub || '/ 0h'}
-                      label={(dateRangeInfo?.workingDays || 1) > 1 ? `Team Tracked (${dateRangeInfo.workingDays} days)` : 'Team Tracked'}
-                      progress={displayTeamStats?.tracked.progress || 0}
-                      color={theme.working}
-                      onClick={() => handleDashboardCardClick('time')}
-                    />
-                    <OverviewCard
-                      theme={theme}
-                      value={displayTeamStats?.tasks.value || '0/0'}
-                      subValue={displayTeamStats?.tasks.sub || '0% done'}
-                      label="Tasks Progress"
-                      progress={displayTeamStats?.tasks.progress || 0}
-                      color={getMetricColor(displayTeamStats?.tasks.progress || 0, { lightMode: theme.type !== 'dark' })}
-                      onClick={() => handleDashboardCardClick('tasks')}
-                    />
+          {/* Main Tabs - Dashboard / Leaves & WFH (Desktop only) */}
+          {!isMobile && (
+            <MainTabs
+              theme={theme}
+              activeMainTab={activeMainTab}
+              setActiveMainTab={setActiveMainTab}
+            />
+          )}
+
+          {/* Dashboard Content */}
+          {activeMainTab === 'dashboard' && (
+            <>
+              {/* Grid View Content */}
+              {activeView === 'grid' && (
+                <>
+                  {/* Overview Row - 3 columns */}
+                  <div className="grid gap-4 mb-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+                    {/* Stacked Overview Cards (Column 1) */}
+                    <div className="flex flex-col gap-4 h-full">
+                      <OverviewCard
+                        theme={theme}
+                        value={displayTeamStats?.tracked.value || '0h'}
+                        subValue={displayTeamStats?.tracked.sub || '/ 0h'}
+                        label={(dateRangeInfo?.workingDays || 1) > 1 ? `Team Tracked (${dateRangeInfo.workingDays} days)` : 'Team Tracked'}
+                        progress={displayTeamStats?.tracked.progress || 0}
+                        color={theme.working}
+                        onClick={() => handleDashboardCardClick('time')}
+                      />
+                      <OverviewCard
+                        theme={theme}
+                        value={displayTeamStats?.tasks.value || '0/0'}
+                        subValue={displayTeamStats?.tasks.sub || '0% done'}
+                        label="Tasks Progress"
+                        progress={displayTeamStats?.tasks.progress || 0}
+                        color={getMetricColor(displayTeamStats?.tasks.progress || 0, { lightMode: theme.type !== 'dark' })}
+                        onClick={() => handleDashboardCardClick('tasks')}
+                      />
+                    </div>
+
+                    {/* Score Breakdown Card (Column 2) */}
+                    <ScoreBreakdownCard theme={theme} teamScore={teamScore} metrics={displayScoreMetrics} yesterdayScore={yesterdaySnapshot?.teamScore ?? null} onClick={() => handleDashboardCardClick('score')} />
+
+                    {/* Team Status Overview (Column 3) */}
+                    <TeamStatusOverview members={filteredMembers} theme={theme} />
                   </div>
 
-                  {/* Score Breakdown Card (Column 2) */}
-                  <ScoreBreakdownCard theme={theme} teamScore={teamScore} metrics={displayScoreMetrics} yesterdayScore={yesterdaySnapshot?.teamScore ?? null} onClick={() => handleDashboardCardClick('score')} />
+                  {/* Project Breakdown - Full Width */}
+                  <div className="mb-4">
+                    <ProjectBreakdownCard theme={theme} />
+                  </div>
 
-                  {/* Team Status Overview (Column 3) */}
-                  <TeamStatusOverview members={filteredMembers} theme={theme} />
-                </div>
-
-                {/* Project Breakdown - Full Width */}
-                <div style={{ marginBottom: '16px' }}>
-                  <ProjectBreakdownCard theme={theme} />
-                </div>
-
-                {/* Filter/Sort Controls - Above member cards */}
-                <FilterSortControls
-                  theme={theme}
-                  activeView={activeView}
-                  setActiveView={setActiveView}
-                />
-
-                {/* Member Cards Grid - Cards on main background */}
-                <div style={{ marginBottom: '16px' }}>
-                  <TeamStatusCard members={filteredMembers} theme={theme} onMemberClick={handleMemberClick} workingDays={dateRangeInfo?.workingDays || 1} />
-                </div>
-
-                {/* Ranking Table - Full Width */}
-                <div style={{ marginBottom: '16px' }}>
-                  <RankingTable members={filteredMembers} theme={theme} onMemberClick={handleMemberClick} dateRangeInfo={dateRangeInfo} />
-                </div>
-
-                
-              </>
-            )}
-
-            {/* List View Content */}
-            {activeView === 'list' && (
-              <ListView
-                members={filteredMembers}
-                theme={theme}
-                teamStats={displayTeamStats}
-                scoreMetrics={displayScoreMetrics}
-                onMemberClick={handleMemberClick}
-                onDashboardCardClick={handleDashboardCardClick}
-                dateRangeInfo={dateRangeInfo}
-                controls={
+                  {/* Filter/Sort Controls - Above member cards */}
                   <FilterSortControls
                     theme={theme}
                     activeView={activeView}
                     setActiveView={setActiveView}
                   />
-                }
-              />
-            )}
-          </>
-        )}
 
-        {/* Feed View Content (Placeholder) */}
-        {activeMainTab === 'dashboard' && activeView === 'feed' && (
-          <div
-            style={{
-              background: theme.cardBg,
-              border: `1px solid ${theme.border}`,
-              borderRadius: '12px',
-              padding: '32px',
-              textAlign: 'center',
-              color: theme.textMuted,
-            }}
-          >
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📡</div>
-            <div style={{ fontSize: '18px', fontWeight: '600', color: theme.text, marginBottom: '8px' }}>
-              Feed View
+                  {/* Member Cards Grid */}
+                  <div className="mb-4">
+                    <TeamStatusCard members={filteredMembers} theme={theme} onMemberClick={handleMemberClick} workingDays={dateRangeInfo?.workingDays || 1} />
+                  </div>
+
+                  {/* Ranking Table - Full Width */}
+                  <div className="mb-4">
+                    <RankingTable members={filteredMembers} theme={theme} onMemberClick={handleMemberClick} dateRangeInfo={dateRangeInfo} />
+                  </div>
+                </>
+              )}
+
+              {/* List View Content */}
+              {activeView === 'list' && (
+                <ListView
+                  members={filteredMembers}
+                  theme={theme}
+                  teamStats={displayTeamStats}
+                  scoreMetrics={displayScoreMetrics}
+                  onMemberClick={handleMemberClick}
+                  onDashboardCardClick={handleDashboardCardClick}
+                  dateRangeInfo={dateRangeInfo}
+                  controls={
+                    <FilterSortControls
+                      theme={theme}
+                      activeView={activeView}
+                      setActiveView={setActiveView}
+                    />
+                  }
+                />
+              )}
+            </>
+          )}
+
+          {/* Feed View Content (Placeholder) */}
+          {activeMainTab === 'dashboard' && activeView === 'feed' && (
+            <div className="bg-[var(--color-card-bg)] border border-[var(--color-border)] rounded-card p-8 text-center text-[var(--color-text-muted)]">
+              <div className="text-5xl mb-4">📡</div>
+              <div className="text-lg font-semibold text-[var(--color-text)] mb-2">Feed View</div>
+              <div className="text-sm">
+                This section will contain a live activity feed showing real-time updates.
+                <br />
+                Coming soon!
+              </div>
             </div>
-            <div style={{ fontSize: '14px' }}>
-              This section will contain a live activity feed showing real-time updates.
-              <br />
-              Coming soon!
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Leaves & WFH Content */}
-        {activeMainTab === 'leaves' && (
-          <LeavesTab theme={theme} isMobile={isMobile} />
-        )}
-      </div>
+          {/* Leaves & WFH Content */}
+          {activeMainTab === 'leaves' && (
+            <LeavesTab theme={theme} isMobile={isMobile} />
+          )}
+        </div>
 
-      {/* Member Detail Modal */}
-      <MemberDetailModal
-        isOpen={isMemberModalOpen}
-        onClose={closeMemberModal}
-        member={selectedMember}
-        theme={theme}
-      />
-
-      {/* Dashboard Detail Modal */}
-      <DashboardDetailModal
-        isOpen={isDashboardDetailOpen}
-        onClose={closeDashboardDetail}
-        type={dashboardDetailType}
-        theme={theme}
-        members={filteredMembers}
-        scoreMetrics={displayScoreMetrics}
-        dateRangeInfo={dateRangeInfo}
-      />
-
-      {/* Settings Modal */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        theme={theme}
-        currentTheme={currentTheme}
-        setTheme={setTheme}
-      />
-
-      {/* Mobile Bottom Navigation */}
-      {isMobile && (
-        <MobileBottomNav
+        {/* Member Detail Modal */}
+        <MemberDetailModal
+          isOpen={isMemberModalOpen}
+          onClose={closeMemberModal}
+          member={selectedMember}
           theme={theme}
-          activeTab={mobileTab}
-          onTabChange={(tab) => {
-            setMobileTab(tab);
-            if (tab === 'dashboard') {
-              setActiveMainTab('dashboard');
-            } else if (tab === 'leaves') {
-              setActiveMainTab('leaves');
-            }
-            // TODO: Add feed view
-          }}
-          onSettingsClick={() => setIsSettingsOpen(true)}
         />
-      )}
+
+        {/* Dashboard Detail Modal */}
+        <DashboardDetailModal
+          isOpen={isDashboardDetailOpen}
+          onClose={closeDashboardDetail}
+          type={dashboardDetailType}
+          theme={theme}
+          members={filteredMembers}
+          scoreMetrics={displayScoreMetrics}
+          dateRangeInfo={dateRangeInfo}
+        />
+
+        {/* Settings Modal */}
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          theme={theme}
+          currentTheme={currentTheme}
+          setTheme={setTheme}
+        />
+
+        {/* Mobile Bottom Navigation */}
+        {isMobile && (
+          <MobileBottomNav
+            theme={theme}
+            activeTab={mobileTab}
+            onTabChange={(tab) => {
+              setMobileTab(tab);
+              if (tab === 'dashboard') {
+                setActiveMainTab('dashboard');
+              } else if (tab === 'leaves') {
+                setActiveMainTab('leaves');
+              }
+              // TODO: Add feed view
+            }}
+            onSettingsClick={() => setIsSettingsOpen(true)}
+          />
+        )}
       </div>
     </>
   );

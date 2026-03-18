@@ -3,7 +3,6 @@ import { tabularNumberStyle, getFontFamily, getAdaptiveFontFamily } from '../../
 import { formatHoursToHM } from '../../utils/timeFormat';
 import { useWindowSize } from '../../hooks/useWindowSize';
 import ModalShell, { ModalHero, ModalSection, StatRow, ProgressBar, EmptyState } from './ModalShell';
-import Sparkline, { SparklineWithStats } from '../ui/Sparkline';
 
 /**
  * Dashboard Detail Modal - Shows detailed breakdowns for Time/Tasks/Score cards
@@ -12,29 +11,6 @@ import Sparkline, { SparklineWithStats } from '../ui/Sparkline';
 const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetrics, dateRangeInfo }) => {
   const { isMobile } = useWindowSize();
 
-  // Helper to get status color
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'working': return 'var(--color-working)';
-      case 'break': return 'var(--color-break)';
-      case 'offline': return 'var(--color-offline)';
-      case 'leave': return 'var(--color-leave)';
-      default: return 'var(--color-text-muted)';
-    }
-  };
-
-  // Helper to get status emoji
-  const getStatusEmoji = (status) => {
-    switch (status) {
-      case 'working': return '🟢';
-      case 'break': return '🟡';
-      case 'offline': return '⚪';
-      case 'leave': return '🔴';
-      default: return '⚪';
-    }
-  };
-
-  // Helper to get performance color based on percentage
   const getPerformanceColor = (percent) => {
     if (percent >= 90) return 'var(--color-success)';
     if (percent >= 70) return 'var(--color-accent)';
@@ -58,13 +34,11 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
     }, 0);
     const progress = totalTarget > 0 ? Math.min((totalTracked / totalTarget) * 100, 100) : 0;
 
-    // Avg time per task (across all members in range)
     const totalDoneForAvg = members.reduce((s, m) => s + (m.done || 0), 0);
     const avgTimePerTask = (totalDoneForAvg > 0 && totalTracked > 0)
       ? totalTracked / totalDoneForAvg
       : null;
 
-    // Per-member target = daily target × per-member leave-deducted working days
     const memberBreakdown = members.map(m => {
       const dailyTarget = m.target || 6.5;
       const memberTarget = dailyTarget * (m.workingDays || workingDays);
@@ -80,20 +54,14 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
       };
     }).sort((a, b) => b.tracked - a.tracked);
 
-    // Count by status
     const statusCounts = members.reduce((acc, m) => {
       acc[m.status] = (acc[m.status] || 0) + 1;
       return acc;
     }, {});
 
     return {
-      totalTracked,
-      totalTarget,
-      progress,
-      memberBreakdown,
-      statusCounts,
-      avgTimePerTask,
-      workingDays,
+      totalTracked, totalTarget, progress, memberBreakdown, statusCounts,
+      avgTimePerTask, workingDays,
       activeCount: members.filter(m => m.status === 'working').length,
       totalMembers: members.length
     };
@@ -105,7 +73,6 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
 
     const workingDays = dateRangeInfo?.workingDays || 1;
 
-    // Member breakdown computed directly from members array
     const memberBreakdown = members.map(m => ({
       name: m.name,
       done: m.done || 0,
@@ -116,19 +83,9 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
     const totalDone = memberBreakdown.reduce((sum, m) => sum + m.done, 0);
     const totalTasks = memberBreakdown.reduce((sum, m) => sum + m.total, 0);
     const progress = totalTasks > 0 ? Math.min((totalDone / totalTasks) * 100, 100) : 0;
-    const avgTasksPerMember = members.length > 0
-      ? (totalTasks / members.length / workingDays)
-      : 0;
+    const avgTasksPerMember = members.length > 0 ? (totalTasks / members.length / workingDays) : 0;
 
-    return {
-      totalDone,
-      totalTasks,
-      progress,
-      memberBreakdown,
-      inProgress: totalTasks - totalDone,
-      avgTasksPerMember,
-      workingDays,
-    };
+    return { totalDone, totalTasks, progress, memberBreakdown, inProgress: totalTasks - totalDone, avgTasksPerMember, workingDays };
   }, [members, dateRangeInfo]);
 
   // Calculate score data from real values
@@ -136,28 +93,21 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
     if (!members || members.length === 0 || !scoreMetrics) return null;
 
     const totalScore = scoreMetrics.total || 0;
-
-    // 4-component breakdown (40/20/30/10)
     const breakdown = [
       { icon: '⏱️', label: 'Time Tracked', weight: 40, ratio: scoreMetrics.time || 0, points: (scoreMetrics.time || 0) * 0.4 },
       { icon: '📋', label: 'Workload', weight: 20, ratio: scoreMetrics.workload || 0, points: (scoreMetrics.workload || 0) * 0.2 },
       { icon: '✅', label: 'Completion', weight: 30, ratio: scoreMetrics.tasks || 0, points: (scoreMetrics.tasks || 0) * 0.3 },
       { icon: '🎯', label: 'Compliance', weight: 10, ratio: scoreMetrics.compliance || 0, points: (scoreMetrics.compliance || 0) * 0.1 }
     ];
-
-    // Member rankings from real scores
     const rankings = members
       .map(m => ({ name: m.name, score: m.score || 0 }))
       .sort((a, b) => b.score - a.score)
       .map((m, i) => ({ ...m, rank: i + 1 }));
-
-    // Grade calculation
     const grade = totalScore >= 90 ? 'A' : totalScore >= 80 ? 'B' : totalScore >= 70 ? 'C' : totalScore >= 60 ? 'D' : 'F';
 
     return { totalScore, breakdown, rankings, grade };
   }, [members, scoreMetrics]);
 
-  // Get modal title and icon based on type
   const getModalInfo = () => {
     switch (type) {
       case 'time': return { title: 'Time Tracked Details', icon: '⏱️' };
@@ -168,6 +118,26 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
   };
 
   const modalInfo = getModalInfo();
+
+  // Reusable inline stat grid item
+  const StatGridItem = ({ icon, value, label, color }) => (
+    <div className="bg-[var(--color-inner-bg)] rounded-[10px] text-center border border-[var(--color-border)]"
+      style={{ padding: isMobile ? '10px 6px' : '12px' }}>
+      <div className="text-sm mb-[3px]">{icon}</div>
+      <div className="font-bold font-mono" style={{ fontSize: isMobile ? '13px' : '16px', color }}>{value}</div>
+      <div className="text-[9px] text-[var(--color-text-muted)] mt-[2px]">{label}</div>
+    </div>
+  );
+
+  // Reusable member row header for desktop table
+  const TableHeader = ({ cols }) => (
+    <div className="grid gap-2 px-4 py-2 border-b border-[var(--color-border)] text-[9px] font-semibold text-[var(--color-text-muted)] uppercase"
+      style={{ gridTemplateColumns: cols }}>
+      {['Member', 'Tracked', 'Target', 'Progress'].map((h, i) => (
+        <span key={h} style={{ textAlign: i > 0 ? 'right' : 'left' }}>{h}</span>
+      ))}
+    </div>
+  );
 
   return (
     <ModalShell
@@ -183,88 +153,61 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
       {type === 'time' && (
         timeData ? (
           <>
-            {/* Hero */}
             <ModalHero
               theme={theme}
               label="Total Time Tracked"
               value={formatHoursToHM(timeData.totalTracked)}
               subValue={`/ ${formatHoursToHM(timeData.totalTarget)} target`}
               progress={timeData.progress}
-              progressColor={theme.working}
+              progressColor="var(--color-working)"
               rightContent={
-                <span style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: '700', color: getPerformanceColor(timeData.progress), ...tabularNumberStyle }}>
+                <span className="font-bold" style={{ fontSize: isMobile ? '20px' : '24px', color: getPerformanceColor(timeData.progress), ...tabularNumberStyle }}>
                   {Math.round(timeData.progress)}%
                 </span>
               }
             />
 
-            {/* Summary stats row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '16px' }}>
-              {[
-                { label: 'Working Days', value: timeData.workingDays, icon: '📅', color: 'var(--color-text)' },
-                { label: 'Avg / Member', value: formatHoursToHM(timeData.totalTracked / timeData.totalMembers), icon: '👤', color: 'var(--color-text)' },
-                { label: 'Avg / Task', value: timeData.avgTimePerTask ? formatHoursToHM(timeData.avgTimePerTask) : '—', icon: '⏱', color: 'var(--color-working)' },
-              ].map((s, i) => (
-                <div key={i} style={{ background: 'var(--color-inner-bg)', borderRadius: '10px', padding: isMobile ? '10px 6px' : '12px', textAlign: 'center', border: '1px solid var(--color-border)' }}>
-                  <div style={{ fontSize: '14px', marginBottom: '3px' }}>{s.icon}</div>
-                  <div style={{ fontSize: isMobile ? '13px' : '16px', fontWeight: '700', color: s.color, fontFamily: 'JetBrains Mono, monospace' }}>{s.value}</div>
-                  <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', marginTop: '2px' }}>{s.label}</div>
-                </div>
-              ))}
+            {/* Summary stats */}
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              <StatGridItem icon="📅" value={timeData.workingDays} label="Working Days" color="var(--color-text)" />
+              <StatGridItem icon="👤" value={formatHoursToHM(timeData.totalTracked / timeData.totalMembers)} label="Avg / Member" color="var(--color-text)" />
+              <StatGridItem icon="⏱" value={timeData.avgTimePerTask ? formatHoursToHM(timeData.avgTimePerTask) : '—'} label="Avg / Task" color="var(--color-working)" />
             </div>
 
             {/* Member Breakdown */}
             <ModalSection theme={theme} title="Member Breakdown" icon="👥" noPadding>
               {isMobile ? (
-                /* Mobile: stacked card layout */
-                <div style={{ padding: '0 0 4px' }}>
+                <div className="pb-1">
                   {timeData.memberBreakdown.map((m, i) => (
-                    <div
-                      key={m.id || i}
-                      style={{
-                        padding: '10px 14px',
-                        borderBottom: i < timeData.memberBreakdown.length - 1 ? '1px solid var(--color-border-light)' : 'none',
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text)', fontFamily: getAdaptiveFontFamily(m.name) }}>{m.name}</span>
-                        <span style={{ fontSize: '12px', fontWeight: '700', color: getPerformanceColor(m.percent), ...tabularNumberStyle }}>{m.percent}%</span>
+                    <div key={m.id || i} className="px-[14px] py-[10px]"
+                      style={{ borderBottom: i < timeData.memberBreakdown.length - 1 ? '1px solid var(--color-border-light)' : 'none' }}>
+                      <div className="flex justify-between items-center mb-[6px]">
+                        <span className="text-[13px] font-semibold text-[var(--color-text)]" style={{ fontFamily: getAdaptiveFontFamily(m.name) }}>{m.name}</span>
+                        <span className="text-xs font-bold" style={{ color: getPerformanceColor(m.percent), ...tabularNumberStyle }}>{m.percent}%</span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Tracked: <span style={{ color: 'var(--color-text)', fontWeight: '600', ...tabularNumberStyle }}>{formatHoursToHM(m.tracked)}</span></span>
-                        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Target: <span style={{ color: 'var(--color-text-secondary)', ...tabularNumberStyle }}>{formatHoursToHM(m.target)}</span></span>
+                      <div className="flex justify-between items-center mb-[6px]">
+                        <span className="text-[11px] text-[var(--color-text-muted)]">Tracked: <span className="text-[var(--color-text)] font-semibold" style={tabularNumberStyle}>{formatHoursToHM(m.tracked)}</span></span>
+                        <span className="text-[11px] text-[var(--color-text-muted)]">Target: <span className="text-[var(--color-text-secondary)]" style={tabularNumberStyle}>{formatHoursToHM(m.target)}</span></span>
                       </div>
                       <ProgressBar theme={theme} value={m.tracked} max={m.target} color={getPerformanceColor(m.percent)} height={4} />
                     </div>
                   ))}
                 </div>
               ) : (
-                /* Desktop: grid table */
                 <>
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 70px 80px 100px', gap: '8px', padding: '8px 16px', borderBottom: '1px solid var(--color-border)', fontSize: '9px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
-                    <span>Member</span>
-                    <span style={{ textAlign: 'right' }}>Tracked</span>
-                    <span style={{ textAlign: 'right' }}>Target</span>
-                    <span style={{ textAlign: 'right' }}>Progress</span>
+                  <div className="grid gap-2 px-4 py-2 border-b border-[var(--color-border)] text-[9px] font-semibold text-[var(--color-text-muted)] uppercase"
+                    style={{ gridTemplateColumns: '2fr 70px 80px 100px' }}>
+                    <span>Member</span><span className="text-right">Tracked</span><span className="text-right">Target</span><span className="text-right">Progress</span>
                   </div>
                   {timeData.memberBreakdown.map((m, i) => (
-                    <div
-                      key={m.id || i}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '2fr 70px 80px 100px',
-                        gap: '8px',
-                        padding: '10px 16px',
-                        alignItems: 'center',
-                        borderBottom: i < timeData.memberBreakdown.length - 1 ? '1px solid var(--color-border-light)' : 'none',
-                      }}
-                    >
-                      <span style={{ fontSize: '12px', fontWeight: '500', color: 'var(--color-text)', fontFamily: getAdaptiveFontFamily(m.name) }}>{m.name}</span>
-                      <span style={{ fontSize: '11px', color: 'var(--color-text)', fontWeight: '600', textAlign: 'right', ...tabularNumberStyle }}>{formatHoursToHM(m.tracked)}</span>
-                      <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)', textAlign: 'right', ...tabularNumberStyle }}>{formatHoursToHM(m.target)}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+                    <div key={m.id || i} className="grid gap-2 px-4 py-[10px] items-center"
+                      style={{ gridTemplateColumns: '2fr 70px 80px 100px', borderBottom: i < timeData.memberBreakdown.length - 1 ? '1px solid var(--color-border-light)' : 'none' }}>
+                      <span className="text-xs font-medium text-[var(--color-text)]" style={{ fontFamily: getAdaptiveFontFamily(m.name) }}>{m.name}</span>
+                      <span className="text-[11px] font-semibold text-[var(--color-text)] text-right" style={tabularNumberStyle}>{formatHoursToHM(m.tracked)}</span>
+                      <span className="text-[10px] text-[var(--color-text-secondary)] text-right" style={tabularNumberStyle}>{formatHoursToHM(m.target)}</span>
+                      <div className="flex items-center gap-[6px] justify-end">
                         <ProgressBar theme={theme} value={m.tracked} max={m.target} color={getPerformanceColor(m.percent)} height={4} />
-                        <span style={{ fontSize: '10px', fontWeight: '600', color: getPerformanceColor(m.percent), ...tabularNumberStyle, minWidth: '28px', textAlign: 'right' }}>{m.percent}%</span>
+                        <span className="text-[10px] font-semibold min-w-7 text-right" style={{ color: getPerformanceColor(m.percent), ...tabularNumberStyle }}>{m.percent}%</span>
                       </div>
                     </div>
                   ))}
@@ -273,17 +216,9 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
             </ModalSection>
 
             {/* Insight */}
-            <div style={{
-              padding: '12px 14px',
-              background: `${theme.accent}10`,
-              borderRadius: '10px',
-              marginTop: '8px',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '10px',
-            }}>
-              <span style={{ fontSize: '16px' }}>💡</span>
-              <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-text)', lineHeight: 1.5, fontFamily: getFontFamily('english') }}>
+            <div className="px-[14px] py-3 bg-[rgba(255,255,255,0.06)] rounded-[10px] mt-2 flex items-start gap-[10px]">
+              <span className="text-base">💡</span>
+              <p className="m-0 text-[11px] text-[var(--color-text)] leading-relaxed" style={{ fontFamily: getFontFamily('english') }}>
                 <strong>Insight:</strong> {timeData.progress >= 80
                   ? 'Team is on track to meet daily targets.'
                   : timeData.progress >= 60
@@ -301,42 +236,33 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
       {type === 'tasks' && (
         tasksData ? (
           <>
-            {/* Hero */}
             <ModalHero
               theme={theme}
               label="Tasks Completed"
               value={`${tasksData.totalDone}`}
               subValue={`/ ${tasksData.totalTasks} total tasks`}
               progress={tasksData.progress}
-              progressColor={theme.accent}
+              progressColor="var(--color-accent)"
               rightContent={
-                <span style={{ fontSize: isMobile ? '20px' : '24px', fontWeight: '700', color: getPerformanceColor(tasksData.progress), ...tabularNumberStyle }}>
+                <span className="font-bold" style={{ fontSize: isMobile ? '20px' : '24px', color: getPerformanceColor(tasksData.progress), ...tabularNumberStyle }}>
                   {Math.round(tasksData.progress)}%
                 </span>
               }
             />
 
             {/* Quick Stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '16px' }}>
+            <div className="grid grid-cols-2 gap-[10px] mb-4">
               {[
                 { label: 'Completed', value: tasksData.totalDone, color: 'var(--color-success)', icon: '✅' },
                 { label: 'In Progress', value: tasksData.inProgress, color: 'var(--color-accent)', icon: '🔄' },
                 { label: 'Total Tasks', value: tasksData.totalTasks, color: 'var(--color-text)', icon: '📋' },
-                { label: `Avg / Member / Day`, value: tasksData.avgTasksPerMember.toFixed(1), color: 'var(--color-text)', icon: '📊' },
+                { label: 'Avg / Member / Day', value: tasksData.avgTasksPerMember.toFixed(1), color: 'var(--color-text)', icon: '📊' },
               ].map((stat, i) => (
-                <div
-                  key={i}
-                  style={{
-                    background: 'var(--color-inner-bg)',
-                    borderRadius: '10px',
-                    padding: isMobile ? '10px' : '14px',
-                    textAlign: 'center',
-                    border: '1px solid var(--color-border-light)',
-                  }}
-                >
-                  <div style={{ fontSize: '16px', marginBottom: '4px' }}>{stat.icon}</div>
-                  <div style={{ fontSize: isMobile ? '17px' : '20px', fontWeight: '700', color: stat.color, ...tabularNumberStyle }}>{stat.value}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontFamily: getFontFamily('english') }}>{stat.label}</div>
+                <div key={i} className="bg-[var(--color-inner-bg)] rounded-[10px] text-center border border-[var(--color-border-light)]"
+                  style={{ padding: isMobile ? '10px' : '14px' }}>
+                  <div className="text-base mb-1">{stat.icon}</div>
+                  <div className="font-bold" style={{ fontSize: isMobile ? '17px' : '20px', color: stat.color, ...tabularNumberStyle }}>{stat.value}</div>
+                  <div className="text-[10px] text-[var(--color-text-muted)]" style={{ fontFamily: getFontFamily('english') }}>{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -344,59 +270,40 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
             {/* Member Breakdown */}
             <ModalSection theme={theme} title="By Member" icon="👥" noPadding>
               {isMobile ? (
-                /* Mobile: stacked layout */
-                <div style={{ padding: '0 0 4px' }}>
+                <div className="pb-1">
                   {tasksData.memberBreakdown.map((m, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        padding: '10px 14px',
-                        borderBottom: i < tasksData.memberBreakdown.length - 1 ? '1px solid var(--color-border-light)' : 'none',
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text)', fontFamily: getAdaptiveFontFamily(m.name) }}>{m.name}</span>
-                        <span style={{ fontSize: '12px', fontWeight: '700', color: getPerformanceColor(m.percent), ...tabularNumberStyle }}>
+                    <div key={i} className="px-[14px] py-[10px]"
+                      style={{ borderBottom: i < tasksData.memberBreakdown.length - 1 ? '1px solid var(--color-border-light)' : 'none' }}>
+                      <div className="flex justify-between items-center mb-[6px]">
+                        <span className="text-[13px] font-semibold text-[var(--color-text)]" style={{ fontFamily: getAdaptiveFontFamily(m.name) }}>{m.name}</span>
+                        <span className="text-xs font-bold" style={{ color: getPerformanceColor(m.percent), ...tabularNumberStyle }}>
                           {m.percent}%{m.percent >= 80 ? ' ⭐' : ''}
                         </span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Done: <span style={{ color: 'var(--color-success)', fontWeight: '600', ...tabularNumberStyle }}>{m.done}</span></span>
-                        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Total: <span style={{ color: 'var(--color-text-secondary)', ...tabularNumberStyle }}>{m.total}</span></span>
+                      <div className="flex justify-between items-center mb-[6px]">
+                        <span className="text-[11px] text-[var(--color-text-muted)]">Done: <span className="text-[var(--color-success)] font-semibold" style={tabularNumberStyle}>{m.done}</span></span>
+                        <span className="text-[11px] text-[var(--color-text-muted)]">Total: <span className="text-[var(--color-text-secondary)]" style={tabularNumberStyle}>{m.total}</span></span>
                       </div>
                       <ProgressBar theme={theme} value={m.done} max={m.total} color={getPerformanceColor(m.percent)} height={4} />
                     </div>
                   ))}
                 </div>
               ) : (
-                /* Desktop: grid table */
                 <>
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 60px 60px 100px', gap: '8px', padding: '8px 16px', borderBottom: '1px solid var(--color-border)', fontSize: '9px', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
-                    <span>Member</span>
-                    <span style={{ textAlign: 'right' }}>Done</span>
-                    <span style={{ textAlign: 'right' }}>Total</span>
-                    <span style={{ textAlign: 'right' }}>Completion</span>
+                  <div className="grid gap-2 px-4 py-2 border-b border-[var(--color-border)] text-[9px] font-semibold text-[var(--color-text-muted)] uppercase"
+                    style={{ gridTemplateColumns: '2fr 60px 60px 100px' }}>
+                    <span>Member</span><span className="text-right">Done</span><span className="text-right">Total</span><span className="text-right">Completion</span>
                   </div>
                   {tasksData.memberBreakdown.map((m, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '2fr 60px 60px 100px',
-                        gap: '8px',
-                        padding: '10px 16px',
-                        alignItems: 'center',
-                        borderBottom: i < tasksData.memberBreakdown.length - 1 ? '1px solid var(--color-border-light)' : 'none',
-                      }}
-                    >
-                      <span style={{ fontSize: '12px', fontWeight: '500', color: 'var(--color-text)', fontFamily: getAdaptiveFontFamily(m.name) }}>{m.name}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--color-success)', fontWeight: '600', textAlign: 'right', ...tabularNumberStyle }}>{m.done}</span>
-                      <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', textAlign: 'right', ...tabularNumberStyle }}>{m.total}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+                    <div key={i} className="grid gap-2 px-4 py-[10px] items-center"
+                      style={{ gridTemplateColumns: '2fr 60px 60px 100px', borderBottom: i < tasksData.memberBreakdown.length - 1 ? '1px solid var(--color-border-light)' : 'none' }}>
+                      <span className="text-xs font-medium text-[var(--color-text)]" style={{ fontFamily: getAdaptiveFontFamily(m.name) }}>{m.name}</span>
+                      <span className="text-xs font-semibold text-[var(--color-success)] text-right" style={tabularNumberStyle}>{m.done}</span>
+                      <span className="text-[11px] text-[var(--color-text-secondary)] text-right" style={tabularNumberStyle}>{m.total}</span>
+                      <div className="flex items-center gap-[6px] justify-end">
                         <ProgressBar theme={theme} value={m.done} max={m.total} color={getPerformanceColor(m.percent)} height={4} />
-                        <span style={{ fontSize: '10px', fontWeight: '600', color: getPerformanceColor(m.percent), ...tabularNumberStyle, minWidth: '28px', textAlign: 'right' }}>
-                          {m.percent}%
-                          {m.percent >= 80 && ' ⭐'}
+                        <span className="text-[10px] font-semibold min-w-7 text-right" style={{ color: getPerformanceColor(m.percent), ...tabularNumberStyle }}>
+                          {m.percent}%{m.percent >= 80 && ' ⭐'}
                         </span>
                       </div>
                     </div>
@@ -414,25 +321,24 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
       {type === 'score' && (
         scoreData ? (
           <>
-            {/* Hero */}
             <ModalHero
               theme={theme}
               label="Team Score"
               value={Math.round(scoreData.totalScore)}
               subValue={`/ 100 · Grade: ${scoreData.grade}`}
               progress={scoreData.totalScore}
-              progressColor={theme.accent}
+              progressColor="var(--color-accent)"
               rightContent={
-                <div style={{ textAlign: 'right' }}>
-                  <span style={{
-                    padding: isMobile ? '3px 7px' : '4px 10px',
-                    borderRadius: '6px',
-                    fontSize: isMobile ? '11px' : '14px',
-                    fontWeight: '700',
-                    background: scoreData.totalScore >= 70 ? `${theme.success}20` : `${theme.warning}20`,
-                    color: scoreData.totalScore >= 70 ? theme.success : theme.warning,
-                    whiteSpace: 'nowrap',
-                  }}>
+                <div className="text-right">
+                  <span
+                    className="font-bold whitespace-nowrap rounded-badge"
+                    style={{
+                      padding: isMobile ? '3px 7px' : '4px 10px',
+                      fontSize: isMobile ? '11px' : '14px',
+                      background: scoreData.totalScore >= 70 ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
+                      color: scoreData.totalScore >= 70 ? 'var(--color-success)' : 'var(--color-warning)',
+                    }}
+                  >
                     {scoreData.totalScore >= 85 ? '🌟 Excellent' : scoreData.totalScore >= 70 ? '👍 Good' : scoreData.totalScore >= 50 ? '📊 Fair' : '⚠️ Needs Work'}
                   </span>
                 </div>
@@ -440,13 +346,14 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
             />
 
             {/* Score summary stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '16px' }}>
+            <div className="grid grid-cols-2 gap-2 mb-4">
               {scoreData.breakdown.map((item, i) => (
-                <div key={i} style={{ background: 'var(--color-inner-bg)', borderRadius: '10px', padding: isMobile ? '10px 8px' : '12px', textAlign: 'center', border: '1px solid var(--color-border)' }}>
-                  <div style={{ fontSize: '14px', marginBottom: '3px' }}>{item.icon}</div>
-                  <div style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '700', color: getPerformanceColor(item.ratio), fontFamily: 'JetBrains Mono, monospace' }}>{Math.round(item.ratio)}%</div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>{item.label}</div>
-                  <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', marginTop: '1px' }}>weight {item.weight}%</div>
+                <div key={i} className="bg-[var(--color-inner-bg)] rounded-[10px] text-center border border-[var(--color-border)]"
+                  style={{ padding: isMobile ? '10px 8px' : '12px' }}>
+                  <div className="text-sm mb-[3px]">{item.icon}</div>
+                  <div className="font-bold font-mono" style={{ fontSize: isMobile ? '14px' : '16px', color: getPerformanceColor(item.ratio) }}>{Math.round(item.ratio)}%</div>
+                  <div className="text-[10px] text-[var(--color-text-muted)] mt-[2px]">{item.label}</div>
+                  <div className="text-[9px] text-[var(--color-text-muted)] mt-[1px]">weight {item.weight}%</div>
                 </div>
               ))}
             </div>
@@ -455,11 +362,11 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
             <ModalSection theme={theme} title="Score Formula Breakdown" icon="📊">
               {scoreData.breakdown.map((item, i) => (
                 <div key={i} style={{ marginBottom: i < scoreData.breakdown.length - 1 ? '14px' : '0' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', gap: '8px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--color-text)', fontFamily: getFontFamily('english'), flexShrink: 0 }}>
-                      {item.icon} {item.label} <span style={{ color: 'var(--color-text-muted)' }}>({item.weight}%)</span>
+                  <div className="flex justify-between items-center mb-[6px] gap-2">
+                    <span className="text-xs text-[var(--color-text)] shrink-0" style={{ fontFamily: getFontFamily('english') }}>
+                      {item.icon} {item.label} <span className="text-[var(--color-text-muted)]">({item.weight}%)</span>
                     </span>
-                    <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-accent)', ...tabularNumberStyle, whiteSpace: 'nowrap' }}>
+                    <span className="text-xs font-semibold text-[var(--color-accent)] whitespace-nowrap" style={tabularNumberStyle}>
                       {Math.round(item.ratio)}% → {Math.round(item.points)} pts
                     </span>
                   </div>
@@ -467,9 +374,9 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
                 </div>
               ))}
               {/* Total */}
-              <div style={{ borderTop: '2px solid var(--color-border)', paddingTop: '12px', marginTop: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-text)' }}>Total Score</span>
-                <span style={{ fontSize: '18px', fontWeight: '700', color: 'var(--color-accent)', ...tabularNumberStyle }}>
+              <div className="border-t-2 border-[var(--color-border)] pt-3 mt-[14px] flex justify-between items-center">
+                <span className="text-[13px] font-bold text-[var(--color-text)]">Total Score</span>
+                <span className="text-lg font-bold text-[var(--color-accent)]" style={tabularNumberStyle}>
                   {Math.round(scoreData.breakdown.reduce((sum, item) => sum + item.points, 0))} pts
                 </span>
               </div>
@@ -482,29 +389,24 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
                 return (
                   <div
                     key={i}
+                    className="grid items-center gap-2 px-[14px] py-[10px]"
                     style={{
-                      display: 'grid',
                       gridTemplateColumns: isMobile ? '44px 1fr 44px' : '50px 1fr 50px 80px',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '10px 14px',
                       borderBottom: i < scoreData.rankings.length - 1 ? '1px solid var(--color-border-light)' : 'none',
-                      background: i < 3 ? `${theme.success}08` : 'transparent',
+                      background: i < 3 ? 'rgba(16,185,129,0.05)' : 'transparent',
                     }}
                   >
-                    <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text-muted)', ...tabularNumberStyle }}>
+                    <span className="text-xs font-bold text-[var(--color-text-muted)]" style={tabularNumberStyle}>
                       #{m.rank} {medal}
                     </span>
-                    <span style={{ fontSize: '12px', color: 'var(--color-text)', fontWeight: '500', fontFamily: getAdaptiveFontFamily(m.name) }}>
+                    <span className="text-xs font-medium text-[var(--color-text)]" style={{ fontFamily: getAdaptiveFontFamily(m.name) }}>
                       {m.name}
                     </span>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: i < 3 ? 'var(--color-success)' : 'var(--color-text)', ...tabularNumberStyle, textAlign: 'right' }}>
+                    <span className="text-sm font-bold text-right" style={{ color: i < 3 ? 'var(--color-success)' : 'var(--color-text)', ...tabularNumberStyle }}>
                       {Math.round(m.score)}
                     </span>
                     {!isMobile && (
-                      <div>
-                        <ProgressBar theme={theme} value={m.score} max={100} color={i < 3 ? 'var(--color-success)' : 'var(--color-accent)'} height={5} />
-                      </div>
+                      <ProgressBar theme={theme} value={m.score} max={100} color={i < 3 ? 'var(--color-success)' : 'var(--color-accent)'} height={5} />
                     )}
                   </div>
                 );
@@ -512,17 +414,9 @@ const DashboardDetailModal = ({ isOpen, onClose, type, theme, members, scoreMetr
             </ModalSection>
 
             {/* Insight */}
-            <div style={{
-              padding: '12px 14px',
-              background: `${theme.accent}10`,
-              borderRadius: '10px',
-              marginTop: '8px',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '10px',
-            }}>
-              <span style={{ fontSize: '16px' }}>💡</span>
-              <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-text)', lineHeight: 1.5, fontFamily: getFontFamily('english') }}>
+            <div className="px-[14px] py-3 bg-[rgba(255,255,255,0.06)] rounded-[10px] mt-2 flex items-start gap-[10px]">
+              <span className="text-base">💡</span>
+              <p className="m-0 text-[11px] text-[var(--color-text)] leading-relaxed" style={{ fontFamily: getFontFamily('english') }}>
                 <strong>Insight:</strong> {
                   scoreData.breakdown.reduce((lowest, item) =>
                     item.ratio < lowest.ratio ? item : lowest

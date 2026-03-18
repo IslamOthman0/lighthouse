@@ -15,7 +15,6 @@ const LeaveCalendar = ({ leaves, members, theme, isMobile, typeFilter, onTypeFil
   const month = viewDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDay = new Date(year, month, 1).getDay();
-  const todayStr = toLocalDateStr();
   const todayDate = new Date();
   const isCurrentMonth = todayDate.getFullYear() === year && todayDate.getMonth() === month;
 
@@ -79,25 +78,22 @@ const LeaveCalendar = ({ leaves, members, theme, isMobile, typeFilter, onTypeFil
     { value: 'bonus', label: 'Bonus' },
   ];
 
+  const isActive = (val) => (typeFilter || 'all') === val;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div className="flex flex-col gap-3">
       {/* Filter Bar */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div className="flex gap-2 flex-wrap items-center">
         {/* Type filter pills */}
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div className="flex gap-1">
           {typeOptions.map(opt => (
             <button
               key={opt.value}
               onClick={() => onTypeFilterChange(opt.value)}
+              className="px-[10px] py-1 rounded-badge text-xs font-medium border-none cursor-pointer transition-colors"
               style={{
-                padding: '4px 10px',
-                borderRadius: 6,
-                fontSize: 12,
-                fontWeight: 500,
-                border: 'none',
-                cursor: 'pointer',
-                background: (typeFilter || 'all') === opt.value ? `${theme.text}25` : `${theme.text}08`,
-                color: (typeFilter || 'all') === opt.value ? theme.text : theme.textSecondary,
+                background: isActive(opt.value) ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
+                color: isActive(opt.value) ? 'var(--color-text)' : 'var(--color-text-secondary)',
               }}
             >
               {opt.value !== 'all' && TYPE_ICONS[opt.value]} {opt.label}
@@ -108,15 +104,7 @@ const LeaveCalendar = ({ leaves, members, theme, isMobile, typeFilter, onTypeFil
         <select
           value={memberFilter || 'all'}
           onChange={e => onMemberFilterChange(e.target.value)}
-          style={{
-            padding: '4px 8px',
-            borderRadius: 6,
-            fontSize: 12,
-            border: `1px solid ${theme.border}`,
-            background: theme.cardBg,
-            color: theme.text,
-            cursor: 'pointer',
-          }}
+          className="px-2 py-1 rounded-badge text-xs border border-[var(--color-border)] bg-[var(--color-card-bg)] text-[var(--color-text)] cursor-pointer"
         >
           <option value="all">All Members</option>
           {members.map(m => (
@@ -128,35 +116,21 @@ const LeaveCalendar = ({ leaves, members, theme, isMobile, typeFilter, onTypeFil
       </div>
 
       {/* Month Navigation */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}>
-        <button onClick={prevMonth} style={navBtnStyle(theme)}>&lsaquo;</button>
-        <span style={{ fontSize: 15, fontWeight: 600, color: theme.text }}>{monthLabel}</span>
-        <button onClick={nextMonth} style={navBtnStyle(theme)}>&rsaquo;</button>
+      <div className="flex justify-between items-center">
+        <button onClick={prevMonth} className="bg-transparent border border-[var(--color-border)] rounded-badge text-[var(--color-text)] text-lg cursor-pointer px-[10px] py-[2px] leading-none">
+          &lsaquo;
+        </button>
+        <span className="text-[15px] font-semibold text-[var(--color-text)]">{monthLabel}</span>
+        <button onClick={nextMonth} className="bg-transparent border border-[var(--color-border)] rounded-badge text-[var(--color-text)] text-lg cursor-pointer px-[10px] py-[2px] leading-none">
+          &rsaquo;
+        </button>
       </div>
 
       {/* Calendar Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
-        gap: 2,
-        background: theme.cardBg,
-        border: `1px solid ${theme.border}`,
-        borderRadius: 12,
-        padding: 8,
-      }}>
+      <div className="grid grid-cols-7 gap-[2px] bg-[var(--color-card-bg)] border border-[var(--color-border)] rounded-card p-2">
         {/* Day headers */}
         {dayLabels.map(l => (
-          <div key={l} style={{
-            textAlign: 'center',
-            fontSize: 11,
-            fontWeight: 600,
-            color: theme.textSecondary,
-            padding: '6px 0',
-          }}>
+          <div key={l} className="text-center text-[11px] font-semibold text-[var(--color-text-secondary)] py-[6px]">
             {l}
           </div>
         ))}
@@ -175,30 +149,29 @@ const LeaveCalendar = ({ leaves, members, theme, isMobile, typeFilter, onTypeFil
             <div
               key={day}
               onClick={() => hasEntries && setExpandedDay(isExpanded ? null : day)}
+              className="relative rounded-badge p-1"
               style={{
                 minHeight: isMobile ? 44 : 60,
-                padding: 4,
-                borderRadius: 6,
-                border: isToday ? `1px solid ${theme.text}40` : '1px solid transparent',
-                background: isToday ? `${theme.text}08` : 'transparent',
+                border: isToday ? '1px solid rgba(255,255,255,0.25)' : '1px solid transparent',
+                background: isToday ? 'rgba(255,255,255,0.05)' : 'transparent',
                 cursor: hasEntries ? 'pointer' : 'default',
-                position: 'relative',
               }}
             >
               {/* Day number */}
-              <div style={{
-                fontSize: 11,
-                fontWeight: isToday ? 700 : 400,
-                color: isToday ? theme.text : theme.textSecondary,
-                ...tabularNumberStyle,
-                marginBottom: 2,
-              }}>
+              <div
+                className="text-[11px] mb-[2px]"
+                style={{
+                  fontWeight: isToday ? 700 : 400,
+                  color: isToday ? 'var(--color-text)' : 'var(--color-text-secondary)',
+                  ...tabularNumberStyle,
+                }}
+              >
                 {day}
               </div>
 
               {/* Member avatars */}
               {hasEntries && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                <div className="flex flex-wrap gap-[2px]">
                   {entries.slice(0, isMobile ? 2 : 3).map(({ member, leave }) => (
                     <Avatar
                       key={member.id || member.clickUpId}
@@ -212,12 +185,7 @@ const LeaveCalendar = ({ leaves, members, theme, isMobile, typeFilter, onTypeFil
                     />
                   ))}
                   {entries.length > (isMobile ? 2 : 3) && (
-                    <span style={{
-                      fontSize: 9,
-                      color: theme.textSecondary,
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}>
+                    <span className="text-[9px] text-[var(--color-text-secondary)] flex items-center">
                       +{entries.length - (isMobile ? 2 : 3)}
                     </span>
                   )}
@@ -226,43 +194,30 @@ const LeaveCalendar = ({ leaves, members, theme, isMobile, typeFilter, onTypeFil
 
               {/* Expanded popover */}
               {isExpanded && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  zIndex: 50,
-                  minWidth: 180,
-                  background: theme.cardBg,
-                  border: `1px solid ${theme.border}`,
-                  borderRadius: 8,
-                  padding: 8,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                }}
+                <div
+                  className="absolute top-full left-0 z-50 min-w-[180px] bg-[var(--color-card-bg)] border border-[var(--color-border)] rounded-button p-2 shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
                   onClick={e => e.stopPropagation()}
                 >
-                  {entries.map(({ member, leave }) => (
-                    <div key={member.id || member.clickUpId} style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      padding: '4px 0',
-                      fontSize: 12,
-                    }}>
-                      <Avatar name={member.name} status={member.status} theme={theme} size={20}
-                        profilePicture={member.profilePicture} clickUpColor={member.clickUpColor}
-                        ringColor={TYPE_COLORS[leave.type] || TYPE_COLORS.annual} />
-                      <span style={{ color: theme.text, flex: 1 }}>{member.name}</span>
-                      <span style={{
-                        fontSize: 10,
-                        padding: '1px 5px',
-                        borderRadius: 4,
-                        background: `${TYPE_COLORS[leave.type] || TYPE_COLORS.annual}20`,
-                        color: TYPE_COLORS[leave.type] || TYPE_COLORS.annual,
-                      }}>
-                        {TYPE_LABELS[leave.type] || 'Leave'}
-                      </span>
-                    </div>
-                  ))}
+                  {entries.map(({ member, leave }) => {
+                    const typeColor = TYPE_COLORS[leave.type] || TYPE_COLORS.annual;
+                    return (
+                      <div key={member.id || member.clickUpId} className="flex items-center gap-[6px] py-1 text-xs">
+                        <Avatar name={member.name} status={member.status} theme={theme} size={20}
+                          profilePicture={member.profilePicture} clickUpColor={member.clickUpColor}
+                          ringColor={typeColor} />
+                        <span className="text-[var(--color-text)] flex-1">{member.name}</span>
+                        <span
+                          className="text-[10px] px-[5px] py-[1px] rounded"
+                          style={{
+                            background: `${typeColor}20`,
+                            color: typeColor,
+                          }}
+                        >
+                          {TYPE_LABELS[leave.type] || 'Leave'}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -271,10 +226,10 @@ const LeaveCalendar = ({ leaves, members, theme, isMobile, typeFilter, onTypeFil
       </div>
 
       {/* Legend */}
-      <div style={{ display: 'flex', gap: 12, fontSize: 11, color: theme.textSecondary }}>
+      <div className="flex gap-3 text-[11px] text-[var(--color-text-secondary)]">
         {Object.entries(TYPE_COLORS).map(([type, color]) => (
-          <span key={type} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 8, height: 4, borderRadius: 2, background: color, display: 'inline-block' }} />
+          <span key={type} className="flex items-center gap-1">
+            <span className="w-2 h-1 rounded-sm inline-block" style={{ background: color }} />
             {TYPE_LABELS[type]}
           </span>
         ))}
@@ -282,16 +237,5 @@ const LeaveCalendar = ({ leaves, members, theme, isMobile, typeFilter, onTypeFil
     </div>
   );
 };
-
-const navBtnStyle = (theme) => ({
-  background: 'none',
-  border: `1px solid ${theme.border}`,
-  borderRadius: 6,
-  color: theme.text,
-  fontSize: 18,
-  cursor: 'pointer',
-  padding: '2px 10px',
-  lineHeight: 1,
-});
 
 export default LeaveCalendar;

@@ -377,8 +377,8 @@
 - [x] 6.4 Verify layout migration
 
 ### Phase 7: Large Components
-- [ ] 7.1 ModalShell.jsx (317 lines) — must do BEFORE other modals
-- [ ] 7.2 DashboardDetailModal.jsx (544 lines)
+- [x] 7.1 ModalShell.jsx (317 lines) — theme-conditional modal bg simplified to var(--color-card-bg); all sub-components (ModalHero, ModalSection, StatRow, ProgressBar, EmptyState) migrated; boxShadow kept inline (dark/light differ)
+- [x] 7.2 DashboardDetailModal.jsx (544 lines) — theme.working/accent/success/warning hex-suffix patterns replaced with CSS vars + rgba constants; StatGridItem helper extracted; gridTemplateColumns kept inline (dynamic)
 - [ ] 7.3 TaskListModal.jsx (775 lines)
 - [ ] 7.4 DatePickerModal.jsx (608 lines)
 - [ ] 7.5 MemberDetailModal.jsx: Timeline tab
@@ -390,10 +390,10 @@
 - [ ] 7.11 ListView.jsx: header + table structure
 - [ ] 7.12 ListView.jsx: member rows + expanded content
 - [ ] 7.13 ListView.jsx: footer + mobile adaptations
-- [ ] 7.14 RankingTable.jsx (610 lines)
-- [ ] 7.15 Leaves sub-components (5 files: LeavesTab, TeamOverviewPanel, LeaveCalendar, MemberLeaveDetail, QuotaBar)
-- [ ] 7.16 ErrorBoundary.jsx (259 lines)
-- [ ] 7.17 App.jsx (563 lines)
+- [x] 7.14 RankingTable.jsx (610 lines) — full Tailwind migration; score badge uses runtime rgba (CSS var hex-suffix not viable); rank colors extracted to RANK_COLORS constant; theme prop retained for Avatar + getMetricColor lightMode
+- [x] 7.15 Leaves sub-components (5 files: LeavesTab, TeamOverviewPanel, LeaveCalendar, MemberLeaveDetail, QuotaBar) — dynamic hex-suffix patterns (color+18/30/40) kept inline; TYPE_COLORS hex values kept inline as they're fixed data constants not theme tokens; CSS vars used for all theme.text/border/cardBg/accent refs
+- [x] 7.16 ErrorBoundary.jsx (259 lines) — dropped isDarkMode detection; CSS custom properties from :root always apply even before useTheme runs
+- [x] 7.17 App.jsx (563 lines) — scrollbar style switched to CSS vars; skeleton loading + main layout fully Tailwind; theme.working/cardBg/border/text all replaced; theme prop retained for child components not yet migrated
 - [ ] 7.18 Verify large component migration
 
 ### Phase 8: Touch Target Fixes (44×44px minimum)
