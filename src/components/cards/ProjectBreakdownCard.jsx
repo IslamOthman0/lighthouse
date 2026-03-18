@@ -23,6 +23,7 @@ const ProjectIcon = ({ projectName, color }) => {
         width: '40px',
         height: '40px',
         borderRadius: '50%',
+        // Dynamic project color with hex suffix — keep inline
         background: `${color}20`,
         border: `2px solid ${color}`,
         display: 'flex',
@@ -127,13 +128,7 @@ const AvatarStack = ({ assignees, max = 3, theme }) => {
   const overflow = assignees.length - max;
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '4px',
-      }}
-    >
+    <div className="flex items-center gap-1">
       {visible.map((assignee) => (
         <Avatar
           key={assignee.id}
@@ -234,39 +229,30 @@ const ProjectBreakdownCard = ({ theme }) => {
 
   return (
     <div
+      className="rounded-[16px] p-5 border"
       style={{
-        background: theme.cardBg,
-        backdropFilter: theme.backdropBlur,
-        WebkitBackdropFilter: theme.backdropBlur,
-        borderRadius: '16px',
-        padding: '20px',
-        border: `1px solid ${theme.border}`,
-        boxShadow: theme.cardShadow || 'none',
+        background: 'var(--color-card-bg)',
+        backdropFilter: 'var(--effect-backdrop-blur)',
+        WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
+        borderColor: 'var(--color-border)',
+        boxShadow: 'var(--effect-card-shadow)',
       }}
     >
       {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '16px',
-        }}
-      >
+      <div className="flex items-center justify-between mb-4">
         <div
+          className="text-sm font-semibold"
           style={{
-            fontSize: '14px',
-            fontWeight: '600',
-            color: theme.text,
+            color: 'var(--color-text)',
             fontFamily: getFontFamily('english'),
           }}
         >
           Projects Breakdown
         </div>
         <div
+          className="text-xs"
           style={{
-            fontSize: '12px',
-            color: theme.textMuted,
+            color: 'var(--color-text-muted)',
             fontFamily: getFontFamily('english'),
           }}
         >
@@ -277,15 +263,13 @@ const ProjectBreakdownCard = ({ theme }) => {
       {/* No Data Placeholder */}
       {!hasData && (
         <div
+          className="py-6 text-center text-[13px]"
           style={{
-            padding: '24px',
-            textAlign: 'center',
-            color: theme.textMuted,
-            fontSize: '13px',
+            color: 'var(--color-text-muted)',
             fontFamily: getFontFamily('english'),
           }}
         >
-          <div style={{ marginBottom: '8px', fontSize: '24px', opacity: 0.5 }}>📂</div>
+          <div className="mb-2 text-2xl opacity-50">📂</div>
           No projects with tracked time today
         </div>
       )}
@@ -304,40 +288,31 @@ const ProjectBreakdownCard = ({ theme }) => {
           {projects.map((project, i) => (
             <div
               key={i}
+              className="rounded-[12px] p-4 border flex flex-col gap-3.5"
               style={{
-                background: theme.innerBg,
+                background: 'var(--color-inner-bg)',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
-                borderRadius: '12px',
-                padding: '16px',
-                border: `1px solid ${theme.borderLight || theme.border}`,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '14px',
+                borderColor: 'var(--color-border-light)',
               }}
             >
               {/* Header: Icon + Name + Subtitle */}
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <div className="flex gap-3 items-center">
                 <ProjectIcon projectName={project.name} color={project.color} />
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="flex-1 min-w-0">
                   <div
+                    className="text-sm font-semibold mb-1 whitespace-nowrap overflow-hidden text-ellipsis"
                     style={{
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: theme.text,
-                      marginBottom: '4px',
+                      color: 'var(--color-text)',
                       fontFamily: getAdaptiveFontFamily(project.name),
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
                     }}
                   >
                     {project.name}
                   </div>
                   <div
+                    className="text-xs"
                     style={{
-                      fontSize: '12px',
-                      color: theme.textMuted,
+                      color: 'var(--color-text-muted)',
                       fontFamily: getFontFamily('english'),
                     }}
                   >
@@ -348,28 +323,20 @@ const ProjectBreakdownCard = ({ theme }) => {
 
               {/* Progress Bar */}
               <div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '6px',
-                  }}
-                >
+                <div className="flex justify-between items-center mb-1.5">
                   <span
+                    className="text-xs"
                     style={{
-                      fontSize: '12px',
-                      color: theme.textSecondary,
+                      color: 'var(--color-text-secondary)',
                       fontFamily: getFontFamily('english'),
                     }}
                   >
                     Progress
                   </span>
                   <span
+                    className="text-[13px] font-semibold"
                     style={{
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      color: theme.text,
+                      color: 'var(--color-text)',
                       ...tabularNumberStyle,
                     }}
                   >
@@ -377,17 +344,14 @@ const ProjectBreakdownCard = ({ theme }) => {
                   </span>
                 </div>
                 <div
-                  style={{
-                    height: '6px',
-                    background: theme.subtleBg || 'rgba(255, 255, 255, 0.05)',
-                    borderRadius: '3px',
-                    overflow: 'hidden',
-                  }}
+                  className="h-1.5 rounded overflow-hidden"
+                  style={{ background: 'var(--color-subtle-bg)' }}
                 >
                   <div
                     style={{
                       height: '100%',
                       width: `${getProgressPercent(project)}%`,
+                      // Dynamic project color gradient — keep inline
                       background: `linear-gradient(90deg, ${project.color}, ${project.color}dd)`,
                       borderRadius: '3px',
                       transition: 'width 0.3s ease',
@@ -398,30 +362,25 @@ const ProjectBreakdownCard = ({ theme }) => {
 
               {/* Today's Time */}
               <div
+                className="text-[13px]"
                 style={{
-                  fontSize: '13px',
-                  color: theme.textSecondary,
+                  color: 'var(--color-text-secondary)',
                   fontFamily: getFontFamily('english'),
                 }}
               >
-                <span style={{ color: theme.textMuted }}>{isToday ? 'Today:' : 'Tracked:'} </span>
-                <span style={{ fontWeight: '600', color: theme.text, ...tabularNumberStyle }}>
+                <span style={{ color: 'var(--color-text-muted)' }}>{isToday ? 'Today:' : 'Tracked:'} </span>
+                <span style={{ fontWeight: '600', color: 'var(--color-text)', ...tabularNumberStyle }}>
                   {formatHoursToHM(project.trackedToday)}
                 </span>
               </div>
 
               {/* Status Pills */}
               <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '6px',
-                  maxHeight: '140px',
-                  overflowY: 'auto',
-                }}
+                className="flex flex-wrap gap-1.5"
+                style={{ maxHeight: '140px', overflowY: 'auto' }}
               >
                 {project.statuses.length === 0 ? (
-                  <span style={{ color: theme.textMuted, fontSize: '11px' }}>No tasks</span>
+                  <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>No tasks</span>
                 ) : (
                   project.statuses.map((status, j) => (
                     <StatusPill
@@ -438,7 +397,7 @@ const ProjectBreakdownCard = ({ theme }) => {
 
               {/* Assignee Avatars */}
               {project.assignees.length > 0 && (
-                <div style={{ paddingTop: '8px', borderTop: `1px solid ${theme.borderLight || theme.border}` }}>
+                <div className="pt-2 border-t" style={{ borderColor: 'var(--color-border-light)' }}>
                   <AvatarStack assignees={project.assignees} max={3} theme={theme} />
                 </div>
               )}
