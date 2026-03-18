@@ -446,7 +446,7 @@ const SettingsModal = ({ isOpen, onClose, theme }) => {
           background: 'var(--color-card-bg)',
           border: isMobile ? 'none' : `1px solid var(--color-border)`,
           borderRadius: isMobile ? '0' : '16px',
-          maxWidth: isMobile ? '100%' : '800px',
+          maxWidth: isMobile ? '100%' : '900px',
           width: '100%',
           height: isMobile ? '100%' : 'auto',
           maxHeight: isMobile ? '100%' : '90vh',
