@@ -371,7 +371,15 @@ function App() {
 
                   {/* Member Cards Grid */}
                   <div className="mb-4">
-                    <TeamStatusCard members={filteredMembers} theme={theme} onMemberClick={handleMemberClick} workingDays={dateRangeInfo?.workingDays || 1} />
+                    {filteredMembers.length === 0 && memberFilter !== 'all' ? (
+                      <div className="bg-[var(--color-card-bg)] border border-[var(--color-border)] rounded-card p-10 text-center text-[var(--color-text-muted)]">
+                        <div className="text-4xl mb-3 opacity-30">👥</div>
+                        <div className="text-sm font-medium text-[var(--color-text-secondary)]">No members match the current filter</div>
+                        <div className="text-xs mt-1 opacity-70">Try selecting a different status filter</div>
+                      </div>
+                    ) : (
+                      <TeamStatusCard members={filteredMembers} theme={theme} onMemberClick={handleMemberClick} workingDays={dateRangeInfo?.workingDays || 1} />
+                    )}
                   </div>
 
                   {/* Ranking Table - Full Width */}
