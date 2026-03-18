@@ -249,7 +249,12 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
 
           {/* Member Cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {sortedMembers.map((member, index) => {
+          {sortedMembers.length === 0 ? (
+            <div className="text-center py-10 text-[var(--color-text-muted)]">
+              <div className="text-4xl mb-3 opacity-30">👥</div>
+              <div className="text-sm" style={{ fontFamily: getFontFamily('english') }}>No members to display</div>
+            </div>
+          ) : sortedMembers.map((member, index) => {
             const isTopThree = index < 3;
             const isWorking = member.status === 'working';
             const isBreak = member.status === 'break';
@@ -831,7 +836,14 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
             </tr>
           </thead>
           <tbody>
-            {sortedMembers.map((member, index) => {
+            {sortedMembers.length === 0 ? (
+              <tr>
+                <td colSpan="99" className="text-center py-10 text-[var(--color-text-muted)]">
+                  <div className="text-4xl mb-3 opacity-30">👥</div>
+                  <div className="text-sm" style={{ fontFamily: getFontFamily('english') }}>No members to display</div>
+                </td>
+              </tr>
+            ) : sortedMembers.map((member, index) => {
               const isTopThree = index < 3;
               const isWorking = member.status === 'working';
               const isBreak = member.status === 'break';
