@@ -36,7 +36,7 @@ export const SkeletonAvatar = ({ size = 48, theme }) => {
         width: `${size}px`,
         height: `${size}px`,
         borderRadius: '12px',
-        background: theme.innerBg,
+        background: 'var(--color-inner-bg)',
         animation: 'pulse 1.5s ease-in-out infinite',
       }}
     />
@@ -51,13 +51,13 @@ export const SkeletonMemberCard = ({ theme }) => {
   return (
     <div
       style={{
-        background: theme.cardBg,
-        backdropFilter: theme.backdropBlur,
-        WebkitBackdropFilter: theme.backdropBlur,
+        background: 'var(--color-card-bg)',
+        backdropFilter: 'var(--effect-backdrop-blur)',
+        WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
         borderRadius: '16px',
         padding: '20px',
-        border: `1px solid ${theme.border}`,
-        boxShadow: theme.cardShadow || `0 8px 32px ${theme.border}80`,
+        border: '1px solid var(--color-border)',
+        boxShadow: 'var(--effect-card-shadow)',
       }}
     >
       {/* Header: Avatar + Name */}
@@ -106,13 +106,13 @@ export const SkeletonOverviewCard = ({ theme }) => {
   return (
     <div
       style={{
-        background: theme.cardBg,
-        backdropFilter: theme.backdropBlur,
-        WebkitBackdropFilter: theme.backdropBlur,
+        background: 'var(--color-card-bg)',
+        backdropFilter: 'var(--effect-backdrop-blur)',
+        WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
         borderRadius: '16px',
         padding: '20px',
-        border: `1px solid ${theme.border}`,
-        boxShadow: theme.cardShadow || `0 8px 32px ${theme.border}80`,
+        border: '1px solid var(--color-border)',
+        boxShadow: 'var(--effect-card-shadow)',
       }}
     >
       {/* Title */}
@@ -138,13 +138,13 @@ export const SkeletonScoreCard = ({ theme }) => {
   return (
     <div
       style={{
-        background: theme.cardBg,
-        backdropFilter: theme.backdropBlur,
-        WebkitBackdropFilter: theme.backdropBlur,
+        background: 'var(--color-card-bg)',
+        backdropFilter: 'var(--effect-backdrop-blur)',
+        WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
         borderRadius: '16px',
         padding: '20px',
-        border: `1px solid ${theme.border}`,
-        boxShadow: theme.cardShadow || `0 8px 32px ${theme.border}80`,
+        border: '1px solid var(--color-border)',
+        boxShadow: 'var(--effect-card-shadow)',
       }}
     >
       {/* Title */}
@@ -157,7 +157,7 @@ export const SkeletonScoreCard = ({ theme }) => {
             width: '120px',
             height: '120px',
             borderRadius: '50%',
-            background: theme.innerBg,
+            background: 'var(--color-inner-bg)',
             animation: 'pulse 1.5s ease-in-out infinite',
           }}
         />
@@ -182,13 +182,13 @@ export const SkeletonProjectCard = ({ theme }) => {
   return (
     <div
       style={{
-        background: theme.cardBg,
-        backdropFilter: theme.backdropBlur,
-        WebkitBackdropFilter: theme.backdropBlur,
+        background: 'var(--color-card-bg)',
+        backdropFilter: 'var(--effect-backdrop-blur)',
+        WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
         borderRadius: '16px',
         padding: '20px',
-        border: `1px solid ${theme.border}`,
-        boxShadow: theme.cardShadow || `0 8px 32px ${theme.border}80`,
+        border: '1px solid var(--color-border)',
+        boxShadow: 'var(--effect-card-shadow)',
       }}
     >
       {/* Title */}
@@ -244,13 +244,13 @@ export const SkeletonListRow = ({ theme }) => {
   return (
     <div
       style={{
-        background: theme.cardBg,
-        backdropFilter: theme.backdropBlur,
-        WebkitBackdropFilter: theme.backdropBlur,
+        background: 'var(--color-card-bg)',
+        backdropFilter: 'var(--effect-backdrop-blur)',
+        WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
         borderRadius: '12px',
         padding: '16px',
-        border: `1px solid ${theme.border}`,
-        boxShadow: theme.cardShadow || `0 4px 16px ${theme.border}40`,
+        border: '1px solid var(--color-border)',
+        boxShadow: 'var(--effect-card-shadow)',
         marginBottom: '12px',
       }}
     >
