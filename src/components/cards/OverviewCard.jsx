@@ -10,63 +10,54 @@ const OverviewCard = ({ theme, value, subValue, label, progress, color, onClick 
     <div
       onClick={onClick}
       data-testid={testId}
+      className="rounded-[16px] p-6 border flex items-center gap-5 h-full min-h-[120px] transition-all duration-200"
       style={{
-        background: theme.cardBg,
-        backdropFilter: theme.backdropBlur,
-        WebkitBackdropFilter: theme.backdropBlur,
-        borderRadius: '16px',
-        padding: '24px',
-        border: `1px solid ${theme.border}`,
-        boxShadow: theme.cardShadow || 'none',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '20px',
-        height: '100%',
-        minHeight: '120px',
+        background: 'var(--color-card-bg)',
+        backdropFilter: 'var(--effect-backdrop-blur)',
+        WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
+        borderColor: 'var(--color-border)',
+        boxShadow: 'var(--effect-card-shadow)',
         cursor: onClick ? 'pointer' : 'default',
-        transition: 'all 0.2s ease',
       }}
       onMouseEnter={(e) => {
         if (onClick) {
           e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = theme.cardShadow || `0 4px 16px ${theme.border}60`;
+          e.currentTarget.style.boxShadow = `var(--effect-card-shadow)`;
         }
       }}
       onMouseLeave={(e) => {
         if (onClick) {
           e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = theme.cardShadow || 'none';
+          e.currentTarget.style.boxShadow = 'var(--effect-card-shadow)';
         }
       }}
     >
       <ProgressRing progress={progress} color={color} size={80} strokeWidth={6} theme={theme} />
 
-      <div style={{ flex: 1 }}>
+      <div className="flex-1">
         <div
+          className="text-xs mb-1"
           style={{
-            fontSize: '12px',
-            color: theme.textMuted,
-            marginBottom: '4px',
+            color: 'var(--color-text-muted)',
             fontFamily: getFontFamily('english'),
           }}
         >
           {label}
         </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+        <div className="flex items-baseline gap-2">
           <span
+            className="text-[22px] font-bold"
             style={{
-              fontSize: '22px',
-              fontWeight: '700',
-              color: theme.text,
+              color: 'var(--color-text)',
               ...tabularNumberStyle,
             }}
           >
             {value}
           </span>
           <span
+            className="text-xs"
             style={{
-              fontSize: '12px',
-              color: theme.textMuted,
+              color: 'var(--color-text-muted)',
               fontFamily: getFontFamily('english'),
             }}
           >
