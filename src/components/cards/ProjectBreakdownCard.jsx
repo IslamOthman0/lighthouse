@@ -224,9 +224,7 @@ const ProjectBreakdownCard = ({ theme }) => {
     <div
       className="rounded-[16px] p-5 border"
       style={{
-        background: 'var(--color-card-bg)',
-        backdropFilter: 'var(--effect-backdrop-blur)',
-        WebkitBackdropFilter: 'var(--effect-backdrop-blur)',
+        background: 'var(--color-bg)',
         borderColor: 'var(--color-border)',
         boxShadow: 'var(--effect-card-shadow)',
       }}
