@@ -76,9 +76,9 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
 
   // Get progress color based on percentage
   const getProgressColor = (percent) => {
-    if (percent >= 80) return theme.success;
-    if (percent >= 50) return theme.warning;
-    return theme.danger;
+    if (percent >= 80) return 'var(--color-success)';
+    if (percent >= 50) return 'var(--color-warning)';
+    return 'var(--color-danger)';
   };
 
   // Use pre-calculated score from member data (global score formula)
@@ -238,10 +238,10 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
               marginBottom: '4px',
             }}
           >
-            <div style={{ fontSize: '14px', fontWeight: '600', color: theme.text, fontFamily: getFontFamily('english') }}>
+            <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)', fontFamily: getFontFamily('english') }}>
               Team Members
             </div>
-            <div style={{ fontSize: '12px', color: theme.textMuted, fontWeight: '400', ...tabularNumberStyle }}>
+            <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: '400', ...tabularNumberStyle }}>
               {sortedMembers.length} Members
             </div>
           </div>
@@ -267,7 +267,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                 return (
                   <div style={{
                     fontSize: '11px',
-                    color: theme.working,
+                    color: 'var(--color-working)',
                     fontWeight: '600',
                     display: 'flex',
                     alignItems: 'center',
@@ -276,26 +276,26 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                   }}>
                     <span>⏱️</span>
                     <LiveTimer seconds={member.timer} theme={theme} compact={true} />
-                    <span style={{ fontSize: '9px', color: theme.textMuted, fontFamily: getFontFamily('english') }}>(running)</span>
+                    <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontFamily: getFontFamily('english') }}>(running)</span>
                   </div>
                 );
               }
               if (isBreak) {
                 return (
-                  <div style={{ fontSize: '11px', color: theme.break, fontWeight: '600', ...tabularNumberStyle }}>
+                  <div style={{ fontSize: '11px', color: 'var(--color-break)', fontWeight: '600', ...tabularNumberStyle }}>
                     ☕ {formatLastSeen(member.lastSeen)}
                   </div>
                 );
               }
               if (isOffline) {
                 return (
-                  <div style={{ fontSize: '11px', color: theme.textMuted, fontWeight: '600', ...tabularNumberStyle }}>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: '600', ...tabularNumberStyle }}>
                     ⏸️ {formatLastSeen(member.lastSeen)}
                   </div>
                 );
               }
               return (
-                <div style={{ fontSize: '11px', color: theme.leave, fontWeight: '600', fontFamily: getFontFamily('english') }}>
+                <div style={{ fontSize: '11px', color: 'var(--color-leave)', fontWeight: '600', fontFamily: getFontFamily('english') }}>
                   📅 {member.leaveType || 'Annual Leave'}
                 </div>
               );
@@ -305,8 +305,8 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
               <div
                 key={member.id}
                 style={{
-                  background: theme.cardBg,
-                  border: `1px solid ${theme.border}`,
+                  background: 'var(--color-card-bg)',
+                  border: `1px solid var(--color-border)`,
                   borderRadius: '12px',
                   overflow: 'hidden',
                   marginBottom: '12px',
@@ -316,7 +316,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                 <div
                   style={{
                     padding: '12px',
-                    borderBottom: `1px solid ${theme.borderLight}`,
+                    borderBottom: `1px solid var(--color-border-light)`,
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
@@ -324,15 +324,15 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                 >
                   <Avatar name={member.name} status={member.status} theme={theme} size={32} profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '13px', fontWeight: '600', color: theme.text, marginBottom: '4px', ...getTextFontStyle(member.name) }}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text)', marginBottom: '4px', ...getTextFontStyle(member.name) }}>
                       {member.name}
                     </div>
-                    <div style={{ display: 'flex', gap: '12px', fontSize: '10px', color: theme.textMuted }}>
+                    <div style={{ display: 'flex', gap: '12px', fontSize: '10px', color: 'var(--color-text-muted)' }}>
                       <div>
-                        First: <span style={{ color: theme.textSecondary, fontWeight: '600', ...tabularNumberStyle }}>{member.startTime}</span>
+                        First: <span style={{ color: 'var(--color-text-secondary)', fontWeight: '600', ...tabularNumberStyle }}>{member.startTime}</span>
                       </div>
                       <div>
-                        Last: <span style={{ color: theme.textSecondary, fontWeight: '600', ...tabularNumberStyle }}>{member.endTime}</span>
+                        Last: <span style={{ color: 'var(--color-text-secondary)', fontWeight: '600', ...tabularNumberStyle }}>{member.endTime}</span>
                       </div>
                     </div>
                   </div>
@@ -343,7 +343,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                 <div
                   style={{
                     padding: '10px 12px',
-                    borderBottom: `1px solid ${theme.borderLight}`,
+                    borderBottom: `1px solid var(--color-border-light)`,
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
@@ -353,7 +353,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                     style={{
                       flex: 1,
                       fontSize: '11px',
-                      color: theme.textSecondary,
+                      color: 'var(--color-text-secondary)',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -361,14 +361,14 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                       ...getTextFontStyle(member.task || ''),
                     }}
                   >
-                    <span style={{ color: theme.textMuted, fontSize: '10px', marginRight: '4px', fontFamily: getFontFamily('english') }}>Task:</span>
+                    <span style={{ color: 'var(--color-text-muted)', fontSize: '10px', marginRight: '4px', fontFamily: getFontFamily('english') }}>Task:</span>
                     {member.task || 'No task assigned'}
                   </div>
                   <div
                     onClick={() => toggleRow(member.id)}
                     style={{
                       fontSize: '10px',
-                      color: theme.textMuted,
+                      color: 'var(--color-text-muted)',
                       minWidth: '36px',
                       minHeight: '36px',
                       display: 'flex',
@@ -389,7 +389,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                     display: 'grid',
                     gridTemplateColumns: 'repeat(4, 1fr)',
                     gap: '0',
-                    borderBottom: isExpanded ? `1px solid ${theme.borderLight}` : 'none',
+                    borderBottom: isExpanded ? `1px solid var(--color-border-light)` : 'none',
                   }}
                 >
                   {/* Tracked */}
@@ -397,13 +397,13 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                     style={{
                       padding: '10px 6px',
                       textAlign: 'center',
-                      borderRight: `1px solid ${theme.borderLight}`,
+                      borderRight: `1px solid var(--color-border-light)`,
                     }}
                   >
-                    <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '3px', fontFamily: getFontFamily('english') }}>
+                    <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '3px', fontFamily: getFontFamily('english') }}>
                       Tracked
                     </div>
-                    <div style={{ fontSize: '13px', fontWeight: '700', color: theme.text, ...tabularNumberStyle }}>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-text)', ...tabularNumberStyle }}>
                       {formatHoursToHM(member.tracked)}
                     </div>
                     <div
@@ -427,16 +427,16 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                     style={{
                       padding: '10px 6px',
                       textAlign: 'center',
-                      borderRight: `1px solid ${theme.borderLight}`,
+                      borderRight: `1px solid var(--color-border-light)`,
                     }}
                   >
-                    <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '3px', fontFamily: getFontFamily('english') }}>
+                    <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '3px', fontFamily: getFontFamily('english') }}>
                       Tasks/Done
                     </div>
                     <div style={{ fontSize: '12px', fontWeight: '700', ...tabularNumberStyle }}>
-                      <span style={{ color: theme.text }}>{member.tasks}</span>
-                      <span style={{ color: theme.textMuted }}>/</span>
-                      <span style={{ color: theme.success }}>{member.done}</span>
+                      <span style={{ color: 'var(--color-text)' }}>{member.tasks}</span>
+                      <span style={{ color: 'var(--color-text-muted)' }}>/</span>
+                      <span style={{ color: 'var(--color-success)' }}>{member.done}</span>
                     </div>
                   </div>
 
@@ -445,16 +445,16 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                     style={{
                       padding: '10px 6px',
                       textAlign: 'center',
-                      borderRight: `1px solid ${theme.borderLight}`,
+                      borderRight: `1px solid var(--color-border-light)`,
                     }}
                   >
-                    <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '3px', fontFamily: getFontFamily('english') }}>
+                    <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '3px', fontFamily: getFontFamily('english') }}>
                       Breaks/Ses
                     </div>
                     <div style={{ fontSize: '12px', fontWeight: '700', ...tabularNumberStyle }}>
-                      <span style={{ color: theme.text }}>{formatMinutesToHM(member.breaks?.total || 0)}</span>
-                      <span style={{ color: theme.textMuted }}>/</span>
-                      <span style={{ color: theme.textSecondary }}>{member.breaks?.count || 0}</span>
+                      <span style={{ color: 'var(--color-text)' }}>{formatMinutesToHM(member.breaks?.total || 0)}</span>
+                      <span style={{ color: 'var(--color-text-muted)' }}>/</span>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>{member.breaks?.count || 0}</span>
                     </div>
                   </div>
 
@@ -465,10 +465,10 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                       textAlign: 'center',
                     }}
                   >
-                    <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '3px', fontFamily: getFontFamily('english') }}>
+                    <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '3px', fontFamily: getFontFamily('english') }}>
                       Time Span
                     </div>
-                    <div style={{ fontSize: '13px', fontWeight: '700', color: theme.text, ...tabularNumberStyle }}>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-text)', ...tabularNumberStyle }}>
                       {formatMinutesToHM(Math.round(member.tracked * 60 + (member.breaks?.total || 0)))}
                     </div>
                   </div>
@@ -478,7 +478,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                 {isExpanded && (
                   <div
                     style={{
-                      background: theme.secondaryBg,
+                      background: 'var(--color-inner-bg)',
                       padding: '12px',
                     }}
                   >
@@ -493,10 +493,10 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                       {/* Task Details */}
                       <div
                         style={{
-                          background: theme.cardBg,
+                          background: 'var(--color-card-bg)',
                           borderRadius: '8px',
                           padding: '12px',
-                          border: `1px solid ${theme.borderLight}`,
+                          border: `1px solid var(--color-border-light)`,
                         }}
                       >
                         {/* Task Details Header */}
@@ -504,7 +504,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                           style={{
                             fontSize: '10px',
                             fontWeight: '700',
-                            color: theme.textMuted,
+                            color: 'var(--color-text-muted)',
                             marginBottom: '8px',
                             letterSpacing: '0.5px',
                             textTransform: 'uppercase',
@@ -526,7 +526,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                           {/* Status */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span>📊</span>
-                            <span style={{ color: theme.textMuted, fontFamily: getFontFamily('english') }}>Status:</span>
+                            <span style={{ color: 'var(--color-text-muted)', fontFamily: getFontFamily('english') }}>Status:</span>
                             <span
                               style={{
                                 background: tsc.bg,
@@ -545,8 +545,8 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                           {/* Project */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span>📍</span>
-                            <span style={{ color: theme.textMuted, fontFamily: getFontFamily('english') }}>Project:</span>
-                            <span style={{ color: theme.text, fontWeight: '600', fontSize: '9px', fontFamily: getFontFamily('english') }}>
+                            <span style={{ color: 'var(--color-text-muted)', fontFamily: getFontFamily('english') }}>Project:</span>
+                            <span style={{ color: 'var(--color-text)', fontWeight: '600', fontSize: '9px', fontFamily: getFontFamily('english') }}>
                               {member.project || '—'}
                             </span>
                           </div>
@@ -559,10 +559,10 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                           {/* Publisher */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span>📚</span>
-                            <span style={{ color: theme.textMuted, fontFamily: getFontFamily('english') }}>Publisher:</span>
+                            <span style={{ color: 'var(--color-text-muted)', fontFamily: getFontFamily('english') }}>Publisher:</span>
                             <span
                               style={{
-                                color: theme.textSecondary,
+                                color: 'var(--color-text-secondary)',
                                 fontWeight: '600',
                                 fontSize: '9px',
                                 direction: isRTL(member.publisher || '') ? 'rtl' : 'ltr',
@@ -579,10 +579,10 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                           {/* Genre */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', gridColumn: '1 / -1' }}>
                             <span>📖</span>
-                            <span style={{ color: theme.textMuted, fontFamily: getFontFamily('english') }}>Genre:</span>
+                            <span style={{ color: 'var(--color-text-muted)', fontFamily: getFontFamily('english') }}>Genre:</span>
                             <span
                               style={{
-                                color: theme.textSecondary,
+                                color: 'var(--color-text-secondary)',
                                 fontWeight: '600',
                                 fontSize: '9px',
                                 direction: isRTL(member.genre || '') ? 'rtl' : 'ltr',
@@ -596,14 +596,14 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                           {/* Tags */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', gridColumn: '1 / -1' }}>
                             <span>🏷️</span>
-                            <span style={{ color: theme.textMuted, fontFamily: getFontFamily('english') }}>Tags:</span>
+                            <span style={{ color: 'var(--color-text-muted)', fontFamily: getFontFamily('english') }}>Tags:</span>
                             {member.tags && member.tags.length > 0 ? (
                               member.tags.slice(0, 2).map((tag, i) => (
                                 <span
                                   key={i}
                                   style={{
-                                    background: theme.secondaryBg,
-                                    color: theme.textSecondary,
+                                    background: 'var(--color-inner-bg)',
+                                    color: 'var(--color-text-secondary)',
                                     padding: '2px 5px',
                                     borderRadius: '3px',
                                     fontSize: '8px',
@@ -615,7 +615,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                 </span>
                               ))
                             ) : (
-                              <span style={{ color: theme.textMuted }}>—</span>
+                              <span style={{ color: 'var(--color-text-muted)' }}>—</span>
                             )}
                           </div>
                         </div>
@@ -624,17 +624,17 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                       {/* Time Tracked */}
                       <div
                         style={{
-                          background: theme.cardBg,
+                          background: 'var(--color-card-bg)',
                           borderRadius: '8px',
                           padding: '12px',
-                          border: `1px solid ${theme.borderLight}`,
+                          border: `1px solid var(--color-border-light)`,
                         }}
                       >
                         <div
                           style={{
                             fontSize: '10px',
                             fontWeight: '700',
-                            color: theme.textMuted,
+                            color: 'var(--color-text-muted)',
                             marginBottom: '10px',
                             letterSpacing: '0.5px',
                             textTransform: 'uppercase',
@@ -653,14 +653,14 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                         >
                           {/* Current Session */}
                           <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '9px', color: theme.textMuted, marginBottom: '3px', fontFamily: getFontFamily('english') }}>
+                            <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', marginBottom: '3px', fontFamily: getFontFamily('english') }}>
                               Current Session
                             </div>
                             <div
                               style={{
                                 fontSize: '14px',
                                 fontWeight: '700',
-                                color: isWorking ? theme.working : theme.textMuted,
+                                color: isWorking ? 'var(--color-working)' : 'var(--color-text-muted)',
                                 ...tabularNumberStyle,
                               }}
                             >
@@ -671,7 +671,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                               )}
                             </div>
                             {isWorking && (
-                              <div style={{ fontSize: '8px', color: theme.success, marginTop: '1px', fontFamily: getFontFamily('english') }}>
+                              <div style={{ fontSize: '8px', color: 'var(--color-success)', marginTop: '1px', fontFamily: getFontFamily('english') }}>
                                 running
                               </div>
                             )}
@@ -679,14 +679,14 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
 
                           {/* Previous Session */}
                           <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '9px', color: theme.textMuted, marginBottom: '3px', fontFamily: getFontFamily('english') }}>
+                            <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', marginBottom: '3px', fontFamily: getFontFamily('english') }}>
                               Previous
                             </div>
                             <div
                               style={{
                                 fontSize: '14px',
                                 fontWeight: '700',
-                                color: theme.text,
+                                color: 'var(--color-text)',
                                 ...tabularNumberStyle,
                               }}
                             >
@@ -696,14 +696,14 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
 
                           {/* Total on Task */}
                           <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '9px', color: theme.textMuted, marginBottom: '3px', fontFamily: getFontFamily('english') }}>
+                            <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', marginBottom: '3px', fontFamily: getFontFamily('english') }}>
                               Total
                             </div>
                             <div
                               style={{
                                 fontSize: '14px',
                                 fontWeight: '700',
-                                color: theme.accent,
+                                color: 'var(--color-accent)',
                                 ...tabularNumberStyle,
                               }}
                             >
@@ -722,9 +722,9 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                             style={{
                               padding: '10px 16px',
                               borderRadius: '8px',
-                              border: `1px solid ${theme.accent}`,
+                              border: `1px solid var(--color-accent)`,
                               background: theme.accent + '20',
-                              color: theme.accent,
+                              color: 'var(--color-accent)',
                               cursor: 'pointer',
                               fontSize: '11px',
                               fontWeight: '600',
@@ -758,9 +758,9 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
         // Desktop Table Layout
         <div
           style={{
-            background: theme.cardBg,
+            background: 'var(--color-card-bg)',
             borderRadius: '12px',
-            border: `1px solid ${theme.border}`,
+            border: `1px solid var(--color-border)`,
             overflow: 'hidden',
           }}
         >
@@ -773,10 +773,10 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
               justifyContent: 'space-between',
             }}
           >
-            <div style={{ fontSize: '14px', fontWeight: '600', color: theme.text, fontFamily: getFontFamily('english') }}>
+            <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text)', fontFamily: getFontFamily('english') }}>
               Team Members List
             </div>
-            <div style={{ fontSize: '12px', color: theme.textMuted, fontWeight: '400', ...tabularNumberStyle }}>
+            <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: '400', ...tabularNumberStyle }}>
               {sortedMembers.length} Members
             </div>
           </div>
@@ -813,14 +813,14 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                     textAlign: col.align,
                     fontSize: '11px',
                     fontWeight: '500',
-                    color: theme.textMuted,
+                    color: 'var(--color-text-muted)',
                     letterSpacing: '0.3px',
                     width: col.width,
                     minWidth: col.minWidth || 'auto',
                     whiteSpace: 'nowrap',
                     cursor: col.sortable ? 'pointer' : 'default',
                     userSelect: col.sortable ? 'none' : 'auto',
-                    borderBottom: `1px solid ${theme.borderLight}`,
+                    borderBottom: `1px solid var(--color-border-light)`,
                     fontFamily: getFontFamily('english'),
                   }}
                 >
@@ -848,14 +848,14 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                   {/* Desktop Row */}
                   <tr
                     style={{
-                      borderBottom: isExpanded ? 'none' : `1px solid ${theme.borderLight}`,
+                      borderBottom: isExpanded ? 'none' : `1px solid var(--color-border-light)`,
                       transition: 'background 0.15s ease',
                       background: 'transparent',
                       cursor: 'pointer',
                     }}
                     onClick={() => toggleRow(member.id)}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = theme.innerBg;
+                      e.currentTarget.style.background = 'var(--color-inner-bg)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'transparent';
@@ -867,7 +867,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                         padding: '14px 16px',
                         fontSize: '13px',
                         fontWeight: '600',
-                        color: theme.textMuted,
+                        color: 'var(--color-text-muted)',
                         ...tabularNumberStyle,
                       }}
                     >
@@ -879,10 +879,10 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <Avatar name={member.name} status={member.status} theme={theme} size={32} profilePicture={member.profilePicture} clickUpColor={member.clickUpColor} />
                         <div>
-                          <div style={{ fontSize: '13px', fontWeight: '600', color: theme.text, ...getTextFontStyle(member.name), lineHeight: '1.3' }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text)', ...getTextFontStyle(member.name), lineHeight: '1.3' }}>
                             {member.name}
                           </div>
-                          <div style={{ fontSize: '11px', color: theme.textMuted, fontFamily: getFontFamily('english'), fontWeight: '400' }}>
+                          <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontFamily: getFontFamily('english'), fontWeight: '400' }}>
                             {member.initials}
                           </div>
                         </div>
@@ -905,7 +905,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                           display: 'inline-flex', alignItems: 'center', gap: '4px',
                           padding: '3px 8px', borderRadius: '6px', whiteSpace: 'nowrap',
                           background: 'rgba(245, 158, 11, 0.12)',
-                          color: theme.break, fontSize: '12px', fontWeight: '500',
+                          color: 'var(--color-break)', fontSize: '12px', fontWeight: '500',
                         }}>
                           Break {formatLastSeen(member.lastSeen)}
                         </span>
@@ -915,7 +915,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                           display: 'inline-flex', alignItems: 'center', gap: '4px',
                           padding: '3px 8px', borderRadius: '6px', whiteSpace: 'nowrap',
                           background: 'rgba(107, 114, 128, 0.1)',
-                          color: theme.textMuted, fontSize: '12px', fontWeight: '500',
+                          color: 'var(--color-text-muted)', fontSize: '12px', fontWeight: '500',
                         }}>
                           Offline {formatLastSeen(member.lastSeen)}
                         </span>
@@ -925,7 +925,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                           display: 'inline-flex', alignItems: 'center', gap: '4px',
                           padding: '3px 8px', borderRadius: '6px', whiteSpace: 'nowrap',
                           background: 'rgba(55, 65, 81, 0.15)',
-                          color: theme.textMuted, fontSize: '12px', fontWeight: '500',
+                          color: 'var(--color-text-muted)', fontSize: '12px', fontWeight: '500',
                         }}>
                           No activity
                         </span>
@@ -935,7 +935,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                           display: 'inline-flex', alignItems: 'center', gap: '4px',
                           padding: '3px 8px', borderRadius: '6px', whiteSpace: 'nowrap',
                           background: 'rgba(139, 92, 246, 0.12)',
-                          color: theme.leave, fontSize: '12px', fontWeight: '500',
+                          color: 'var(--color-leave)', fontSize: '12px', fontWeight: '500',
                         }}>
                           On Leave
                         </span>
@@ -947,7 +947,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                       style={{
                         padding: '14px 16px',
                         fontSize: '12px',
-                        color: member.task ? theme.text : theme.textMuted,
+                        color: member.task ? 'var(--color-text)' : 'var(--color-text-muted)',
                         fontStyle: member.task ? 'normal' : 'italic',
                         maxWidth: '250px',
                         overflow: 'hidden',
@@ -967,7 +967,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                         padding: '14px 16px',
                         textAlign: 'center',
                         fontSize: '12px',
-                        color: member.startTime && member.startTime !== '—' ? theme.textSecondary : theme.textMuted,
+                        color: member.startTime && member.startTime !== '—' ? 'var(--color-text-secondary)' : 'var(--color-text-muted)',
                         fontWeight: '400',
                         ...tabularNumberStyle,
                       }}
@@ -981,7 +981,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                         padding: '14px 16px',
                         textAlign: 'center',
                         fontSize: '12px',
-                        color: member.status === 'working' ? theme.working : (member.endTime && member.endTime !== '—' ? theme.textSecondary : theme.textMuted),
+                        color: member.status === 'working' ? 'var(--color-working)' : (member.endTime && member.endTime !== '—' ? 'var(--color-text-secondary)' : 'var(--color-text-muted)'),
                         fontWeight: member.status === 'working' ? '600' : '400',
                         ...tabularNumberStyle,
                       }}
@@ -997,7 +997,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: '600', color: theme.text, ...tabularNumberStyle }}>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-text)', ...tabularNumberStyle }}>
                           {formatHoursToHM(member.tracked)}
                         </span>
                         <span
@@ -1025,9 +1025,9 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                         ...tabularNumberStyle,
                       }}
                     >
-                      <span style={{ color: theme.text, fontWeight: '600' }}>{member.tasks}</span>
-                      <span style={{ color: theme.textMuted, fontWeight: '400' }}>/</span>
-                      <span style={{ color: theme.success, fontWeight: '600' }}>{member.done}</span>
+                      <span style={{ color: 'var(--color-text)', fontWeight: '600' }}>{member.tasks}</span>
+                      <span style={{ color: 'var(--color-text-muted)', fontWeight: '400' }}>/</span>
+                      <span style={{ color: 'var(--color-success)', fontWeight: '600' }}>{member.done}</span>
                     </td>
 
                     {/* Breaks/Session */}
@@ -1039,9 +1039,9 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                         ...tabularNumberStyle,
                       }}
                     >
-                      <span style={{ color: theme.text, fontWeight: '500' }}>{formatMinutesToHM(member.breaks?.total || 0)}</span>
-                      <span style={{ color: theme.textMuted, fontWeight: '400' }}>/</span>
-                      <span style={{ color: theme.textSecondary, fontWeight: '500' }}>{member.breaks?.count || 0}</span>
+                      <span style={{ color: 'var(--color-text)', fontWeight: '500' }}>{formatMinutesToHM(member.breaks?.total || 0)}</span>
+                      <span style={{ color: 'var(--color-text-muted)', fontWeight: '400' }}>/</span>
+                      <span style={{ color: 'var(--color-text-secondary)', fontWeight: '500' }}>{member.breaks?.count || 0}</span>
                     </td>
 
                     {/* Time Span */}
@@ -1051,7 +1051,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                         textAlign: 'center',
                         fontSize: '13px',
                         fontWeight: '500',
-                        color: theme.text,
+                        color: 'var(--color-text)',
                         ...tabularNumberStyle,
                       }}
                     >
@@ -1063,7 +1063,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                       <span
                         style={{
                           fontSize: '10px',
-                          color: theme.textMuted,
+                          color: 'var(--color-text-muted)',
                           transition: 'transform 0.2s ease',
                           display: 'inline-block',
                           transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -1076,11 +1076,11 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
 
                   {/* Expanded Details */}
                   {isExpanded && (
-                    <tr style={{ borderBottom: `1px solid ${theme.borderLight}` }}>
+                    <tr style={{ borderBottom: `1px solid var(--color-border-light)` }}>
                       <td colSpan="11" style={{ padding: '0' }}>
                         <div
                           style={{
-                            background: theme.secondaryBg,
+                            background: 'var(--color-inner-bg)',
                             padding: '16px 20px',
                           }}
                         >
@@ -1095,10 +1095,10 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                             {/* Left: Task Details */}
                             <div
                               style={{
-                                background: theme.cardBg,
+                                background: 'var(--color-card-bg)',
                                 borderRadius: '12px',
                                 padding: '16px',
-                                border: `1px solid ${theme.borderLight}`,
+                                border: `1px solid var(--color-border-light)`,
                               }}
                             >
                               {/* Task Details Header */}
@@ -1106,7 +1106,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                 style={{
                                   fontSize: '11px',
                                   fontWeight: '700',
-                                  color: theme.textMuted,
+                                  color: 'var(--color-text-muted)',
                                   marginBottom: '10px',
                                   letterSpacing: '0.5px',
                                   textTransform: 'uppercase',
@@ -1120,7 +1120,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                 style={{
                                   fontSize: '14px',
                                   fontWeight: '600',
-                                  color: theme.text,
+                                  color: 'var(--color-text)',
                                   marginBottom: '12px',
                                   direction: isRTL(member.task || '') ? 'rtl' : 'ltr',
                                   ...getTextFontStyle(member.task || ''),
@@ -1141,7 +1141,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                 {/* Status */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                   <span>📊</span>
-                                  <span style={{ color: theme.textMuted }}>Status:</span>
+                                  <span style={{ color: 'var(--color-text-muted)' }}>Status:</span>
                                   <span
                                     style={{
                                       background: tsc.bg,
@@ -1159,8 +1159,8 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                 {/* Project */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                   <span>📍</span>
-                                  <span style={{ color: theme.textMuted }}>Project:</span>
-                                  <span style={{ color: theme.text, fontWeight: '600' }}>
+                                  <span style={{ color: 'var(--color-text-muted)' }}>Project:</span>
+                                  <span style={{ color: 'var(--color-text)', fontWeight: '600' }}>
                                     {member.project || '—'}
                                   </span>
                                 </div>
@@ -1173,10 +1173,10 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                 {/* Publisher */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                   <span>📚</span>
-                                  <span style={{ color: theme.textMuted }}>Publisher:</span>
+                                  <span style={{ color: 'var(--color-text-muted)' }}>Publisher:</span>
                                   <span
                                     style={{
-                                      color: theme.textSecondary,
+                                      color: 'var(--color-text-secondary)',
                                       fontWeight: '600',
                                       direction: isRTL(member.publisher || '') ? 'rtl' : 'ltr',
                                       overflow: 'hidden',
@@ -1192,10 +1192,10 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                 {/* Genre */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                   <span>📖</span>
-                                  <span style={{ color: theme.textMuted }}>Genre:</span>
+                                  <span style={{ color: 'var(--color-text-muted)' }}>Genre:</span>
                                   <span
                                     style={{
-                                      color: theme.textSecondary,
+                                      color: 'var(--color-text-secondary)',
                                       fontWeight: '600',
                                       direction: isRTL(member.genre || '') ? 'rtl' : 'ltr',
                                       ...getTextFontStyle(member.genre || ''),
@@ -1208,14 +1208,14 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                 {/* Tags */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                                   <span>🏷️</span>
-                                  <span style={{ color: theme.textMuted }}>Tags:</span>
+                                  <span style={{ color: 'var(--color-text-muted)' }}>Tags:</span>
                                   {member.tags && member.tags.length > 0 ? (
                                     member.tags.slice(0, 2).map((tag, i) => (
                                       <span
                                         key={i}
                                         style={{
-                                          background: theme.secondaryBg,
-                                          color: theme.textSecondary,
+                                          background: 'var(--color-inner-bg)',
+                                          color: 'var(--color-text-secondary)',
                                           padding: '2px 6px',
                                           borderRadius: '4px',
                                           fontSize: '9px',
@@ -1227,7 +1227,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                       </span>
                                     ))
                                   ) : (
-                                    <span style={{ color: theme.textMuted }}>—</span>
+                                    <span style={{ color: 'var(--color-text-muted)' }}>—</span>
                                   )}
                                 </div>
                               </div>
@@ -1236,10 +1236,10 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                             {/* Right: Time Tracked */}
                             <div
                               style={{
-                                background: theme.cardBg,
+                                background: 'var(--color-card-bg)',
                                 borderRadius: '12px',
                                 padding: '16px',
-                                border: `1px solid ${theme.borderLight}`,
+                                border: `1px solid var(--color-border-light)`,
                                 display: 'flex',
                                 flexDirection: 'column',
                               }}
@@ -1248,7 +1248,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                 style={{
                                   fontSize: '11px',
                                   fontWeight: '700',
-                                  color: theme.textMuted,
+                                  color: 'var(--color-text-muted)',
                                   marginBottom: '12px',
                                   letterSpacing: '0.5px',
                                   textTransform: 'uppercase',
@@ -1268,14 +1268,14 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                               >
                                 {/* Current Session */}
                                 <div style={{ textAlign: 'center' }}>
-                                  <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '4px' }}>
+                                  <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
                                     Current Session
                                   </div>
                                   <div
                                     style={{
                                       fontSize: '16px',
                                       fontWeight: '700',
-                                      color: isWorking ? theme.working : theme.textMuted,
+                                      color: isWorking ? 'var(--color-working)' : 'var(--color-text-muted)',
                                       fontVariantNumeric: 'tabular-nums',
                                     }}
                                   >
@@ -1286,7 +1286,7 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                     )}
                                   </div>
                                   {isWorking && (
-                                    <div style={{ fontSize: '9px', color: theme.success, marginTop: '2px' }}>
+                                    <div style={{ fontSize: '9px', color: 'var(--color-success)', marginTop: '2px' }}>
                                       running
                                     </div>
                                   )}
@@ -1294,14 +1294,14 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
 
                                 {/* Previous Session */}
                                 <div style={{ textAlign: 'center' }}>
-                                  <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '4px' }}>
+                                  <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
                                     Previous
                                   </div>
                                   <div
                                     style={{
                                       fontSize: '16px',
                                       fontWeight: '700',
-                                      color: theme.text,
+                                      color: 'var(--color-text)',
                                     }}
                                   >
                                     {member.previousTimer || '—'}
@@ -1310,14 +1310,14 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
 
                                 {/* Total on Task */}
                                 <div style={{ textAlign: 'center' }}>
-                                  <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '4px' }}>
+                                  <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>
                                     Total
                                   </div>
                                   <div
                                     style={{
                                       fontSize: '16px',
                                       fontWeight: '700',
-                                      color: theme.accent,
+                                      color: 'var(--color-accent)',
                                     }}
                                   >
                                     {totalOnTask > 0 ? formatMinutes(totalOnTask) : '—'}
@@ -1335,9 +1335,9 @@ const ListView = ({ members, theme, teamStats, scoreMetrics, onMemberClick, onDa
                                   style={{
                                     padding: '8px 20px',
                                     borderRadius: '8px',
-                                    border: `1px solid ${theme.accent}`,
+                                    border: `1px solid var(--color-accent)`,
                                     background: theme.accent + '20',
-                                    color: theme.accent,
+                                    color: 'var(--color-accent)',
                                     cursor: 'pointer',
                                     fontSize: '12px',
                                     fontWeight: '600',
