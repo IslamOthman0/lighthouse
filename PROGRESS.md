@@ -371,10 +371,10 @@
 - [x] 5.12 Verify card migration
 
 ### Phase 6: Layout Migration
-- [ ] 6.1 FilterSortControls.jsx (320 lines)
-- [ ] 6.2 Header.jsx (396 lines)
-- [ ] 6.3 MobileBottomNav.jsx (300 lines)
-- [ ] 6.4 Verify layout migration
+- [x] 6.1 FilterSortControls.jsx (320 lines)
+- [x] 6.2 Header.jsx (396 lines)
+- [x] 6.3 MobileBottomNav.jsx (300 lines)
+- [x] 6.4 Verify layout migration
 
 ### Phase 7: Large Components
 - [ ] 7.1 ModalShell.jsx (317 lines) — must do BEFORE other modals
@@ -629,6 +629,7 @@ Priority fixes (Phase 9):
 | 7 | 2026-03-17 | 2.3 | taskCacheV2.js: 41 console calls replaced with logger (added import). DEV-only console.debug guard removed — logger.debug handles that. 0 console calls remain. 256 tests pass, build clean. |
 | 8 | 2026-03-17 | 2.4 | clickup.js: 24 console calls replaced with logger (added import). 0 console calls remain. 256 tests pass, build clean. |
 | 9 | 2026-03-17 | 2.5 | syncQueue.js: 16 console calls replaced with logger (added import). 0 console calls remain. 256 tests pass, build clean. |
+| 10 | 2026-03-18 | 6.1, 6.2, 6.3, 6.4 | Phase 6 layout migration complete. FilterSortControls: theme.working/break/offline/leave/noActivity → colorVar CSS vars; cardBg/backdropBlur/border/text/accent/innerBg → CSS vars; theme.type dropdown bg kept inline. Header: statusColor uses CSS vars; glow uses hardcoded rgba constants; cardBg/border/text/textMuted/danger/working(toggle) → CSS vars; theme.type avatar/dropdown bg kept inline. MobileBottomNav: theme.border/text/textMuted/danger → CSS vars; isDark-derived colors (navBg/shadow/activeColor/etc.) kept inline (no single CSS var covers these). 256 tests pass, build clean. |
 
 ---
 
