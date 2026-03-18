@@ -80,28 +80,38 @@ const LeavesTab = ({ theme }) => {
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'overview' && (
-        <TeamOverviewPanel
-          leaves={leaves}
-          members={members}
-          theme={theme}
-          settings={settings}
-          isMobile={isMobile}
-          onSelectMember={setSelectedMember}
-        />
-      )}
+      {members.length === 0 ? (
+        <div className="text-center py-10 text-[var(--color-text-muted)]">
+          <div className="text-4xl mb-3 opacity-30">📅</div>
+          <div className="text-sm">No team members configured</div>
+          <div className="text-xs mt-1 opacity-70">Add members in Settings → Team</div>
+        </div>
+      ) : (
+        <>
+          {activeTab === 'overview' && (
+            <TeamOverviewPanel
+              leaves={leaves}
+              members={members}
+              theme={theme}
+              settings={settings}
+              isMobile={isMobile}
+              onSelectMember={setSelectedMember}
+            />
+          )}
 
-      {activeTab === 'calendar' && (
-        <LeaveCalendar
-          leaves={leaves}
-          members={members}
-          theme={theme}
-          isMobile={isMobile}
-          typeFilter={typeFilter}
-          onTypeFilterChange={setTypeFilter}
-          memberFilter={memberFilter}
-          onMemberFilterChange={setMemberFilter}
-        />
+          {activeTab === 'calendar' && (
+            <LeaveCalendar
+              leaves={leaves}
+              members={members}
+              theme={theme}
+              isMobile={isMobile}
+              typeFilter={typeFilter}
+              onTypeFilterChange={setTypeFilter}
+              memberFilter={memberFilter}
+              onMemberFilterChange={setMemberFilter}
+            />
+          )}
+        </>
       )}
     </div>
   );
