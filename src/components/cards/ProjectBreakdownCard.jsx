@@ -263,14 +263,14 @@ const ProjectBreakdownCard = ({ theme }) => {
       {/* No Data Placeholder */}
       {!hasData && (
         <div
-          className="py-6 text-center text-[13px]"
+          className="py-10 text-center text-[13px]"
           style={{
             color: 'var(--color-text-muted)',
             fontFamily: getFontFamily('english'),
           }}
         >
-          <div className="mb-2 text-2xl opacity-50">📂</div>
-          No projects with tracked time today
+          <div className="mb-3 text-4xl opacity-30">📂</div>
+          <div>No projects with tracked time today</div>
         </div>
       )}
 
