@@ -45,12 +45,15 @@ const NoActivityCard = ({ member, theme, onClick, workingDays = 1 }) => {
       workingDays={workingDays}
     >
       {/* Compact Inner Content */}
-      <div className="m-4 p-3 rounded-lg border text-center" style={{ background: theme.subtleBg, borderColor: theme.borderLight }}>
-        <div className="text-xs mb-0.5" style={{ color: theme.textMuted }}>
+      <div
+        className="m-4 p-3 rounded-lg border text-center"
+        style={{ background: 'var(--color-subtle-bg)', borderColor: 'var(--color-border-light)' }}
+      >
+        <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>
           No tasks started today
         </div>
         {lastActive && (
-          <div className="text-[10px]" style={{ color: theme.textMuted }}>
+          <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
             Last active: {lastActive}
           </div>
         )}
