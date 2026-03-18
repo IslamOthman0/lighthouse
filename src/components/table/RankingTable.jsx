@@ -191,7 +191,12 @@ const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
       {/* Mobile Card Layout */}
       {isMobile && (
         <div>
-          {sortedMembers.map((member, index) => {
+          {sortedMembers.length === 0 ? (
+            <div className="text-center py-10 text-[var(--color-text-muted)]">
+              <div className="text-4xl mb-3 opacity-30">🏆</div>
+              <div className="text-sm" style={{ fontFamily: getFontFamily('english') }}>No members to rank</div>
+            </div>
+          ) : sortedMembers.map((member, index) => {
             const compliance = formatComplianceDisplay(member);
             const isTopThree = index < 3;
             const hasActivity = member.tracked > 0 || member.score > 0;
@@ -308,7 +313,14 @@ const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
             </thead>
 
             <tbody>
-              {sortedMembers.map((member, index) => {
+              {sortedMembers.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="text-center py-10 text-[var(--color-text-muted)]">
+                    <div className="text-4xl mb-3 opacity-30">🏆</div>
+                    <div className="text-sm" style={{ fontFamily: getFontFamily('english') }}>No members to rank</div>
+                  </td>
+                </tr>
+              ) : sortedMembers.map((member, index) => {
                 const isTopThree = index < 3;
                 const compliance = formatComplianceDisplay(member);
                 const scoreBadgeStyle = getScoreBadgeStyle(member.score);
