@@ -31,10 +31,15 @@ const Sparkline = ({
   const max = Math.max(...data);
   const range = max - min || 1;
 
+  // Use a fixed internal coordinate space so geometry is always correct,
+  // regardless of whether width is a number or "100%".
+  const VB_WIDTH = 300;
+  const VB_HEIGHT = height;
+
   // Padding for markers
   const padding = 4;
-  const chartWidth = width - padding * 2;
-  const chartHeight = height - padding * 2;
+  const chartWidth = VB_WIDTH - padding * 2;
+  const chartHeight = VB_HEIGHT - padding * 2;
 
   // Calculate points for the line
   const points = data.map((value, index) => {
@@ -49,14 +54,14 @@ const Sparkline = ({
     .join(' ');
 
   // Create fill path (area under the line)
-  const fillD = `${pathD} L ${points[points.length - 1].x} ${height - padding} L ${padding} ${height - padding} Z`;
+  const fillD = `${pathD} L ${points[points.length - 1].x} ${VB_HEIGHT - padding} L ${padding} ${VB_HEIGHT - padding} Z`;
 
   // Find peak and low indices
   const maxIndex = data.indexOf(max);
   const minIndex = data.indexOf(min);
 
   return (
-    <svg width={width} height={height} style={{ overflow: 'visible' }}>
+    <svg width={width} height={height} viewBox={`0 0 ${VB_WIDTH} ${VB_HEIGHT}`} style={{ overflow: 'visible', display: 'block' }}>
       {/* Gradient fill under the line */}
       <defs>
         <linearGradient id={`sparkline-gradient-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
@@ -132,7 +137,7 @@ export const SparklineWithStats = ({
   if (!data || data.length < 2) {
     return (
       <div style={{
-        width,
+        width: '100%',
         height: height + 24,
         display: 'flex',
         alignItems: 'center',
@@ -153,10 +158,10 @@ export const SparklineWithStats = ({
   const maxIndex = data.indexOf(max);
 
   return (
-    <div style={{ width }}>
+    <div style={{ width: '100%' }}>
       <Sparkline
         data={data}
-        width={width}
+        width="100%"
         height={height}
         color={color}
         showMarkers={true}

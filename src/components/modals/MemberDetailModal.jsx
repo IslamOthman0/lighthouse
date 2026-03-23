@@ -83,7 +83,7 @@ const getThisWeekRange = () => {
  */
 const fetchWeeklyPerformanceData = async (member, startDate, endDate) => {
   if (!member?.clickUpId) {
-    return { weeklyHours: [], byProject: [], totalTracked: 0, totalTasks: 0 };
+    return { weeklyHours: [], byProject: [], totalTracked: 0, totalTasks: 0, chartMode: 'day' };
   }
 
   const start = startDate ? new Date(startDate) : (() => { const { start: s } = getThisWeekRange(); return s; })();
@@ -93,88 +93,102 @@ const fetchWeeklyPerformanceData = async (member, startDate, endDate) => {
   const startTimestamp = Math.floor(start.getTime() / 1000);
   const endTimestamp = Math.floor(end.getTime() / 1000);
 
+  // Determine grouping mode based on range length
+  const rangeDays = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+  const chartMode = rangeDays <= 14 ? 'day' : 'week';
+
   try {
-    // Fetch time entries for the week
     const timeEntries = await clickup.getTimeEntries(startTimestamp, endTimestamp, [member.clickUpId]);
 
     if (!timeEntries || timeEntries.length === 0) {
-      return { weeklyHours: [], byProject: [], totalTracked: 0, totalTasks: 0 };
+      return { weeklyHours: [], byProject: [], totalTracked: 0, totalTasks: 0, chartMode };
     }
 
-    // Group time entries by day
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const weeklyHoursMap = {};
     const projectMap = {};
     const taskIds = new Set();
-
-    // Initialize all days from Sunday to today
-    const current = new Date(start);
-    while (current <= end) {
-      const dayName = dayNames[current.getDay()];
-      weeklyHoursMap[dayName] = { day: dayName, hours: 0, isFuture: false };
-      current.setDate(current.getDate() + 1);
-    }
-
-    // Mark future days
     const today = new Date();
-    for (let i = today.getDay() + 1; i <= 6; i++) {
-      const dayName = dayNames[i];
-      weeklyHoursMap[dayName] = { day: dayName, hours: 0, isFuture: true };
+    today.setHours(23, 59, 59, 999);
+
+    // Helper: local YYYY-MM-DD key for a date
+    const toDateKey = (d) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    // Helper: ISO week key "YYYY-Www" for a date
+    const toWeekKey = (d) => {
+      const tmp = new Date(d);
+      tmp.setHours(0, 0, 0, 0);
+      tmp.setDate(tmp.getDate() + 4 - (tmp.getDay() || 7));
+      const yearStart = new Date(tmp.getFullYear(), 0, 1);
+      const weekNum = Math.ceil(((tmp - yearStart) / 86400000 + 1) / 7);
+      return `${tmp.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+    };
+
+    // Build ordered bucket keys covering the entire range
+    const bucketMap = {};
+    const orderedKeys = [];
+    const cur = new Date(start);
+
+    if (chartMode === 'day') {
+      while (cur <= end) {
+        const key = toDateKey(cur);
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const label = rangeDays <= 7
+          ? dayNames[cur.getDay()]                          // "Mon"
+          : `${cur.getMonth() + 1}/${cur.getDate()}`;      // "3/18"
+        bucketMap[key] = { day: label, hours: 0, isFuture: cur > today };
+        orderedKeys.push(key);
+        cur.setDate(cur.getDate() + 1);
+      }
+    } else {
+      // week mode: one bucket per calendar week
+      while (cur <= end) {
+        const key = toWeekKey(cur);
+        if (!bucketMap[key]) {
+          // Label: start-of-week date within the range
+          const weekStart = new Date(cur);
+          const label = `${weekStart.getMonth() + 1}/${weekStart.getDate()}`;
+          bucketMap[key] = { day: label, hours: 0, isFuture: cur > today };
+          orderedKeys.push(key);
+        }
+        cur.setDate(cur.getDate() + 7 - cur.getDay()); // jump to next Sunday
+        if (cur > end) break;
+        cur.setDate(cur.getDate() - cur.getDay()); // snap to Sunday
+      }
     }
 
-    // Process time entries
+    // Process time entries into buckets
     timeEntries.forEach(entry => {
       const duration = parseInt(entry.duration, 10);
       const isLive = duration < 0;
-      const startTime = new Date(parseInt(entry.start));
-      const dayName = dayNames[startTime.getDay()];
+      const entryStart = new Date(parseInt(entry.start));
 
-      // Calculate hours
       const trackedMinutes = isLive
-        ? Math.floor((Date.now() - startTime.getTime()) / 60000)
+        ? Math.floor((Date.now() - entryStart.getTime()) / 60000)
         : Math.floor(duration / 60000);
       const trackedHours = trackedMinutes / 60;
 
-      // Add to daily total
-      if (weeklyHoursMap[dayName]) {
-        weeklyHoursMap[dayName].hours += trackedHours;
+      const key = chartMode === 'day' ? toDateKey(entryStart) : toWeekKey(entryStart);
+      if (bucketMap[key]) {
+        bucketMap[key].hours += trackedHours;
       }
 
-      // Track unique tasks
-      if (entry.task?.id) {
-        taskIds.add(entry.task.id);
-      }
+      if (entry.task?.id) taskIds.add(entry.task.id);
 
-      // Group by project
       const projectName = entry.task_location?.list_name || 'Other';
       if (!projectMap[projectName]) {
         projectMap[projectName] = { name: projectName, hours: 0, tasks: new Set() };
       }
       projectMap[projectName].hours += trackedHours;
-      if (entry.task?.id) {
-        projectMap[projectName].tasks.add(entry.task.id);
-      }
+      if (entry.task?.id) projectMap[projectName].tasks.add(entry.task.id);
     });
 
-    // Convert to arrays
-    const weeklyHours = dayNames
-      .slice(0, today.getDay() + 1)
-      .map(day => ({
-        ...weeklyHoursMap[day],
-        hours: Math.round(weeklyHoursMap[day]?.hours * 10) / 10 || 0,
-      }));
-
-    // Add future days
-    for (let i = today.getDay() + 1; i <= 6; i++) {
-      weeklyHours.push({ day: dayNames[i], hours: 0, isFuture: true });
-    }
+    const weeklyHours = orderedKeys.map(key => ({
+      ...bucketMap[key],
+      hours: Math.round(bucketMap[key].hours * 10) / 10,
+    }));
 
     const byProject = Object.values(projectMap)
-      .map(p => ({
-        name: p.name,
-        hours: Math.round(p.hours * 10) / 10,
-        tasks: p.tasks.size,
-      }))
+      .map(p => ({ name: p.name, hours: Math.round(p.hours * 10) / 10, tasks: p.tasks.size }))
       .sort((a, b) => b.hours - a.hours);
 
     const totalTracked = weeklyHours
@@ -186,10 +200,11 @@ const fetchWeeklyPerformanceData = async (member, startDate, endDate) => {
       byProject,
       totalTracked: Math.round(totalTracked * 10) / 10,
       totalTasks: taskIds.size,
+      chartMode,
     };
   } catch (error) {
     logger.error('Failed to fetch weekly performance data:', error);
-    return { weeklyHours: [], byProject: [], totalTracked: 0, totalTasks: 0 };
+    return { weeklyHours: [], byProject: [], totalTracked: 0, totalTasks: 0, chartMode };
   }
 };
 
@@ -1343,28 +1358,27 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
             // Calculate percentages
             const timePercent = targetHours > 0 ? Math.round((trackedHours / targetHours) * 100) : 0;
             const tasksPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-            const onTimePercent = member.compliance || 85;
+            const compliancePercent = targetHours > 0
+              ? Math.round(Math.min((member.complianceHours || 0) / targetHours, 1) * 100)
+              : 0;
 
             // Build performance data
+            const monitored = (settings?.team?.membersToMonitor || []).map(String);
+            const monitoredMembers = monitored.length > 0
+              ? storeMembers.filter(m => monitored.includes(String(m.clickUpId)))
+              : storeMembers;
+
             const perfData = {
               timePercent,
               tasksPercent,
-              onTimePercent,
-              score: member.score || Math.round(timePercent * 0.4 + tasksPercent * 0.2 + onTimePercent * 0.3 + 10),
+              compliancePercent,
+              score: member.score != null ? Math.round(member.score) : 0,
               previousScore: 0,
               rank: member.rank || 1,
-              teamSize: storeMembers?.length || 8,
+              teamSize: monitoredMembers.length || 8,
               tracked: { current: trackedHours, target: targetHours },
-              tasks: { completed: completedTasks, total: totalTasks, onTime: Math.round(completedTasks * 0.85) },
-              weeklyHours: weeklyData.length > 0 ? weeklyData : [
-                { day: 'Sun', hours: 0, isFuture: false },
-                { day: 'Mon', hours: 0, isFuture: false },
-                { day: 'Tue', hours: 0, isFuture: false },
-                { day: 'Wed', hours: 0, isFuture: false },
-                { day: 'Thu', hours: trackedHours, isFuture: false },
-                { day: 'Fri', hours: 0, isFuture: true },
-                { day: 'Sat', hours: 0, isFuture: true },
-              ],
+              tasks: { completed: completedTasks, total: totalTasks },
+              weeklyHours: weeklyData,
               byProject: projectData,
             };
 
@@ -1378,7 +1392,9 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
             const percentile = Math.round(((perfData.teamSize - perfData.rank + 1) / perfData.teamSize) * 100);
             const totalWeekHours = perfData.weeklyHours.filter(d => !d.isFuture).reduce((sum, d) => sum + d.hours, 0);
 
-            // Prepare sparkline data (hours per day)
+            // Prepare sparkline data
+            const chartMode = performanceData?.chartMode || 'day';
+            const chartTitle = chartMode === 'week' ? '📈 Hours by Week' : '📈 Daily Hours Trend';
             const sparklineData = perfData.weeklyHours.filter(d => !d.isFuture).map(d => d.hours);
             const sparklineLabels = perfData.weeklyHours.filter(d => !d.isFuture).map(d => d.day);
 
@@ -1447,12 +1463,12 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                       color: perfData.tasksPercent >= 80 ? 'var(--color-success)' : 'var(--color-warning)',
                     },
                     {
-                      icon: '🎯',
-                      label: 'On-Time',
-                      value: `${perfData.tasks.onTime}/${perfData.tasks.completed}`,
-                      sub: `${perfData.onTimePercent}%`,
-                      percent: perfData.onTimePercent,
-                      color: perfData.onTimePercent >= 80 ? 'var(--color-success)' : 'var(--color-warning)',
+                      icon: '🕐',
+                      label: 'Compliance',
+                      value: formatHoursToHM(member.complianceHours || 0),
+                      sub: `${perfData.compliancePercent}%`,
+                      percent: perfData.compliancePercent,
+                      color: perfData.compliancePercent >= 80 ? 'var(--color-success)' : 'var(--color-warning)',
                     },
                   ].map((m, i) => (
                     <div
@@ -1481,7 +1497,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                   ))}
                 </div>
 
-                {/* Weekly Hours Trend - Sparkline */}
+                {/* Hours Trend - Sparkline (adapts to date range) */}
                 <div
                   style={{
                     background: 'var(--color-inner-bg)',
@@ -1493,7 +1509,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                     <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--color-text)', fontFamily: getFontFamily('english') }}>
-                      📈 Weekly Hours Trend
+                      {chartTitle}
                     </div>
                     <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', ...tabularNumberStyle }}>
                       {formatHoursToHM(totalWeekHours)} total
@@ -1505,8 +1521,7 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
                     <SparklineWithStats
                       data={sparklineData}
                       labels={sparklineLabels}
-                      width={300}
-                      height={60}
+                      height={80}
                       color="var(--color-accent)"
                       theme={theme}
                       formatValue={(v) => formatHoursToHM(v)}
