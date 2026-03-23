@@ -85,12 +85,14 @@ const CardShell = ({
           >
             {name}
           </div>
-          <div
-            className="text-[10px] font-medium"
-            style={{ color: 'var(--color-text-muted)' }}
-          >
-            {statusTime}
-          </div>
+          {statusTime && (
+            <div
+              className="text-[10px] font-medium"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              {statusTime}
+            </div>
+          )}
         </div>
 
         <StatusBadge status={status} theme={theme} size="small" />

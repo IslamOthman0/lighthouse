@@ -10,7 +10,8 @@
       "Bash(npm run dev:*)",
       "Bash(tasklist:*)",
       "Bash(findstr:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_pages"
     ],
     "deny": [],
     "ask": []

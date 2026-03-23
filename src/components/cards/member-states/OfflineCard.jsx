@@ -2,6 +2,7 @@ import React from 'react';
 import CardShell from './CardShell';
 import { getTextFontStyle, tabularNumberStyle } from '../../../utils/typography';
 import { formatHoursToHM, formatMinutesToHM } from '../../../utils/timeFormat';
+import { useAppStore } from '../../../stores/useAppStore';
 
 // Utility to detect RTL text (Arabic)
 const isRTL = (text) => /[\u0600-\u06FF]/.test(text);
@@ -16,6 +17,15 @@ const formatTimeElapsed = (minutes) => {
   return `${hours}h ${mins}m ago`;
 };
 
+// Format last-seen minutes back to "Sun 10 Jan"
+const formatLastSeenDate = (minutes) => {
+  if (!minutes) return null;
+  const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const d = new Date(Date.now() - minutes * 60000);
+  return `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+};
+
 // Hardcoded hex constants for offline gradient (avoids theme.offlineLight/theme.offline hex suffix pattern)
 const OFFLINE_LIGHT = '#9CA3AF';
 const OFFLINE = '#6B7280';
@@ -25,6 +35,9 @@ const OFFLINE = '#6B7280';
  * Features: gray border, 70% opacity, last seen info
  */
 const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
+  const dateRange = useAppStore(state => state.dateRange);
+  const isToday = !dateRange?.startDate || dateRange?.preset === 'today';
+
   const {
     task,
     taskStatus,
@@ -64,7 +77,7 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
       member={member}
       theme={theme}
       onClick={onClick}
-      statusTime={endTime ? `Started ${startTime} – lasted ${endTime}` : (startTime ? `Started ${startTime}` : '—')}
+      statusTime={isToday ? (endTime ? `Started ${startTime} – lasted ${endTime}` : (startTime ? `Started ${startTime}` : '—')) : null}
       opacity={0.75}
       avatarFilter="grayscale(30%)"
       workingDays={workingDays}
@@ -78,7 +91,9 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
               Last Activity
             </div>
             <div className="text-xl font-bold leading-tight min-h-[24px]" style={timerStyle}>
-              Offline {formatTimeElapsed(lastSeen)}
+              {isToday
+                ? `Offline ${formatTimeElapsed(lastSeen)}`
+                : `Stopped ${formatLastSeenDate(lastSeen) || '—'}`}
             </div>
             {/* Previous tracked time */}
             {member.previousTimer && (
@@ -93,7 +108,7 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
         <div className="p-3 rounded-lg border" style={{ background: 'var(--color-subtle-bg)', borderColor: 'var(--color-border-light)' }}>
           {/* Location + Status Badge — same line */}
           {((location || project) || taskStatus) && (
-            <div className="flex items-center justify-between gap-2 mb-1.5">
+            <div className="flex items-center justify-between gap-2 mb-2.5">
               {(location || project) ? (
                 <div
                   className="text-[10px] font-bold truncate"
@@ -129,7 +144,7 @@ const OfflineCard = ({ member, theme, onClick, workingDays = 1 }) => {
               direction: isRTL(task || '') ? 'rtl' : 'ltr',
             }}
           >
-            {task ? `Last: ${task}` : '—'}
+            {task || '—'}
           </div>
         </div>
 

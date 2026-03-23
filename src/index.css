@@ -12,7 +12,7 @@
 :root {
   /* Backgrounds */
   --color-bg: #0A0A0A;
-  --color-card-bg: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+  --color-card-bg: rgba(255,255,255,0.03);
   --color-inner-bg: rgba(255, 255, 255, 0.03);
   --color-subtle-bg: rgba(255, 255, 255, 0.02);
 
