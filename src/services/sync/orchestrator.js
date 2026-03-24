@@ -229,11 +229,13 @@ async function syncSingleMember(member, todayTimeEntries, avgTasksBaseline = 3, 
     let memberWorkingDays = workingDays;
     if (member.id && startDate && endDate) {
       try {
+        logger.info(`${member.name}: querying db.leaves for memberId=${member.id} (type=${typeof member.id}), range=[${startDate.toISOString()} - ${endDate.toISOString()}]`);
         const memberLeaves = await db.leaves.where('memberId').equals(member.id).toArray();
+        logger.info(`${member.name}: found ${memberLeaves.length} leave record(s). Types: [${memberLeaves.map(l => l.type).join(', ')}]. Statuses: [${memberLeaves.map(l => l.status).join(', ')}]`);
         const leaveDays = countLeaveDaysInRange(memberLeaves, startDate, endDate, settings);
         memberWorkingDays = Math.max(workingDays - leaveDays, 1);
         if (leaveDays > 0) {
-          logger.debug(`${member.name}: ${leaveDays} leave day(s) in range → memberWorkingDays=${memberWorkingDays}`);
+          logger.info(`${member.name}: ${leaveDays} leave day(s) in range → memberWorkingDays=${memberWorkingDays}`);
         }
       } catch (leaveErr) {
         // Non-critical — fall back to team working days
