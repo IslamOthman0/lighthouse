@@ -564,6 +564,11 @@ export function useClickUpSync(config = {}) {
         // All member IDs (including non-monitored) for full project breakdown coverage
         const allMemberIds = allMembers.map(m => m.clickUpId).filter(Boolean);
 
+        // Sync leaves FIRST so db.leaves is fresh when syncSingleMember reads it for leave deduction
+        // (syncMemberData → syncSingleMember queries db.leaves to deduct leave days from workingDays)
+        const allMembersForLeave = await db.members.toArray();
+        await performLeaveSync(allMembersForLeave.length > 0 ? allMembersForLeave : currentMembers, settings);
+
         // Sync all members — poll mode uses cache for past days, only fetches today fresh
         const syncResult = await syncMemberData(currentMembers, avgTasksBaseline, settings, currentDateRange, onProgress, signal, { pollMode: true, allMemberIds });
 
@@ -582,11 +587,7 @@ export function useClickUpSync(config = {}) {
         const projectBreakdown = syncResult.projectBreakdown;
         const dateRangeInfo = syncResult.dateRangeInfo;
 
-        // Perform daily leave/WFH sync FIRST so db.leaves is fresh for enrichment
-        const allMembersForLeave = await db.members.toArray();
-        await performLeaveSync(allMembersForLeave.length > 0 ? allMembersForLeave : syncResult.members, settings);
-
-        // Now enrich with leave status using freshly-synced db.leaves
+        // Enrich with leave status (display badges) using freshly-synced db.leaves
         const updatedMembers = await enrichMembersWithLeaveStatus(syncResult.members);
 
         // Update IndexedDB (persistence) before batching store update
@@ -770,6 +771,10 @@ export function useClickUpSync(config = {}) {
         // All member IDs (including non-monitored) for full project breakdown coverage
         const allMemberIds = allMembers.map(m => m.clickUpId).filter(Boolean);
 
+        // Sync leaves FIRST so db.leaves is fresh when syncSingleMember reads it for leave deduction
+        const allMembersForLeave = await db.members.toArray();
+        await performLeaveSync(allMembersForLeave.length > 0 ? allMembersForLeave : currentMembers, settings);
+
         const syncResult = await syncMemberData(
           currentMembers,
           avgTasksBaseline,
@@ -900,17 +905,17 @@ export function useManualSync() {
         setSyncProgress(progress);
       };
 
+      // Force leave sync FIRST so db.leaves is fresh when syncSingleMember reads it for leave deduction
+      localStorage.removeItem(LEAVE_SYNC_KEY);
+      const allMembersForLeave = await db.members.toArray();
+      await performLeaveSync(allMembersForLeave.length > 0 ? allMembersForLeave : members, settings);
+
       // Sync members and get project breakdown
       const syncResult = await syncMemberData(members, avgTasksBaseline, settings, dateRange, onProgress);
       const projectBreakdown = syncResult.projectBreakdown;
       const dateRangeInfo = syncResult.dateRangeInfo;
 
-      // Perform daily leave/WFH sync FIRST (force sync on manual refresh)
-      localStorage.removeItem(LEAVE_SYNC_KEY);
-      const allMembersForLeave = await db.members.toArray();
-      await performLeaveSync(allMembersForLeave.length > 0 ? allMembersForLeave : syncResult.members, settings);
-
-      // Now enrich with leave status using freshly-synced db.leaves
+      // Enrich with leave status using freshly-synced db.leaves
       const updatedMembers = await enrichMembersWithLeaveStatus(syncResult.members);
 
       await bulkUpdateMembers(updatedMembers);
