@@ -143,22 +143,30 @@ export function calculateComplianceHours(timeEntries, workSchedule = null) {
 
     if (isNaN(startMs) || isNaN(endMs)) return;
 
-    const startDate = new Date(startMs);
-    const endDate = new Date(endMs);
+    // Iterate over each calendar day the entry spans so that entries crossing
+    // midnight (e.g. 5 PM → 9 AM next day) correctly count compliance hours
+    // on both days rather than only on the start date.
+    const currentDay = new Date(startMs);
+    currentDay.setHours(0, 0, 0, 0);
+    const entryEnd = new Date(endMs);
 
-    // Get work window boundaries for this entry's date
-    const workStart = new Date(startDate);
-    workStart.setHours(START_HOUR, 0, 0, 0);
+    while (currentDay <= entryEnd) {
+      // Get work window boundaries for this calendar day
+      const workStart = new Date(currentDay);
+      workStart.setHours(START_HOUR, 0, 0, 0);
 
-    const workEnd = new Date(startDate);
-    workEnd.setHours(END_HOUR, 0, 0, 0);
+      const workEnd = new Date(currentDay);
+      workEnd.setHours(END_HOUR, 0, 0, 0);
 
-    // Calculate overlap with work window
-    const effectiveStart = Math.max(startMs, workStart.getTime());
-    const effectiveEnd = Math.min(endMs, workEnd.getTime());
+      // Calculate overlap of entry with work window on this day
+      const effectiveStart = Math.max(startMs, workStart.getTime());
+      const effectiveEnd = Math.min(endMs, workEnd.getTime());
 
-    if (effectiveEnd > effectiveStart) {
-      totalComplianceMs += effectiveEnd - effectiveStart;
+      if (effectiveEnd > effectiveStart) {
+        totalComplianceMs += effectiveEnd - effectiveStart;
+      }
+
+      currentDay.setDate(currentDay.getDate() + 1);
     }
   });
 
