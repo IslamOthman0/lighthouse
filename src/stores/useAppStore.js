@@ -295,7 +295,7 @@ export const useAppStore = create(devtools((set, get) => ({
         complianceHours: m.complianceHours ?? (m.tracked || 0) * 0.85,
         avgTasksBaseline: teamBaseline,
         weights: settingsWeights,
-        workingDays,
+        workingDays: m.workingDays || workingDays,
       });
       return { ...m, score: memberScore.total };
     });
@@ -330,7 +330,8 @@ export const useAppStore = create(devtools((set, get) => ({
         tracked: m.tracked || 0, tasks: m.tasks || 0, done: m.done || 0,
         completionDenominator: m.completionDenominator,
         complianceHours: m.complianceHours ?? (m.tracked || 0) * 0.85,
-        avgTasksBaseline: teamBaseline, weights: settingsWeights, workingDays,
+        avgTasksBaseline: teamBaseline, weights: settingsWeights,
+        workingDays: m.workingDays || workingDays,
       });
       return { ...m, score: memberScore.total };
     });

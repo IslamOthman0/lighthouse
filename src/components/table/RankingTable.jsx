@@ -95,11 +95,12 @@ const RankingTable = ({ members, theme, onMemberClick, dateRangeInfo }) => {
     return <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>;
   };
 
-  // Format compliance display: show percentage (complianceHours / (dailyTarget × workingDays) × 100%)
+  // Format compliance display: show percentage (complianceHours / (dailyTarget × memberWorkingDays) × 100%)
   const formatComplianceDisplay = (member) => {
     const compliance = member.complianceHours || 0;
     const dailyTarget = member.target || 6.5;
-    const totalTarget = dailyTarget * workingDays;
+    const mWorkingDays = member.workingDays || workingDays;
+    const totalTarget = dailyTarget * mWorkingDays;
     const pct = Math.min(Math.round((compliance / totalTarget) * 100), 100);
     return { pct, label: `${pct}%` };
   };

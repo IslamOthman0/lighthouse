@@ -1346,7 +1346,9 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
             }
 
             // Use real data from member object and fetched performance data
-            const targetHours = member.target || 6.5;
+            const dailyTarget = member.target || 6.5;
+            const perfWorkingDays = member.workingDays || memberWorkingDays;
+            const targetHours = dailyTarget * perfWorkingDays;
             const trackedHours = member.tracked || 0;
             const totalTasks = member.tasks || 0;
             const completedTasks = member.done || 0;
@@ -1368,13 +1370,20 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
               ? storeMembers.filter(m => monitored.includes(String(m.clickUpId)))
               : storeMembers;
 
+            // Compute rank from monitored members sorted by score descending
+            const sortedByScore = [...monitoredMembers]
+              .sort((a, b) => (b.score || 0) - (a.score || 0));
+            const memberRank = sortedByScore.findIndex(m =>
+              String(m.clickUpId) === String(member.clickUpId)
+            ) + 1;
+
             const perfData = {
               timePercent,
               tasksPercent,
               compliancePercent,
               score: member.score != null ? Math.round(member.score) : 0,
               previousScore: 0,
-              rank: member.rank || 1,
+              rank: memberRank || 1,
               teamSize: monitoredMembers.length || 8,
               tracked: { current: trackedHours, target: targetHours },
               tasks: { completed: completedTasks, total: totalTasks },
@@ -1390,7 +1399,8 @@ const MemberDetailModal = ({ isOpen, onClose, member, theme }) => {
 
             const scoreDiff = perfData.score - perfData.previousScore;
             const percentile = Math.round(((perfData.teamSize - perfData.rank + 1) / perfData.teamSize) * 100);
-            const totalWeekHours = perfData.weeklyHours.filter(d => !d.isFuture).reduce((sum, d) => sum + d.hours, 0);
+            // Use member.tracked (precise) instead of summing rounded per-day values
+            const totalWeekHours = trackedHours || perfData.weeklyHours.filter(d => !d.isFuture).reduce((sum, d) => sum + d.hours, 0);
 
             // Prepare sparkline data
             const chartMode = performanceData?.chartMode || 'day';
