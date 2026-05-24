@@ -310,16 +310,22 @@ export function useClickUpSync(config = {}) {
         try {
           const cachedMembers = await db.members.toArray();
           if (cachedMembers && cachedMembers.length > 0) {
-            // Sanitize stale fields that may be objects instead of primitives
-            // (e.g. status stored as a ClickUp status object in older schema versions)
+            // Sanitize stale fields that may be objects instead of primitives.
+            // Old schema versions could store raw ClickUp objects (e.g. task.list object
+            // as `project`, or status objects) — coerce all scalar fields back to strings.
             const VALID_STATUSES = new Set(['working', 'break', 'offline', 'noActivity', 'leave']);
+            const toStr = (v) => (typeof v === 'string' ? v : null);
             const sanitized = cachedMembers.map(m => ({
               ...m,
               status: (typeof m.status === 'string' && VALID_STATUSES.has(m.status))
                 ? m.status
                 : 'noActivity',
-              taskStatus: typeof m.taskStatus === 'string' ? m.taskStatus : null,
-              taskStatusColor: typeof m.taskStatusColor === 'string' ? m.taskStatusColor : null,
+              task: toStr(m.task) ?? '',
+              project: toStr(m.project) ?? '',
+              publisher: toStr(m.publisher) ?? '',
+              genre: toStr(m.genre) ?? '',
+              taskStatus: toStr(m.taskStatus),
+              taskStatusColor: toStr(m.taskStatusColor),
             }));
             setMembers(sanitized);
             updateStats();
