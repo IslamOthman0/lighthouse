@@ -29,6 +29,25 @@ import { processPendingQueue } from '../services/syncQueue';
 import { taskCacheV2 } from '../services/taskCacheV2';
 import { enrichMembersWithLeaveStatus } from '../utils/leaveHelpers';
 
+// Sanitize a member object loaded from IndexedDB.
+// Old schema versions could store raw ClickUp objects in scalar fields
+// (e.g. task.list object as `project` or `location`), causing React error #31.
+const VALID_STATUSES = new Set(['working', 'break', 'offline', 'noActivity', 'leave']);
+const _toStr = (v) => (typeof v === 'string' ? v : null);
+function sanitizeCachedMember(m) {
+  return {
+    ...m,
+    status: (typeof m.status === 'string' && VALID_STATUSES.has(m.status)) ? m.status : 'noActivity',
+    task: _toStr(m.task) ?? '',
+    project: _toStr(m.project) ?? '',
+    location: _toStr(m.location) ?? '',
+    publisher: _toStr(m.publisher) ?? '',
+    genre: _toStr(m.genre) ?? '',
+    taskStatus: _toStr(m.taskStatus),
+    taskStatusColor: _toStr(m.taskStatusColor),
+  };
+}
+
 /**
  * Load settings from localStorage
  * @returns {Object} Settings object
@@ -203,7 +222,7 @@ async function discoverAndMergeTeamMembers() {
     // DON'T trigger updateStats() to avoid immediate re-sync cascade
     if (added > 0) {
       const refreshed = await db.members.toArray();
-      useAppStore.getState().setMembers(refreshed);
+      useAppStore.getState().setMembers(refreshed.map(sanitizeCachedMember));
       logger.info(`Store updated with ${refreshed.length} total members (will sync on next cycle)`);
     }
   } catch (error) {
@@ -310,23 +329,7 @@ export function useClickUpSync(config = {}) {
         try {
           const cachedMembers = await db.members.toArray();
           if (cachedMembers && cachedMembers.length > 0) {
-            // Sanitize stale fields that may be objects instead of primitives.
-            // Old schema versions could store raw ClickUp objects (e.g. task.list object
-            // as `project`, or status objects) — coerce all scalar fields back to strings.
-            const VALID_STATUSES = new Set(['working', 'break', 'offline', 'noActivity', 'leave']);
-            const toStr = (v) => (typeof v === 'string' ? v : null);
-            const sanitized = cachedMembers.map(m => ({
-              ...m,
-              status: (typeof m.status === 'string' && VALID_STATUSES.has(m.status))
-                ? m.status
-                : 'noActivity',
-              task: toStr(m.task) ?? '',
-              project: toStr(m.project) ?? '',
-              publisher: toStr(m.publisher) ?? '',
-              genre: toStr(m.genre) ?? '',
-              taskStatus: toStr(m.taskStatus),
-              taskStatusColor: toStr(m.taskStatusColor),
-            }));
+            const sanitized = cachedMembers.map(sanitizeCachedMember);
             setMembers(sanitized);
             updateStats();
             logger.info(`Hydrated ${sanitized.length} members from IndexedDB cache`);
