@@ -310,9 +310,20 @@ export function useClickUpSync(config = {}) {
         try {
           const cachedMembers = await db.members.toArray();
           if (cachedMembers && cachedMembers.length > 0) {
-            setMembers(cachedMembers);
+            // Sanitize stale fields that may be objects instead of primitives
+            // (e.g. status stored as a ClickUp status object in older schema versions)
+            const VALID_STATUSES = new Set(['working', 'break', 'offline', 'noActivity', 'leave']);
+            const sanitized = cachedMembers.map(m => ({
+              ...m,
+              status: (typeof m.status === 'string' && VALID_STATUSES.has(m.status))
+                ? m.status
+                : 'noActivity',
+              taskStatus: typeof m.taskStatus === 'string' ? m.taskStatus : null,
+              taskStatusColor: typeof m.taskStatusColor === 'string' ? m.taskStatusColor : null,
+            }));
+            setMembers(sanitized);
             updateStats();
-            logger.info(`Hydrated ${cachedMembers.length} members from IndexedDB cache`);
+            logger.info(`Hydrated ${sanitized.length} members from IndexedDB cache`);
           }
         } catch (e) {
           // non-critical — will be populated by first sync
