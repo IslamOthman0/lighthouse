@@ -1,6 +1,6 @@
 import React from 'react';
 import CardShell from './CardShell';
-import { getTextFontStyle, tabularNumberStyle } from '../../../utils/typography';
+import { getTextFontStyle, tabularNumberStyle, safeText } from '../../../utils/typography';
 import { formatHoursToHM, formatMinutesToHM } from '../../../utils/timeFormat';
 import { useAppStore } from '../../../stores/useAppStore';
 
@@ -41,11 +41,11 @@ const BreakCard = ({ member, theme, onClick, workingDays = 1 }) => {
   const isToday = !dateRange?.startDate || dateRange?.preset === 'today';
 
   const {
-    task,
-    taskStatus,
+    task: rawTask,
+    taskStatus: rawTaskStatus,
     taskStatusColor,
-    location,
-    project,
+    location: rawLocation,
+    project: rawProject,
     tracked,
     target,
     tasks,
@@ -54,12 +54,21 @@ const BreakCard = ({ member, theme, onClick, workingDays = 1 }) => {
     startTime,
     endTime,
     lastSeen,
-    publisher,
-    genre,
+    publisher: rawPublisher,
+    genre: rawGenre,
     assignees = [],
     tags = [],
     score,
   } = member;
+
+  // Coerce text fields to safe strings — guards against legacy IndexedDB data
+  // storing raw ClickUp objects (list/status) which would crash React (#31).
+  const task = safeText(rawTask);
+  const taskStatus = safeText(rawTaskStatus);
+  const location = safeText(rawLocation);
+  const project = safeText(rawProject);
+  const publisher = safeText(rawPublisher);
+  const genre = safeText(rawGenre);
 
   const progressPercent = (tracked / target) * 100;
 
@@ -257,7 +266,7 @@ const BreakCard = ({ member, theme, onClick, workingDays = 1 }) => {
                         borderColor: tag.color ? `${tag.color}40` : 'var(--color-border-light)',
                       }}
                     >
-                      #{tag.name || tag}
+                      #{safeText(tag?.name ?? tag)}
                     </span>
                   ))}
                 </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CardShell from './CardShell';
 import LiveTimer from '../../ui/LiveTimer';
 import { PriorityBadge } from '../../ui/PriorityFlag';
-import { getTextFontStyle, tabularNumberStyle } from '../../../utils/typography';
+import { getTextFontStyle, tabularNumberStyle, safeText } from '../../../utils/typography';
 import { formatHoursToHM, formatMinutesToHM } from '../../../utils/timeFormat';
 import { logger } from '../../../utils/logger';
 
@@ -19,11 +19,11 @@ const WORKING_GLOW = 'rgba(16, 185, 129, 0.4)';
 const WorkingCard = ({ member, theme, onClick, workingDays = 1 }) => {
   const {
     name,
-    task,
-    taskStatus,
+    task: rawTask,
+    taskStatus: rawTaskStatus,
     taskStatusColor,
-    location,
-    project,
+    location: rawLocation,
+    project: rawProject,
     priority,
     tags = [],
     timer,
@@ -34,10 +34,19 @@ const WorkingCard = ({ member, theme, onClick, workingDays = 1 }) => {
     breaks,
     startTime,
     assignees = [],
-    publisher,
-    genre,
+    publisher: rawPublisher,
+    genre: rawGenre,
     score,
   } = member;
+
+  // Coerce text fields to safe strings — guards against legacy IndexedDB data
+  // storing raw ClickUp objects (list/status) which would crash React (#31).
+  const task = safeText(rawTask);
+  const taskStatus = safeText(rawTaskStatus);
+  const location = safeText(rawLocation);
+  const project = safeText(rawProject);
+  const publisher = safeText(rawPublisher);
+  const genre = safeText(rawGenre);
 
   // Live tracked time - only update when tracked changes significantly
   const [liveTracked, setLiveTracked] = useState(tracked);
@@ -259,7 +268,7 @@ const WorkingCard = ({ member, theme, onClick, workingDays = 1 }) => {
                           borderColor: tag.color ? `${tag.color}40` : 'var(--color-border-light)',
                         }}
                       >
-                        #{tag.name || tag}
+                        #{safeText(tag?.name ?? tag)}
                       </span>
                     ))}
                   </div>

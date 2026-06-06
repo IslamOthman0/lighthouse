@@ -4,10 +4,22 @@
  */
 
 /**
+ * Coerce a value to a safe string for rendering as a JSX child.
+ * Guards against raw objects (e.g. legacy ClickUp list/status objects in
+ * stale IndexedDB data) reaching React, which throws error #31.
+ * Strings/numbers pass through; everything else (objects, arrays) \u2192 ''.
+ */
+export const safeText = (value) => {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  return '';
+};
+
+/**
  * Detects if text contains Arabic characters
  */
 export const isRTL = (text) => {
-  if (!text) return false;
+  if (!text || typeof text !== 'string') return false;
   return /[\u0600-\u06FF]/.test(text);
 };
 
